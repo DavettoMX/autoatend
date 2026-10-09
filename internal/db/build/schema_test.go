@@ -343,3 +343,16 @@ func TestOperationsFailOnClosedDB(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateMakesParentDirectories(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "a", "b", "corpus.db")
+	d, err := CreateCorpus(path)
+	if err != nil {
+		t.Fatalf("CreateCorpus in a missing directory: %v", err)
+	}
+	defer d.Close()
+	if _, err := os.Stat(path); err != nil {
+		t.Fatalf("corpus.db not created: %v", err)
+	}
+	testutil.Scalar(t, d, 1, `SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'categorias'`)
+}
