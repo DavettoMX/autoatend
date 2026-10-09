@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"autoatend/internal/db"
 	"autoatend/internal/db/schema"
@@ -24,13 +25,18 @@ var buildPragmas = []string{
 	"foreign_keys(1)",
 }
 
-// create builds a brand-new database file and applies ddl atomically.
-// The pool is pinned to one connection so per-connection PRAGMAs always hold.
+// create builds a brand-new database file and applies ddl atomically,
+// creating missing parent directories first. The pool is pinned to one
+// connection so per-connection PRAGMAs always hold. If the DDL fails the
+// partial file is removed; the parent directories are left in place.
 func create(path string, ddl []string) (*sql.DB, error) {
 	if _, err := os.Stat(path); err == nil {
 		return nil, fmt.Errorf("db: refusing to overwrite existing file %s", path)
 	} else if !os.IsNotExist(err) {
 		return nil, err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return nil, fmt.Errorf("db: create parent dir of %s: %w", path, err)
 	}
 	name, err := db.DSN(path, buildPragmas, nil)
 	if err != nil {

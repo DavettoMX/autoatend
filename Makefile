@@ -9,7 +9,6 @@ DIST   := dist
 # Generates data/corpus.db and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
 gen:
-	mkdir -p data docs/reports
 	$(GO) run ./cmd/gencorpus
 
 clean-data:
