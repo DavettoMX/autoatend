@@ -2,7 +2,7 @@
 
 Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 1. `../documentos/2907_10433.pdf`: enunciado del caso (consignas a–e).
-2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales. Cualquier desviación debe quedar en un ADR.
+2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales, por lo que se encuentra congelado y no se modifica. Toda diferencia entre lo implementado y lo escrito se justifica en un ADR (`docs/adr/`) para la defensa oral.
 3. `PLAN.md`: plan por fases. `OPTIMIZATIONS.md` es la checklist viva: marca `[x]` solo lo que verificaste ejecutándolo.
 
 ## Reglas duras (no negociables)
@@ -39,10 +39,51 @@ El Trabajo Escrito (§5.2.1) compromete el ciclo rojo-verde-refactor y los sinod
 - Las pruebas de integración pesadas se saltan con `testing.Short()`; `make test` usa `-short`.
 - Las aserciones se hacen contra oráculos independientes o consultando la BD directamente, no con las estadísticas que reporta el propio código bajo prueba.
 
+## Flujo de git
+
+Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositorio git es la carpeta padre.
+- Cada tarea se hace en su propia rama desde `main`: `faseN/<tema>`, `fix/<tema>` o `docs/<tema>`. No se hacen commits directos en `main`.
+- Integración con `git merge --no-ff`; **nunca squash**, para conservar la evidencia rojo-verde-refactor.
+- Antes de pedir el merge debe pasar `make verify`.
+- El merge a `main` y el push solo se hacen con aprobación explícita del usuario.
+
+## Flujo por tarea
+
+1. Crear la rama (ver arriba).
+2. Antes de diseñar, lanzar el agente `mapeo-reuso` con la descripción de la tarea.
+3. El plan cita qué reutiliza (`archivo:línea`) y justifica cualquier código nuevo que se parezca a algo existente.
+4. Ciclo rojo → verde → refactor, con un commit por paso.
+5. `make verify` en verde.
+6. Pedir aprobación para el merge.
+
+## Criterios de éxito
+
+### Por tarea (Definition of Done)
+- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover-gate` (≥ 80 % por paquete), `corpus-sha` y `cross`.
+- [ ] Commits rojo → verde → refactor visibles en la rama.
+- [ ] Pruebas nombradas con su ID del plan cuando exista.
+- [ ] Sin código duplicado respecto a lo que reportó `mapeo-reuso`.
+- [ ] Toda desviación del Trabajo Escrito tiene su ADR.
+- [ ] `OPTIMIZATIONS.md` y el "Mapa del código" de este archivo actualizados si cambiaron.
+- [ ] Ningún `[x]` marcado sin haberlo ejecutado.
+
+**Estado actual:** `make verify` falla en `cover-gate` por `internal/db/build` (75.9 %). La primera tarea es `fix/cover-build`; hasta entonces ningún merge cumple este criterio.
+
+### Por fase (umbrales de `PLAN.md`)
+
+| Fase | Criterios de aceptación |
+|---|---|
+| 1 — Corpus | SHA de `data/corpus.db` = `CORPUS_SHA`; conteos exactos 21,900/14,600/14,600/14,600/7,300; distribución ±1 %; 0 textos vacíos; sin fuga temporal en el split |
+| 2 — Analizador | I-1 round-trip = 0 fallos; I-2 = 0 filas (consulta agrupada por `(l.id, f.corrida_id)`); I-3 mismo SHA-256 de `resultados.db` en dos corridas; I-4 R² ≥ 0.99 y T(73k) < 60 s; CPU01–CPU14, CPP01–CPP04 y CPE01–CPE04 en verde; `docs/PLAN_PRUEBAS.md` con L-1 y L-2 |
+| 3 — Modelo | CPM01 Macro-F1 ≥ 0.85; CPM02 recall de Reconocimientos ≥ 0.70; CPA06 paridad Python↔Go L1 = 0 en 1,000 comentarios; métricas también sobre test sin duplicados en train |
+| 4 — Servicio | CPA01–CPA05 en verde; P99 < 50 ms en 100 llamadas a `/api/clasificar`; `--selftest` < 3 s con exit 0/1; fallback 8471 → 8472 |
+| 5 — CI/CD | CI verde en ubuntu, windows y macos; `--selftest` en Windows x86-64 y macOS ARM64; ADR-001 a ADR-008 presentes; checklist final ↔ `docs/PLAN_PRUEBAS.md` consistentes en ambos sentidos |
+
 ## Comandos
 
 ```bash
-make test | test-integration | cover-gate | lint-regexp | cross
+make verify       # criterio de terminado: todos los gates en orden
+make test | test-integration | cover-gate | lint-regexp | corpus-sha | cross
 make gen          # se niega a sobrescribir data/corpus.db; usa make clean-data antes
 go test -count=1 -run NombrePrueba ./internal/...
 ```
@@ -54,6 +95,7 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `internal/db`: acceso en tiempo de ejecución (`Categories`, `OpenReadOnly`, `DSN`, constantes del split).
 - `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `Finalize`, `ApplySplit`, `CheckCategoriaIntegrity`).
 - `internal/db/schema`: DDL embebida (Anexo I + `particiones` + `uq_frecuencias_global`).
+- `internal/testutil`: helpers de prueba compartidos (`MustExec`, `ExpectErr`, `Scalar`).
 - Por crear según `PLAN.md`: `internal/regex`, `internal/lexer` (stoplist versionada en `internal/lexer/stoplist/v1.json`), `cmd/simulador`, `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
 
 ## Desviaciones del diseño ya decididas

@@ -37,6 +37,8 @@ Las pruebas tienen estilo TDD (oráculos independientes, verificación directa s
 - [ ] **[ALTA]** Subir la cobertura de `internal/db` de **77.7 %** a **≥ 80 %** (umbral del plan). Faltan las rutas de error de `create`, `applyDDL`, `InsertCategorias`, `Finalize` y `ApplySplit`.
 - [ ] **[MEDIA]** Cubrir `ValidationError.Error()` (0 %) y las ramas restantes de `run`, `Persist` y `verifyCorpus`.
 - [ ] **[MEDIA]** Rastrear las pruebas a los IDs del plan (CPU/CPP/CPE/CPA): nombres como `TestCPU01_...` o un comentario con el ID, más una matriz ID→prueba en `docs/PLAN_PRUEBAS.md`. Hace falta para la verificación bidireccional de la Fase 5 (A1).
+- [x] **[MEDIA]** Criterios de éxito ejecutables: `make verify` (fmt-check, vet, lint-regexp, test-integration, cover-gate, corpus-sha, cross) y sección "Criterios de éxito" en `CLAUDE.md`.
+- [x] **[MEDIA]** Agente `mapeo-reuso` (`.claude/agents/mapeo-reuso.md`, Sonnet, solo lectura) para mapear código reutilizable antes de cada tarea.
 - [ ] **[BAJA]** Reemplazar `testing.Short()` por la etiqueta de compilación `//go:build integration` en las pruebas de nivel 4.
 
 ---

@@ -1,8 +1,10 @@
 GO     ?= go
 CORPUS := data/corpus.db
+CORPUS_SHA ?= c0343583040f51afa54cfddb5bebe608bac3a02aa1416286582ae97744adfb05
+REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
 
-.PHONY: gen clean-data test test-integration cover-gate lint-regexp cross sweep train assets
+.PHONY: gen clean-data test test-integration cover-gate lint-regexp cross sweep train assets fmt-check vet corpus-sha verify
 
 # Generates data/corpus.db and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
@@ -60,3 +62,22 @@ train:
 
 assets:
 	@echo "pendiente: Fase 4"; exit 1
+
+fmt-check:
+	@out=$$(gofmt -l .); if [ -n "$$out" ]; then echo "fmt-check: unformatted files:"; echo "$$out"; exit 1; fi; echo "fmt-check: ok"
+
+vet:
+	$(GO) vet ./...
+
+# Regenerates the corpus in a temp dir and requires the baseline SHA-256 and an identical report (invariant I-3 groundwork).
+corpus-sha:
+	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
+	$(GO) run ./cmd/gencorpus -out "$$d/c.db" -report "$$d/r.md" >/dev/null || exit 1; \
+	got=$$(sha256sum "$$d/c.db" | cut -d' ' -f1); \
+	if [ "$$got" != "$(CORPUS_SHA)" ]; then echo "corpus-sha: FAIL got $$got, want $(CORPUS_SHA)"; exit 1; fi; \
+	diff -q "$$d/r.md" $(REPORT) >/dev/null || { echo "corpus-sha: FAIL report differs from $(REPORT)"; exit 1; }; \
+	echo "corpus-sha: ok $$got"
+
+# Definition of done for a task: everything must pass before asking for a merge.
+verify: fmt-check vet lint-regexp test-integration cover-gate corpus-sha cross
+	@echo "verify: PASS"
