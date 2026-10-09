@@ -34,7 +34,7 @@ The composite primary key stays unchanged and keeps protecting the per-category 
 
 - The schema keeps NULL-as-global and now rejects a second global row with a `UNIQUE constraint failed` error.
 - The Phase 2 sweep must write at most one global row per `(lexema, corrida)`; it already must, by I-2.
-- Verified in `internal/db/schema_test.go`: `TestFrecuenciasGlobalRowIsUnique` (duplicate global rejected;
+- Verified in `internal/db/build/schema_test.go`: `TestFrecuenciasGlobalRowIsUnique` (duplicate global rejected;
   global rows for another lexeme or another run accepted) and `TestFrecuenciasPerCategoryRowsKeepCompositePK`
   (per-category duplicates still rejected, a global row coexists with per-category rows). Removing the index
   makes the first test fail, confirming that it exercises the fix.

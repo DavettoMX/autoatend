@@ -1,9 +1,12 @@
-package db
+package build
 
 import (
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"autoatend/internal/db"
+	"autoatend/internal/testutil"
 )
 
 func TestCheckCategoriaIntegrityCleanAndOrphans(t *testing.T) {
@@ -16,9 +19,9 @@ func TestCheckCategoriaIntegrityCleanAndOrphans(t *testing.T) {
 	res, _ := newResultados(t)
 	seedResultados(t, res)
 	// Global row (NULL) plus all five valid categories.
-	mustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, NULL, 15)`)
+	testutil.MustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, NULL, 15)`)
 	for c := 1; c <= 5; c++ {
-		mustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, ?, 3)`, c)
+		testutil.MustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, ?, 3)`, c)
 	}
 
 	orphans, err := CheckCategoriaIntegrity(res, corpusPath)
@@ -30,8 +33,8 @@ func TestCheckCategoriaIntegrityCleanAndOrphans(t *testing.T) {
 	}
 
 	// Introduce dangling categoria_id values (no FK across files, so SQLite accepts them).
-	mustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (2, 1, 9, 1)`)
-	mustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (2, 1, 7, 1)`)
+	testutil.MustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (2, 1, 9, 1)`)
+	testutil.MustExec(t, res, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (2, 1, 7, 1)`)
 	orphans, err = CheckCategoriaIntegrity(res, corpusPath)
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +67,7 @@ func TestCheckCategoriaIntegrityMissingCorpusFile(t *testing.T) {
 	if _, err := CheckCategoriaIntegrity(res, missing); err == nil {
 		t.Fatal("expected error for missing corpus file")
 	}
-	if _, err := OpenReadOnly(missing); err == nil {
+	if _, err := db.OpenReadOnly(missing); err == nil {
 		t.Fatal("missing file must not have been created")
 	}
 }

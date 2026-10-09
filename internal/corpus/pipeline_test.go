@@ -1,4 +1,4 @@
-package main
+package corpus
 
 import (
 	"bytes"
@@ -40,7 +40,7 @@ func TestRunRefusesToPersistWhenValidationFails(t *testing.T) {
 		}
 		return cs, err
 	}
-	_, err := run(opts)
+	_, err := Run(opts)
 	if err == nil {
 		t.Fatal("run: expected validation error")
 	}
@@ -55,7 +55,7 @@ func TestRunRefusesToPersistWhenValidationFails(t *testing.T) {
 
 func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
 	opts := smallOptions(t)
-	res, err := run(opts)
+	res, err := Run(opts)
 	if err != nil {
 		t.Fatalf("run: %v", err)
 	}
@@ -93,7 +93,7 @@ func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
 func TestReportIsDeterministic(t *testing.T) {
 	render := func() ([]byte, string) {
 		opts := smallOptions(t)
-		res, err := run(opts)
+		res, err := Run(opts)
 		if err != nil {
 			t.Fatal(err)
 		}

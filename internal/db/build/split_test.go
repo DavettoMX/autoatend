@@ -1,4 +1,4 @@
-package db
+package build
 
 import (
 	"database/sql"
@@ -7,6 +7,9 @@ import (
 	"math/rand"
 	"sort"
 	"testing"
+
+	"autoatend/internal/db"
+	"autoatend/internal/testutil"
 )
 
 type fixtureRow struct {
@@ -103,9 +106,9 @@ func oracleSplit(t *testing.T, d *sql.DB) map[int64]string {
 		nTrain := len(rs) * 80 / 100
 		for i, r := range rs {
 			if i < nTrain {
-				out[r.id] = SplitTrain
+				out[r.id] = db.SplitTrain
 			} else {
-				out[r.id] = SplitTest
+				out[r.id] = db.SplitTest
 			}
 		}
 	}
@@ -239,8 +242,8 @@ func TestSplitHasNoTemporalLeakage(t *testing.T) {
 
 func TestParticionesConstraints(t *testing.T) {
 	d := loadFixture(t, fixtureRows(1)[:10])
-	expectErr(t, d, "CHECK constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'val')`)
-	expectErr(t, d, "FOREIGN KEY constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (999, 'train')`)
-	mustExec(t, d, `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'train')`)
-	expectErr(t, d, "UNIQUE constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'test')`)
+	testutil.ExpectErr(t, d, "CHECK constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'val')`)
+	testutil.ExpectErr(t, d, "FOREIGN KEY constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (999, 'train')`)
+	testutil.MustExec(t, d, `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'train')`)
+	testutil.ExpectErr(t, d, "UNIQUE constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'test')`)
 }

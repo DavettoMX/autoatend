@@ -80,8 +80,9 @@ Las pruebas tienen estilo TDD (oráculos independientes, verificación directa s
 - [ ] `cmd/gencorpus/report.go`: `defer f.Close()` ignora el error al cerrar, así que un reporte truncado pasaría sin aviso. Revisar el error de `Close`.
 - [ ] `cmd/gencorpus/pipeline.go`: si `verifyCorpus` falla después de `Persist`, el `corpus.db` se queda en disco. Borrarlo para mantener el "todo o nada".
 - [ ] `cmd/gencorpus/noise.go`: `typo()` sobre una letra mayúscula siempre termina duplicándola, porque `qwertyNeighbors` solo tiene minúsculas. Normalizar con `unicode.ToLower` antes de buscar.
-- [ ] `corpus.db` (16 MB) está en la raíz: moverlo a `data/` (ver §5).
-- [ ] Crear `README.md` (cómo generar, probar y compilar) y `.gitignore` (`dist/`, `data/*.db` si se regeneran, `*.out`).
+- [x] `corpus.db` (16 MB) está en la raíz: moverlo a `data/` (ver §5).
+- [x] Crear `.gitignore` (`dist/`, `*.out`, `*.test`; `data/corpus.db` sí se versiona).
+- [x] Crear `README.md` (cómo generar, probar y compilar) y `CLAUDE.md` (reglas para agentes).
 
 ---
 
@@ -122,26 +123,27 @@ proyect/
 
 Checklist (cada paso es un refactor **sin cambio de comportamiento**: el SHA-256 de `corpus.db` debe seguir siendo `c0343583…`):
 
-- [ ] **Mover el generador de `cmd/gencorpus` a `internal/corpus`** y dejar `cmd/gencorpus/main.go` solo con los flags.
+- [x] **Mover el generador de `cmd/gencorpus` a `internal/corpus`** y dejar `cmd/gencorpus/main.go` solo con los flags.
   - Por qué: `package main` no se puede importar, y el generador (~1,300 líneas) se necesita desde la prueba I-4, desde las pruebas del barrido de la Fase 2 y desde `--selftest`.
-- [ ] **Separar `templates.go` y `vocab.go`** en `internal/corpus/templates/` (datos separados de la lógica).
-- [ ] **Dividir `internal/db`:**
-  - [ ] `internal/db` (ejecución): `Categories`, `OpenReadOnly` y, en la Fase 4, `OpenEmbedded` con `Deserialize`.
-  - [ ] `internal/db/build` (solo generación): `create`, `CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`, `ApplySplit`, `CheckCategoriaIntegrity`.
+- [x] **Separar `templates.go` y `vocab.go`** en `internal/corpus/templates/` (datos separados de la lógica).
+- [x] **Dividir `internal/db`:**
+  - [x] `internal/db` (ejecución): `Categories`, `OpenReadOnly` y, en la Fase 4, `OpenEmbedded` con `Deserialize`.
+  - [x] `internal/db/build` (solo generación): `create`, `CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`, `ApplySplit`, `CheckCategoriaIntegrity`.
   - Por qué: así la regla de ADR-007 ("ATTACH solo en el pipeline de generación") se cumple por la estructura misma, porque `cmd/autoatend` nunca importa `build`. También evita que `open.go` mezcle creación, solo lectura y `Deserialize`.
   - [ ] Agregar una prueba o un chequeo de CI que confirme que `cmd/autoatend` no depende de `internal/db/build` (`go list -deps`).
-- [ ] **Mover la DDL a `internal/db/schema/*.sql` con `go:embed`**, para que los sinodales puedan comparar el archivo directamente con el Anexo I.
+- [x] **Mover la DDL a `internal/db/schema/*.sql` con `go:embed`**, para que los sinodales puedan comparar el archivo directamente con el Anexo I.
 - [ ] **Crear `internal/assets/`** para los archivos embebidos (`go:embed` no acepta rutas con `..`, así que tienen que estar dentro del paquete que los embebe). Los copia ahí un paso del `Makefile`; nunca se editan a mano.
-- [ ] **Crear `internal/testutil/`** con los helpers compartidos (`newCorpus`, `newResultados`, `mustExec`, `expectErr`, `scalar`) para los paquetes de las fases 2 a 4.
-- [ ] **Mover `corpus.db` a `data/`** y `generator_validation_report.md` a `docs/reports/` (actualizar los valores por defecto de los flags de `gencorpus`).
-- [ ] **Crear `Makefile`** con los objetivos:
-  - [ ] `gen` — genera `data/corpus.db` y su reporte.
+- [x] **Crear `internal/testutil/`** con los helpers compartidos (`newCorpus`, `newResultados`, `mustExec`, `expectErr`, `scalar`) para los paquetes de las fases 2 a 4.
+- [x] **Mover `corpus.db` a `data/`** y `generator_validation_report.md` a `docs/reports/` (actualizar los valores por defecto de los flags de `gencorpus`).
+- [x] **Crear `Makefile`** con los objetivos:
+  - [x] `gen` — genera `data/corpus.db` y su reporte.
   - [ ] `sweep` — `cmd/simulador` → `data/resultados.db` (Fase 2).
   - [ ] `train` — `ml/` → `modelo.json` (Fase 3).
   - [ ] `assets` — copia los artefactos a `internal/assets/`.
-  - [ ] `test` / `test-integration` / `cover-gate` (falla si algún paquete queda por debajo del 80 %).
-  - [ ] `lint-regexp` — falla si aparece `import "regexp"` o CGo.
-  - [ ] `cross` — `dist/autoatend.exe` y `dist/autoatend-macos-arm64` con los comandos del §1 del plan.
+  - [x] `test` / `test-integration` / `cover-gate` (falla si algún paquete queda por debajo del 80 %).
+  - [x] `lint-regexp` — falla si aparece `import "regexp"` o CGo.
+  - [ ] `cross` — `dist/autoatend.exe` y `dist/autoatend-macos-arm64` con los comandos del §1 del plan. *(Parcial: hoy compila `gencorpus` para ambos objetivos; las líneas de `autoatend` están comentadas hasta la Fase 4.)*
+  - Nota: `sweep`, `train` y `assets` existen como marcadores que fallan con "pendiente: Fase N".
 
 ---
 
@@ -149,7 +151,7 @@ Checklist (cada paso es un refactor **sin cambio de comportamiento**: el SHA-256
 
 1. [ ] `git init` y commit de la línea base (§1).
 2. [ ] Subir la cobertura de `internal/db` a ≥ 80 % (§1).
-3. [ ] Reestructura de §5 (generador → `internal/corpus`, `internal/db/build`, DDL en `.sql`, `testutil`, `data/`, `Makefile`), verificando que el SHA del corpus no cambie.
+3. [x] Reestructura de §5 (generador → `internal/corpus`, `internal/db/build`, DDL en `.sql`, `testutil`, `data/`, `Makefile`). Hecha el 2026-10-09: SHA del corpus sin cambios y reporte idéntico. Quedan para la Fase 4 `internal/assets/` y el chequeo `go list -deps`.
 4. [ ] Procedencia del corpus y flags del generador (§3).
 5. [ ] Decidir la política de `q`/`x` y redactar ADR-007, más la extensión de ADR-008 (§2, §3), **antes** de empezar la Fase 2.
 6. [ ] Arrancar la Fase 2 con commits rojo-verde-refactor y pruebas nombradas con su ID del plan.

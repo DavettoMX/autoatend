@@ -1,12 +1,12 @@
-package main
+package corpus
 
 import (
-	"database/sql"
 	"math"
 	"path/filepath"
 	"testing"
 
 	"autoatend/internal/db"
+	"autoatend/internal/testutil"
 )
 
 // Level 4a integration: gencorpus -> corpus.db at full case size (seed 10433, 73,000 rows).
@@ -19,11 +19,11 @@ func TestLevel4aGencorpusToCorpusDB(t *testing.T) {
 	opts := func(name string) Options {
 		return Options{Config: DefaultConfig(), OutPath: filepath.Join(dir, name+".db")}
 	}
-	first, err := run(opts("a"))
+	first, err := Run(opts("a"))
 	if err != nil {
 		t.Fatalf("run: %v", err)
 	}
-	second, err := run(opts("b"))
+	second, err := Run(opts("b"))
 	if err != nil {
 		t.Fatalf("second run: %v", err)
 	}
@@ -73,20 +73,20 @@ func TestLevel4aGencorpusToCorpusDB(t *testing.T) {
 	}
 
 	// Zero empty texts.
-	scalar(t, d, 0, `SELECT COUNT(*) FROM comentarios WHERE TRIM(texto) = ''`)
+	testutil.Scalar(t, d, 0, `SELECT COUNT(*) FROM comentarios WHERE TRIM(texto) = ''`)
 	// 100 comments per day over 730 days.
-	scalar(t, d, 730, `SELECT COUNT(DISTINCT fecha) FROM comentarios`)
-	scalar(t, d, 0, `SELECT COUNT(*) FROM (SELECT fecha FROM comentarios GROUP BY fecha HAVING COUNT(*) != 100)`)
+	testutil.Scalar(t, d, 730, `SELECT COUNT(DISTINCT fecha) FROM comentarios`)
+	testutil.Scalar(t, d, 0, `SELECT COUNT(*) FROM (SELECT fecha FROM comentarios GROUP BY fecha HAVING COUNT(*) != 100)`)
 
 	// Structural integrity.
 	var ic string
 	if err := d.QueryRow(`PRAGMA integrity_check`).Scan(&ic); err != nil || ic != "ok" {
 		t.Errorf("integrity_check = %q (%v)", ic, err)
 	}
-	scalar(t, d, 0, `SELECT COUNT(*) FROM pragma_foreign_key_check`)
+	testutil.Scalar(t, d, 0, `SELECT COUNT(*) FROM pragma_foreign_key_check`)
 
 	// The persisted split covers every row and is stratified and leak-free at full size.
-	scalar(t, d, 73000, `SELECT COUNT(*) FROM particiones`)
+	testutil.Scalar(t, d, 73000, `SELECT COUNT(*) FROM particiones`)
 	srows, err := d.Query(`
 		SELECT c.categoria_id, SUM(p.conjunto = 'train'), COUNT(*),
 		       MAX(CASE WHEN p.conjunto = 'train' THEN c.fecha END),
@@ -109,16 +109,5 @@ func TestLevel4aGencorpusToCorpusDB(t *testing.T) {
 		if maxTrain > minTest {
 			t.Errorf("category %d: temporal leakage %s > %s", cat, maxTrain, minTest)
 		}
-	}
-}
-
-func scalar(t *testing.T, d *sql.DB, want int, q string) {
-	t.Helper()
-	var got int
-	if err := d.QueryRow(q).Scan(&got); err != nil {
-		t.Fatalf("%s: %v", q, err)
-	}
-	if got != want {
-		t.Errorf("%s = %d, want %d", q, got, want)
 	}
 }

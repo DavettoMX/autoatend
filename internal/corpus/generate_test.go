@@ -1,6 +1,7 @@
-package main
+package corpus
 
 import (
+	"autoatend/internal/corpus/templates"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -43,10 +44,10 @@ func TestTargetCountsFollow30_20_20_20_10(t *testing.T) {
 }
 
 func TestTemplateCountPerCategoryIsBetween30And60(t *testing.T) {
-	if len(templates) != 5 {
-		t.Fatalf("templates has %d categories, want 5", len(templates))
+	if len(templates.Templates) != 5 {
+		t.Fatalf("templates has %d categories, want 5", len(templates.Templates))
 	}
-	for i, ts := range templates {
+	for i, ts := range templates.Templates {
 		if len(ts) < 30 || len(ts) > 60 {
 			t.Errorf("category %d has %d templates, want 30..60", i+1, len(ts))
 		}
@@ -62,7 +63,7 @@ func TestTemplateCountPerCategoryIsBetween30And60(t *testing.T) {
 
 func TestEveryTemplateFillsCleanly(t *testing.T) {
 	rng := rand.New(rand.NewSource(1))
-	for ci, ts := range templates {
+	for ci, ts := range templates.Templates {
 		for _, tpl := range ts {
 			for k := 0; k < 20; k++ {
 				out, err := newSlotFiller(rng).fill(tpl)

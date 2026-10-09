@@ -1,4 +1,4 @@
-package main
+package corpus
 
 import (
 	"crypto/sha256"
@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"autoatend/internal/db"
+	"autoatend/internal/db/build"
 )
 
 // Persist builds a new corpus.db at path: the five categories, then every
@@ -15,7 +16,7 @@ import (
 // transaction, then the 80/20 temporal-stratified split, then Finalize
 // (journal_mode=DELETE + VACUUM). On any error the partial file is removed.
 func Persist(path string, cs []Comment) (err error) {
-	d, err := db.CreateCorpus(path)
+	d, err := build.CreateCorpus(path)
 	if err != nil {
 		return err
 	}
@@ -26,16 +27,16 @@ func Persist(path string, cs []Comment) (err error) {
 		}
 	}()
 
-	if err = db.InsertCategorias(d); err != nil {
+	if err = build.InsertCategorias(d); err != nil {
 		return err
 	}
 	if err = bulkInsert(d, cs); err != nil {
 		return err
 	}
-	if err = db.ApplySplit(d); err != nil {
+	if err = build.ApplySplit(d); err != nil {
 		return err
 	}
-	return db.Finalize(d)
+	return build.Finalize(d)
 }
 
 func bulkInsert(d *sql.DB, cs []Comment) error {

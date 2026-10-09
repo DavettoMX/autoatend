@@ -41,7 +41,7 @@ noisy enough to justify the per-lexeme regular expression of Reading B.
   7. sample review: 50 comments per category (own rng stream, seed + 1) must pass sanity checks (10–800
      runes, ≥ 2 words, no slot residue) and are printed in the report for manual reading.
 - **Split:** the 80/20 temporal-stratified assignment is materialized once in `corpus.db` (`particiones`,
-  see `internal/db/split.go`) and never recomputed downstream.
+  see `internal/db/build/split.go`) and never recomputed downstream.
 
 ## Consequences and known limitations
 

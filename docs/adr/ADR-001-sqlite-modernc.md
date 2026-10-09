@@ -16,7 +16,7 @@ catalog (`resultados.db`), both in third normal form.
   concern exists on either target and one module cross-compiles with plain `go build`.
 - Two files, not one: `corpus.db` is the historical input and is never modified by the analyzer;
   `resultados.db` is the simulator output and carries run metadata (baseline §6.1.1).
-- Fixed build-time PRAGMAs (`internal/db/open.go`): `page_size=4096`, `encoding='UTF-8'`,
+- Fixed build-time PRAGMAs (`internal/db/build/open.go`): `page_size=4096`, `encoding='UTF-8'`,
   `journal_mode=DELETE`, `foreign_keys=ON`; the build pool is pinned to one connection so per-connection
   PRAGMAs always hold. `Finalize` re-asserts `journal_mode=DELETE` and then runs `VACUUM`.
 - `journal_mode=DELETE` replaces the baseline Annex I `journal_mode=WAL` for `corpus.db`
@@ -28,7 +28,7 @@ catalog (`resultados.db`), both in third normal form.
 - `mattn/go-sqlite3`: requires CGo and a C compiler on every build host, which breaks the single-static-binary constraint.
 - A client/server database (PostgreSQL, MySQL): needs an installation and a network service on the exam machine.
 - Flat files / JSON: no declarative constraints; the schema's CHECK, FOREIGN KEY and UNIQUE rules are the
-  first line of defence against mislabeled data and are tested directly (`internal/db/schema_test.go`).
+  first line of defence against mislabeled data and are tested directly (`internal/db/build/schema_test.go`).
 
 ## Consequences
 

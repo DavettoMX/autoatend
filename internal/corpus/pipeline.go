@@ -1,4 +1,4 @@
-package main
+package corpus
 
 import (
 	"fmt"
@@ -32,8 +32,8 @@ func (e *ValidationError) Error() string {
 	return "gencorpus: validation battery failed: " + strings.Join(parts, "; ")
 }
 
-// run is the whole pipeline: generate -> validate -> persist -> verify -> report.
-func run(opts Options) (Result, error) {
+// Run is the whole pipeline: generate -> validate -> persist -> verify -> report.
+func Run(opts Options) (Result, error) {
 	gen := opts.generate
 	if gen == nil {
 		gen = Generate

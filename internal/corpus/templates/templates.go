@@ -1,9 +1,13 @@
-package main
+// Package templates holds the pure data of the synthetic corpus generator: the
+// slot-typed sentence templates, the neutral openers and closers. It contains no
+// logic. Values and slice order are load-bearing: the rng stream indexes into
+// these slices, so any edit or reordering changes corpus.db.
+package templates
 
-// templates[i] holds the slot-typed base templates of category id i+1
+// Templates[i] holds the slot-typed base templates of category id i+1
 // (1 Falta de Servicio, 2 Cobros Indebidos, 3 Problemas de Facturación,
 // 4 Quejas, 5 Reconocimientos). Domain text stays in Spanish.
-var templates = [5][]string{
+var Templates = [5][]string{
 	// 1 — Falta de Servicio
 	{
 		"Desde hace {DURACION} estoy sin {SERVICIO} en {ZONA} y nadie me da una solución.",
@@ -191,10 +195,10 @@ var templates = [5][]string{
 	},
 }
 
-// openers and closers are neutral, category-independent sentences. They are the
+// Openers and Closers are neutral, category-independent sentences. They are the
 // controlled source of shared vocabulary between categories (the corpus must not
 // be trivially separable).
-var openers = []string{
+var Openers = []string{
 	"Buenos días.",
 	"Buenas tardes.",
 	"Buenas noches.",
@@ -207,7 +211,7 @@ var openers = []string{
 	"Les escribo porque necesito ayuda.",
 }
 
-var closers = []string{
+var Closers = []string{
 	"Gracias.",
 	"Quedo atento a su respuesta.",
 	"Espero una respuesta pronto.",

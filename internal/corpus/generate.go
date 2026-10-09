@@ -1,6 +1,7 @@
-package main
+package corpus
 
 import (
+	"autoatend/internal/corpus/templates"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -95,7 +96,7 @@ func Generate(cfg Config) ([]Comment, error) {
 // compose builds one clean comment: optional opener, one or two category
 // templates, optional closer.
 func compose(cat int, rng *rand.Rand) (string, error) {
-	ts := templates[cat-1]
+	ts := templates.Templates[cat-1]
 	f := newSlotFiller(rng)
 	var parts []string
 	add := func(tpl string) error {
@@ -108,7 +109,7 @@ func compose(cat int, rng *rand.Rand) (string, error) {
 	}
 
 	if rng.Float64() < pOpener {
-		if err := add(openers[rng.Intn(len(openers))]); err != nil {
+		if err := add(templates.Openers[rng.Intn(len(templates.Openers))]); err != nil {
 			return "", err
 		}
 	}
@@ -126,7 +127,7 @@ func compose(cat int, rng *rand.Rand) (string, error) {
 		}
 	}
 	if rng.Float64() < pCloser {
-		if err := add(closers[rng.Intn(len(closers))]); err != nil {
+		if err := add(templates.Closers[rng.Intn(len(templates.Closers))]); err != nil {
 			return "", err
 		}
 	}
