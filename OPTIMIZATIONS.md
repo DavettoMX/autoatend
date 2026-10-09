@@ -34,7 +34,7 @@ Las pruebas tienen estilo TDD (oráculos independientes, verificación directa s
 
 - [ ] **[ALTA]** Inicializar el repositorio git (`git init`) y versionar el estado actual como línea base.
 - [ ] **[ALTA]** A partir de la Fase 2, hacer commits con el ciclo explícito: `test: … (red)` → `feat: … (green)` → `refactor: …`. Es la evidencia de TDD que pueden pedir en la defensa oral.
-- [ ] **[ALTA]** Subir la cobertura de `internal/db` de **77.7 %** a **≥ 80 %** (umbral del plan). Faltan las rutas de error de `create`, `applyDDL`, `InsertCategorias`, `Finalize` y `ApplySplit`.
+- [x] **[ALTA]** Subir la cobertura de `internal/db` a **≥ 80 %** (umbral del plan). Hecho en `fix/cover-build`: `internal/db/build` 75.9 % → 91.8 %, `internal/db` 85.0 %.
 - [ ] **[MEDIA]** Cubrir `ValidationError.Error()` (0 %) y las ramas restantes de `run`, `Persist` y `verifyCorpus`.
 - [ ] **[MEDIA]** Rastrear las pruebas a los IDs del plan (CPU/CPP/CPE/CPA): nombres como `TestCPU01_...` o un comentario con el ID, más una matriz ID→prueba en `docs/PLAN_PRUEBAS.md`. Hace falta para la verificación bidireccional de la Fase 5 (A1).
 - [x] **[MEDIA]** Criterios de éxito ejecutables: `make verify` (fmt-check, vet, lint-regexp, test-integration, cover-gate, corpus-sha, cross) y sección "Criterios de éxito" en `CLAUDE.md`.
@@ -152,7 +152,7 @@ Checklist (cada paso es un refactor **sin cambio de comportamiento**: el SHA-256
 ## 6. Orden de ejecución recomendado
 
 1. [ ] `git init` y commit de la línea base (§1).
-2. [ ] Subir la cobertura de `internal/db` a ≥ 80 % (§1).
+2. [x] Subir la cobertura de `internal/db` a ≥ 80 % (§1).
 3. [x] Reestructura de §5 (generador → `internal/corpus`, `internal/db/build`, DDL en `.sql`, `testutil`, `data/`, `Makefile`). Hecha el 2026-10-09: SHA del corpus sin cambios y reporte idéntico. Quedan para la Fase 4 `internal/assets/` y el chequeo `go list -deps`.
 4. [ ] Procedencia del corpus y flags del generador (§3).
 5. [ ] Decidir la política de `q`/`x` y redactar ADR-007, más la extensión de ADR-008 (§2, §3), **antes** de empezar la Fase 2.

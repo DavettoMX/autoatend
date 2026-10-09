@@ -67,7 +67,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 - [ ] `OPTIMIZATIONS.md` y el "Mapa del código" de este archivo actualizados si cambiaron.
 - [ ] Ningún `[x]` marcado sin haberlo ejecutado.
 
-**Estado actual:** `make verify` falla en `cover-gate` por `internal/db/build` (75.9 %). La primera tarea es `fix/cover-build`; hasta entonces ningún merge cumple este criterio.
+**Estado actual:** `make verify` en verde desde `fix/cover-build` (cobertura: corpus 91.6 %, db 85.0 %, db/build 91.8 %, db/schema 100 %).
 
 ### Por fase (umbrales de `PLAN.md`)
 
