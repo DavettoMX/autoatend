@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"strings"
 	"testing"
 
 	"autoatend/internal/db"
@@ -246,4 +247,11 @@ func TestParticionesConstraints(t *testing.T) {
 	testutil.ExpectErr(t, d, "FOREIGN KEY constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (999, 'train')`)
 	testutil.MustExec(t, d, `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'train')`)
 	testutil.ExpectErr(t, d, "UNIQUE constraint failed", `INSERT INTO particiones(comentario_id, conjunto) VALUES (1, 'test')`)
+}
+
+func TestApplySplitRequiresParticionesTable(t *testing.T) {
+	d, _ := newResultados(t)
+	if err := ApplySplit(d); err == nil || !strings.Contains(err.Error(), "particiones") {
+		t.Fatalf("ApplySplit on resultados.db: err = %v, want missing particiones table", err)
+	}
 }

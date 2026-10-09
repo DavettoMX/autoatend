@@ -263,3 +263,83 @@ func TestResultadosCheckAndForeignKeyConstraints(t *testing.T) {
 	testutil.ExpectErr(t, d, "UNIQUE constraint failed", `INSERT INTO variantes(lexema_id, forma, frecuencia) VALUES (1, 'factura', 1)`)
 	testutil.ExpectErr(t, d, "CHECK constraint failed", `INSERT INTO variantes(lexema_id, forma, frecuencia) VALUES (1, 'facturas', 0)`)
 }
+
+// closedCorpus returns a corpus.db handle that has already been closed, to
+// exercise the error path of every operation that needs a live connection.
+func closedCorpus(t *testing.T) *sql.DB {
+	t.Helper()
+	d, _ := newCorpus(t)
+	if err := d.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return d
+}
+
+func TestCreateRemovesFileWhenDDLFails(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bad.db")
+	_, err := create(path, []string{"CREATE TABLE a(x)", "NOT SQL"})
+	if err == nil || !strings.Contains(err.Error(), "ddl") {
+		t.Fatalf("create with invalid DDL: err = %v, want a ddl error", err)
+	}
+	for _, p := range []string{path, path + "-journal"} {
+		if _, err := os.Stat(p); err == nil {
+			t.Errorf("failed create left %s behind", p)
+		}
+	}
+}
+
+func TestCreateRejectsPathUnderAFile(t *testing.T) {
+	file := filepath.Join(t.TempDir(), "not-a-dir")
+	if err := os.WriteFile(file, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(file, "corpus.db")
+	if _, err := CreateCorpus(path); err == nil {
+		t.Fatal("CreateCorpus under a regular file: expected error")
+	}
+	if _, err := os.Stat(path); err == nil {
+		t.Fatalf("%s must not exist", path)
+	}
+}
+
+func TestInsertCategoriasIsAtomicOnConflict(t *testing.T) {
+	d, _ := newCorpus(t)
+	seedCategorias(t, d)
+	if err := InsertCategorias(d); err == nil || !strings.Contains(err.Error(), "UNIQUE constraint failed") {
+		t.Fatalf("second InsertCategorias: err = %v, want UNIQUE violation", err)
+	}
+	testutil.Scalar(t, d, 5, `SELECT COUNT(*) FROM categorias`)
+}
+
+func TestFinalizeRejectsNonDeleteJournal(t *testing.T) {
+	// An in-memory database cannot use the rollback journal: journal_mode stays "memory".
+	d, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	if err := Finalize(d); err == nil || !strings.Contains(err.Error(), "journal_mode") {
+		t.Fatalf("Finalize on :memory:: err = %v, want journal_mode error", err)
+	}
+}
+
+func TestOperationsFailOnClosedDB(t *testing.T) {
+	_, corpusPath := newCorpus(t)
+	ops := map[string]func(*sql.DB) error{
+		"applyDDL":         func(d *sql.DB) error { return applyDDL(d, []string{"CREATE TABLE a(x)"}) },
+		"InsertCategorias": InsertCategorias,
+		"Finalize":         Finalize,
+		"ApplySplit":       ApplySplit,
+		"CheckCategoriaIntegrity": func(d *sql.DB) error {
+			_, err := CheckCategoriaIntegrity(d, corpusPath)
+			return err
+		},
+	}
+	for name, op := range ops {
+		t.Run(name, func(t *testing.T) {
+			if err := op(closedCorpus(t)); err == nil {
+				t.Fatalf("%s on a closed database: expected error", name)
+			}
+		})
+	}
+}

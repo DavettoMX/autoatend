@@ -71,3 +71,12 @@ func TestCheckCategoriaIntegrityMissingCorpusFile(t *testing.T) {
 		t.Fatal("missing file must not have been created")
 	}
 }
+
+func TestCheckCategoriaIntegrityRejectsNonCorpusFile(t *testing.T) {
+	res, _ := newResultados(t)
+	_, other := newResultados(t)
+	if _, err := CheckCategoriaIntegrity(res, other); err == nil {
+		t.Fatal("attaching a file without categorias: expected error")
+	}
+	testutil.Scalar(t, res, 1, `SELECT COUNT(*) FROM pragma_database_list`)
+}
