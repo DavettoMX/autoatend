@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"autoatend/internal/corpus/templates"
 	"autoatend/internal/db"
 )
 
@@ -49,6 +50,14 @@ func writeReport(w io.Writer, cfg Config, res Result) error {
 		pf("\n")
 	}
 
+	pf("\n## Generator parameters\n\n| Parameter | Value |\n|---|---:|\n")
+	ts := templates.Templates
+	pf("| Templates per category | %d / %d / %d / %d / %d |\n", len(ts[0]), len(ts[1]), len(ts[2]), len(ts[3]), len(ts[4]))
+	pf("| Shared openers / closers | %d / %d |\n", len(templates.Openers), len(templates.Closers))
+	pf("| Opener / second template / closer probability | %.2f / %.2f / %.2f |\n", pOpener, pSecond, pCloser)
+	pf("| Amount pool / surface formats | %d / %d |\n", len(templates.AmountPool), amountStyles)
+	pf("| Folio prefixes / digits | %d / %d–%d |\n", len(templates.FolioPrefixes), folioMinDigits, folioMaxDigits)
+
 	n := cfg.Noise
 	pf("\n## Noise calibration\n\n| Parameter | Value |\n|---|---:|\n")
 	pf("| Comment selection rate | %.2f |\n| Tilde drop (per accented letter) | %.2f |\n| Abbreviation q/x/tel/fact (per word) | %.2f |\n", n.Rate, n.TildeDrop, n.Abbrev)
@@ -61,6 +70,9 @@ func writeReport(w io.Writer, cfg Config, res Result) error {
 		pf("| %s | %d | %d | %d | %s | %s |\n", c.Nombre, p.PerCategory[i], p.Train[i], p.Test[i], p.MaxTrainDate[i], p.MinTestDate[i])
 	}
 	pf("\nEmpty texts: %d. Split rule (global, temporal): the cut-off is the fecha at position %d%% of the corpus in chronological order; train is fecha < %s, test is fecha >= %s, so every training comment precedes every test comment.\n", p.Empty, db.TrainPercent, p.Cutoff, p.Cutoff)
+	nTest := p.Rows - sum5(p.Train)
+	pf("\nTest comments with an identical text in train: %d of %d (%.2f%%). A temporal split does not prevent exact repeats of a template draw.\n",
+		p.TestInTrain, nTest, 100*float64(p.TestInTrain)/float64(nTest))
 	pf("\ncorpus.db SHA-256: `%s`\n\n", p.SHA256)
 
 	pf("## Sample review\n\n%d comments per category, drawn with a dedicated rng stream (seed+1) for manual inspection.\n", sampleSize)

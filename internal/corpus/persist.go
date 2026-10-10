@@ -61,6 +61,7 @@ type PersistedStats struct {
 	Rows         int
 	PerCategory  [5]int
 	Cutoff       string // first fecha of the test set (db.SplitCutoff)
+	TestInTrain  int    // test comments whose exact text also occurs in train
 	Train, Test  [5]int
 	MaxTrainDate [5]string
 	MinTestDate  [5]string
@@ -107,6 +108,11 @@ func verifyCorpus(path string) (PersistedStats, error) {
 		p.Rows += n
 	}
 	if err := rows.Err(); err != nil {
+		return p, err
+	}
+	if err := d.QueryRow(`
+		SELECT COUNT(*) FROM comentarios
+		WHERE fecha >= ?1 AND texto IN (SELECT texto FROM comentarios WHERE fecha < ?1)`, p.Cutoff).Scan(&p.TestInTrain); err != nil {
 		return p, err
 	}
 	if err := d.QueryRow(`SELECT COUNT(*) FROM comentarios WHERE TRIM(texto) = ''`).Scan(&p.Empty); err != nil {
