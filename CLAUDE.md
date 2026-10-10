@@ -10,7 +10,7 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 - **Prohibido `import "regexp"`** y cualquier biblioteca de NLP o generador de parsers. El analizador léxico (parser de ER, Thompson, simulación del AFN-ε) se escribe a mano. Verifícalo con `make lint-regexp`.
 - **Prohibido CGo.** Todo debe compilar con `CGO_ENABLED=0` para `windows/amd64` y `darwin/arm64` (`make cross`). Solo se permiten dependencias en Go puro; hoy la única es `modernc.org/sqlite`.
 - **El único `runtime.GOOS` permitido** es la apertura opcional del navegador en la Fase 4.
-- **`internal/db` (tiempo de ejecución) nunca importa `internal/db/build`.** `ATTACH`, la creación de archivos y el split viven solo en `build` (ADR-007).
+- **`internal/db` (tiempo de ejecución) nunca importa `internal/db/build`.** La creación de archivos, la DDL y el `VACUUM` viven solo en `build`; `internal/db` solo lee (`OpenReadOnly`, `SplitCutoff`).
 - **Determinismo (invariante I-3):** nada de timestamps, nada de iterar mapas al escribir y PRAGMAs fijos. Dos ejecuciones con la misma semilla deben producir archivos byte a byte idénticos.
 - **No dar por hecho nada que no se ejecutó.** Antes de afirmar que algo pasa, córrelo.
 
@@ -28,7 +28,7 @@ Cosas que cambian el SHA sin que se note:
 - **El texto de la DDL en `internal/db/schema/*.sql`.** SQLite guarda literalmente cada sentencia `CREATE` en `sqlite_master`, así que un espacio, una sangría o un comentario de más lo alteran. Los `.sql` no llevan comentarios; la explicación va en `schema.go`.
 - **El orden o la longitud de cualquier slice de `templates`** y el orden de las llamadas al rng en `internal/corpus`.
 
-Si un cambio *debe* alterar el corpus, es una decisión de diseño: regenera `data/corpus.db` y el reporte, actualiza el SHA aquí y en `OPTIMIZATIONS.md`, y regístralo en un ADR.
+Si un cambio *debe* alterar el corpus, es una decisión de diseño: regenera `data/corpus.db` y el reporte, actualiza el SHA aquí, en el `Makefile`, en `README.md` y en `OPTIMIZATIONS.md`. Si el cambio se aparta del Trabajo Escrito, solo procede si el caso lo exige y no hay alternativa fiel al TE, y entonces va en el ADR que el TE promete para ese tema (ver "Política de ADR").
 
 ## Metodología: TDD estricto
 
@@ -67,17 +67,17 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 - [ ] `OPTIMIZATIONS.md` y el "Mapa del código" de este archivo actualizados si cambiaron.
 - [ ] Ningún `[x]` marcado sin haberlo ejecutado.
 
-**Estado actual:** `make verify` en verde desde `fix/cover-build` (cobertura: corpus 91.6 %, db 85.0 %, db/build 91.8 %, db/schema 100 %).
+**Estado actual:** `make verify` en verde desde `fase1/apego-te` (cobertura: corpus 91.5 %, db 87.5 %, db/build 90.8 %, db/schema 100 %).
 
 ### Por fase (umbrales de `PLAN.md`)
 
 | Fase | Criterios de aceptación |
 |---|---|
 | 1 — Corpus | SHA de `data/corpus.db` = `CORPUS_SHA`; conteos exactos 21,900/14,600/14,600/14,600/7,300; distribución ±1 %; 0 textos vacíos; sin fuga temporal en el split |
-| 2 — Analizador | I-1 round-trip = 0 fallos; I-2 = 0 filas (consulta agrupada por `(l.id, f.corrida_id)`); I-3 mismo SHA-256 de `resultados.db` en dos corridas; I-4 R² ≥ 0.99 y T(73k) < 60 s; CPU01–CPU14, CPP01–CPP04 y CPE01–CPE04 en verde; `docs/PLAN_PRUEBAS.md` con L-1 y L-2 |
+| 2 — Analizador | I-1 round-trip = 0 fallos; I-2 = 0 filas (consulta literal del TE §6.3.3; una sola corrida por archivo); I-3 mismo SHA-256 de `resultados.db` en dos corridas; I-4 R² ≥ 0.99 y T(73k) < 60 s; CPU01–CPU14, CPP01–CPP04 y CPE01–CPE04 en verde; `docs/PLAN_PRUEBAS.md` con L-1 y L-2 |
 | 3 — Modelo | CPM01 Macro-F1 ≥ 0.85; CPM02 recall de Reconocimientos ≥ 0.70; CPA06 paridad Python↔Go L1 = 0 en 1,000 comentarios; métricas también sobre test sin duplicados en train |
 | 4 — Servicio | CPA01–CPA05 en verde; P99 < 50 ms en 100 llamadas a `/api/clasificar`; `--selftest` < 3 s con exit 0/1; fallback 8471 → 8472 |
-| 5 — CI/CD | CI verde en ubuntu, windows y macos; `--selftest` en Windows x86-64 y macOS ARM64; ADR-001 a ADR-008 presentes; checklist final ↔ `docs/PLAN_PRUEBAS.md` consistentes en ambos sentidos |
+| 5 — CI/CD | CI verde en ubuntu, windows y macos; `--selftest` en Windows x86-64 y macOS ARM64; ADR-001 a ADR-005 presentes; checklist final ↔ `docs/PLAN_PRUEBAS.md` consistentes en ambos sentidos |
 
 ## Comandos
 
@@ -92,26 +92,43 @@ go test -count=1 -run NombrePrueba ./internal/...
 
 - `cmd/<herramienta>/main.go`: solo flags; la lógica vive en `internal/`.
 - `internal/corpus`: generador del corpus sintético (semilla 10433, 73,000 filas, 30/20/20/20/10).
-- `internal/db`: acceso en tiempo de ejecución (`Categories`, `OpenReadOnly`, `DSN`, constantes del split).
-- `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `Finalize`, `ApplySplit`, `CheckCategoriaIntegrity`).
-- `internal/db/schema`: DDL embebida (Anexo I + `particiones` + `uq_frecuencias_global`).
+- `internal/db`: acceso en tiempo de ejecución, solo lectura (`Categories`, `OpenReadOnly`, `FileURI`, `ReadOnlyParams`, `SplitCutoff`).
+- `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`, `CheckCategoriaIntegrity`).
+- `internal/db/schema`: DDL embebida, literal del Anexo I.
 - `internal/testutil`: helpers de prueba compartidos (`MustExec`, `ExpectErr`, `Scalar`).
 - Por crear según `PLAN.md`: `internal/regex`, `internal/lexer` (stoplist versionada en `internal/lexer/stoplist/v1.json`), `cmd/simulador`, `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
 
-## Desviaciones del diseño ya decididas
+## Política de ADR y apego al Trabajo Escrito
 
-No las "corrijas" de vuelta al Trabajo Escrito:
-- `journal_mode=DELETE` en ambas BD, no WAL. En ejecución, BD en memoria con `Deserialize` y `PRAGMA query_only=ON` (ADR-007, pendiente de redactar).
-- Índice parcial `uq_frecuencias_global`, porque SQLite trata los NULL como distintos dentro de la PK (ADR-006).
-- Stoplist: `se`, `no`, `este` y `eso` **no** se filtran. Los homógrafos `bajo`, `para`, `sobre`, `entre`, `como`, `más`, `solo`, `aun` y `hacia` se conservan. Solo `según`/`segun` y `olé`/`ole` tienen variante sin tilde; no hay plegado global de acentos (ADR-008, pendiente).
-- Consulta I-2 agrupada por `(l.id, f.corrida_id)`.
-- El vocabulario y el IDF del modelo salen solo de la partición train; el catálogo de `resultados.db` se construye con el corpus completo.
+Precedencia: el caso (`2907_10433.pdf`) manda; después, el Trabajo Escrito tanto como sea posible. Solo hay ADR para lo que el TE promete documentar:
+- ADR-001: SQLite.
+- ADR-002: simulación directa del AFN-ε.
+- ADR-003: stoplist y homógrafos.
+- ADR-004: modelo.
+- ADR-005: despliegue.
+
+No agregues desviaciones nuevas del TE si existe una alternativa fiel que cumpla el caso.
+
+Ya implementado como lo dice el TE (no lo "mejores"):
+- `corpus.db` en WAL, `resultados.db` en DELETE (Anexo I). Lectura con `mode=ro&immutable=1` (§5.1.4). Integridad cruzada con `ATTACH` (§6.1.3).
+- DDL literal del Anexo I: sin índices ni tablas extra. La fila global duplicada que admite la PK la detecta la consulta I-2 del TE.
+- Split temporal global (§5.2.2) como consulta (`db.SplitCutoff`), sin tabla.
+
+Decisiones para las fases siguientes:
+- **I-2**: consulta literal del TE §6.3.3; cada `resultados.db` contiene una sola corrida (lo implican `forma_canonica UNIQUE` y el I-3).
+- **IDF**: sale solo de train ("precalculados durante el entrenamiento", §6.4.2); el catálogo de `resultados.db` usa el corpus completo.
+- **Fase 4**: el embed se escribe en el directorio temporal del usuario y se abre con `mode=ro&immutable=1`; `ATTACH` en tiempo de ejecución; sin `Deserialize`.
+- **Stoplist (ADR-003)**: resuelve las contradicciones internas del TE a favor del caso.
+  - Se filtran artículos, preposiciones (incluida `hacia`), conjunciones e interjecciones.
+  - Se conservan los homógrafos del TE: `bajo`, `para`, `sobre`, `entre`, `como`, `más`, `solo`, `aun`.
+  - `se`, `no`, `este` y `eso` no se filtran, porque no pertenecen a las 4 clases.
+  - Variantes de superficie de formas filtradas, hueco detectado en el desarrollo: `segun`, `ole` (entrada libre en la consigna e) y las abreviaturas de ruido `q` y `x`.
+  - No hay plegado global de acentos.
 
 ## Pendientes conocidos que afectan el diseño
 
 Consulta `OPTIMIZATIONS.md` §2 antes de empezar la Fase 2:
-- Las abreviaturas de ruido `q` (por `que`) y `x` (por `por`) no están en la stoplist v1.
-- El 19.5 % de los comentarios de test tiene un duplicado exacto en train, lo que infla CPM01.
+- El 19.6 % de los comentarios de test (2,860 de 14,600) tiene un duplicado exacto en train, lo que infla CPM01.
 
 ## Idioma
 

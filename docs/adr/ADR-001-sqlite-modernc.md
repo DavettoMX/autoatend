@@ -17,11 +17,15 @@ catalog (`resultados.db`), both in third normal form.
 - Two files, not one: `corpus.db` is the historical input and is never modified by the analyzer;
   `resultados.db` is the simulator output and carries run metadata (baseline §6.1.1).
 - Fixed build-time PRAGMAs (`internal/db/build/open.go`): `page_size=4096`, `encoding='UTF-8'`,
-  `journal_mode=DELETE`, `foreign_keys=ON`; the build pool is pinned to one connection so per-connection
-  PRAGMAs always hold. `Finalize` re-asserts `journal_mode=DELETE` and then runs `VACUUM`.
-- `journal_mode=DELETE` replaces the baseline Annex I `journal_mode=WAL` for `corpus.db`
-  (deviation recorded in ADR-007): WAL leaves `-wal`/`-shm` sidecars and a WAL-flagged header, which is
-  incompatible with embedding the database file as a single image.
+  `foreign_keys=ON`, and the journal mode of baseline Anexo I — `WAL` for `corpus.db`, `DELETE` for
+  `resultados.db`. The build pool is pinned to one connection so per-connection PRAGMAs always hold.
+  `Finalize` runs `VACUUM` and, in WAL mode, checkpoints the log back into the main file, so each file is a
+  single self-contained image with no `-wal`/`-shm` sidecar and can be embedded with `go:embed`.
+- Read-only access uses `mode=ro&immutable=1` (baseline §5.1.4): it rejects writes and reads the file as a
+  fixed image, without locks or sidecars. This is what lets a WAL database be opened from a read-only
+  location; with `mode=ro` alone SQLite must create the `-shm` file and the open fails.
+- The cross-file reference `frecuencias.categoria_id → corpus.categorias(id)` is checked with
+  `ATTACH DATABASE` and a `JOIN`, as Anexo I states (`build.CheckCategoriaIntegrity`).
 
 ## Alternatives rejected
 
@@ -32,11 +36,12 @@ catalog (`resultados.db`), both in third normal form.
 
 ## Consequences
 
-- Pure-Go SQLite is slower than the C library, but the workload here is small: Phase 1 generates, builds,
-  splits and VACUUMs a 73,000-row `corpus.db` (≈16 MB). Measured on the development machine, the full-size
+- Pure-Go SQLite is slower than the C library, but the workload here is small: Phase 1 generates, builds
+  and VACUUMs a 73,000-row `corpus.db` (≈15 MB). Measured on the development machine, the full-size
   integration test (two complete builds plus read-back verification) runs in ≈1.7 s.
 - Reproducibility depends on determinism of the write sequence (no timestamps, fixed PRAGMAs, sorted
-  iteration, fixed insertion order). Phase 1 already verifies that two builds with the same seed yield a
-  byte-identical `corpus.db` (Level 4a test), which is the groundwork for invariant I-3.
+  iteration, fixed insertion order). Phase 1 verifies that two builds with the same seed yield a
+  byte-identical `corpus.db` in WAL mode (Level 4a test and `make corpus-sha`), which is the groundwork
+  for invariant I-3.
 - Foreign keys are enforced per connection, so every connection opened by this project sets
-  `foreign_keys=ON` through the DSN rather than relying on a one-off statement.
+  `foreign_keys=ON` through the connection URI rather than relying on a one-off statement.

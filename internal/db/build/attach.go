@@ -14,9 +14,6 @@ import (
 // categoria_id, sorted ascending. NULL (global) rows are ignored.
 // corpusPath must be a finished file (after Finalize): it is attached with
 // immutable=1, so pending WAL content is not read.
-//
-// Generation pipeline only (ADR-007): it needs both files on disk, which is not
-// the case at runtime, where the databases are in-memory deserialized buffers.
 func CheckCategoriaIntegrity(resultados *sql.DB, corpusPath string) ([]int64, error) {
 	uri, err := db.FileURI(corpusPath, nil, db.ReadOnlyParams())
 	if err != nil {

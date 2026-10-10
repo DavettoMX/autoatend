@@ -1,7 +1,7 @@
 // Package build is the generation pipeline for corpus.db and resultados.db. It
-// creates the files with their fixed build-time PRAGMAs, applies the DDL from
-// internal/db/schema, seeds the categories, materializes the persisted split,
-// VACUUMs the result and runs the cross-file integrity check (ATTACH, ADR-007).
+// creates the files with their fixed build-time PRAGMAs (journal mode per
+// Anexo I), applies the DDL from internal/db/schema, seeds the categories,
+// VACUUMs the result and runs the cross-file integrity check (ATTACH).
 // The runtime never imports this package.
 package build
 

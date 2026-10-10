@@ -61,20 +61,20 @@ docs/reports/           reportes generados
 
 ## Bases de datos
 
-- **`corpus.db`**: `categorias` (CHECK con las 5 etiquetas del caso), `comentarios` (FK `ON DELETE RESTRICT`, fecha `YYYY-MM-DD`) y `particiones`, que guarda el split 80/20 temporal-estratificado de forma fija: por categoría, el 80 % más antiguo va a train y el resto a test. Ninguna fase posterior vuelve a particionar.
+- **`corpus.db`**: `categorias` (CHECK con las 5 etiquetas del caso) y `comentarios` (FK `ON DELETE RESTRICT`, fecha `YYYY-MM-DD`), como en el Anexo I. El split 80/20 no se guarda: es la consulta `db.SplitCutoff`, un corte temporal global (TE §5.2.2). Todo comentario de train es anterior a todo comentario de test; con este corpus el corte es 2026-04-06 (58,400 / 14,600).
 - **`resultados.db`** (Fase 2): `corridas`, `lexemas`, `frecuencias` (`categoria_id NULL` = frecuencia global) y `variantes`.
 
-Los dos archivos usan `journal_mode=DELETE` y se compactan con `VACUUM` para poder embeberse en el binario.
+Como indica el Anexo I, `corpus.db` usa `journal_mode=WAL` y `resultados.db` `journal_mode=DELETE`. Los dos se compactan con `VACUUM` y quedan como un único archivo, sin `-wal` ni `-shm`, para poder embeberse en el binario. La lectura usa `mode=ro&immutable=1` (TE §5.1.4).
 
 ## Decisiones de arquitectura
+
+Solo hay ADR para las decisiones que el Trabajo Escrito promete documentar (§5.2.1, §6.2.3 y §6.4).
 
 | ADR | Tema |
 |---|---|
 | [ADR-001](docs/adr/ADR-001-sqlite-modernc.md) | SQLite mediante `modernc.org/sqlite` (Go puro, sin CGo) |
-| [ADR-002](docs/adr/ADR-002-synthetic-corpus-design.md) | Diseño del corpus sintético |
-| [ADR-006](docs/adr/ADR-006-frecuencias-global-uniqueness.md) | Unicidad de la fila global en `frecuencias` |
 
-Pendientes: ADR-003 (simulación directa del AFN), ADR-004 (modelo), ADR-005 (solo loopback), ADR-007 (BD embebidas con `Deserialize`) y ADR-008 (variantes sin tilde en la stoplist).
+Pendientes: ADR-002 (simulación directa del AFN-ε), ADR-003 (stoplist y homógrafos), ADR-004 (modelo) y ADR-005 (despliegue: solo loopback, sin TLS, autenticación ni CORS).
 
 ## Objetivos de despliegue
 
