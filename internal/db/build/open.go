@@ -16,20 +16,28 @@ import (
 	"autoatend/internal/db/schema"
 )
 
+// Journal modes of the two files, per baseline Anexo I.
+const (
+	journalCorpus     = "WAL"
+	journalResultados = "DELETE"
+)
+
 // buildPragmas are the fixed PRAGMAs applied to every build-time connection.
 // page_size and encoding only take effect on an empty database, so they must come first.
-var buildPragmas = []string{
-	"page_size(4096)",
-	"encoding('UTF-8')",
-	"journal_mode(DELETE)",
-	"foreign_keys(1)",
+func buildPragmas(journal string) []string {
+	return []string{
+		"page_size(4096)",
+		"encoding('UTF-8')",
+		"journal_mode(" + journal + ")",
+		"foreign_keys(1)",
+	}
 }
 
-// create builds a brand-new database file and applies ddl atomically,
+// create builds a brand-new database file in the given journal mode and applies ddl atomically,
 // creating missing parent directories first. The pool is pinned to one
 // connection so per-connection PRAGMAs always hold. If the DDL fails the
 // partial file is removed; the parent directories are left in place.
-func create(path string, ddl []string) (*sql.DB, error) {
+func create(path string, ddl []string, journal string) (*sql.DB, error) {
 	if _, err := os.Stat(path); err == nil {
 		return nil, fmt.Errorf("db: refusing to overwrite existing file %s", path)
 	} else if !os.IsNotExist(err) {
@@ -38,7 +46,7 @@ func create(path string, ddl []string) (*sql.DB, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return nil, fmt.Errorf("db: create parent dir of %s: %w", path, err)
 	}
-	name, err := db.FileURI(path, buildPragmas, nil)
+	name, err := db.FileURI(path, buildPragmas(journal), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -72,10 +80,12 @@ func applyDDL(d *sql.DB, ddl []string) error {
 }
 
 // CreateCorpus creates a new, empty corpus.db at path.
-func CreateCorpus(path string) (*sql.DB, error) { return create(path, schema.Corpus()) }
+func CreateCorpus(path string) (*sql.DB, error) { return create(path, schema.Corpus(), journalCorpus) }
 
 // CreateResultados creates a new, empty resultados.db at path.
-func CreateResultados(path string) (*sql.DB, error) { return create(path, schema.Resultados()) }
+func CreateResultados(path string) (*sql.DB, error) {
+	return create(path, schema.Resultados(), journalResultados)
+}
 
 // InsertCategorias inserts the five case labels with their fixed ids.
 func InsertCategorias(d *sql.DB) error {
@@ -92,8 +102,9 @@ func InsertCategorias(d *sql.DB) error {
 	return tx.Commit()
 }
 
-// Finalize forces journal_mode=DELETE (ADR-007) and then VACUUMs, leaving a
-// compact, rollback-journal image that is safe to embed and deserialize later.
+// Finalize VACUUMs the database and, in WAL mode, checkpoints the WAL back into
+// the main file, leaving a compact, self-contained image that can be embedded.
+// Only the two journal modes of Anexo I (delete, wal) are accepted.
 func Finalize(d *sql.DB) error {
 	ctx := context.Background()
 	c, err := d.Conn(ctx)
@@ -102,12 +113,17 @@ func Finalize(d *sql.DB) error {
 	}
 	defer c.Close()
 	var mode string
-	if err := c.QueryRowContext(ctx, `PRAGMA journal_mode = DELETE`).Scan(&mode); err != nil {
+	if err := c.QueryRowContext(ctx, `PRAGMA journal_mode`).Scan(&mode); err != nil {
 		return err
 	}
-	if mode != "delete" {
-		return fmt.Errorf("db: journal_mode = %q after setting DELETE", mode)
+	if mode != "delete" && mode != "wal" {
+		return fmt.Errorf("db: unsupported journal_mode %q (want delete or wal)", mode)
 	}
-	_, err = c.ExecContext(ctx, `VACUUM`)
+	if _, err := c.ExecContext(ctx, `VACUUM`); err != nil {
+		return err
+	}
+	if mode == "wal" {
+		_, err = c.ExecContext(ctx, `PRAGMA wal_checkpoint(TRUNCATE)`)
+	}
 	return err
 }

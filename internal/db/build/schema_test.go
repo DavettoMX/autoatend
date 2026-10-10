@@ -286,11 +286,11 @@ func closedCorpus(t *testing.T) *sql.DB {
 
 func TestCreateRemovesFileWhenDDLFails(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "bad.db")
-	_, err := create(path, []string{"CREATE TABLE a(x)", "NOT SQL"})
+	_, err := create(path, []string{"CREATE TABLE a(x)", "NOT SQL"}, journalCorpus)
 	if err == nil || !strings.Contains(err.Error(), "ddl") {
 		t.Fatalf("create with invalid DDL: err = %v, want a ddl error", err)
 	}
-	for _, p := range []string{path, path + "-journal"} {
+	for _, p := range []string{path, path + "-journal", path + "-wal", path + "-shm"} {
 		if _, err := os.Stat(p); err == nil {
 			t.Errorf("failed create left %s behind", p)
 		}
