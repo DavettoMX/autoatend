@@ -66,10 +66,17 @@ func (f *slotFiller) drawAmount(differ bool) string {
 		n = templates.AmountPool[f.rng.Intn(len(templates.AmountPool))]
 	}
 	f.prevAmount, f.amount = f.amount, n
-	return formatAmount(n, f.rng.Intn(6))
+	return formatAmount(n, f.rng.Intn(amountStyles))
 }
 
-// formatAmount renders n pesos in one of six surface formats ("variable format").
+// Surface variety of the amount and folio slots.
+const (
+	amountStyles   = 6 // surface formats of formatAmount
+	folioMinDigits = 5
+	folioMaxDigits = 7
+)
+
+// formatAmount renders n pesos in one of amountStyles surface formats ("variable format").
 func formatAmount(n, style int) string {
 	s := withThousands(n)
 	switch style {
@@ -98,7 +105,7 @@ func withThousands(n int) string {
 
 func (f *slotFiller) folio() string {
 	prefix := templates.FolioPrefixes[f.rng.Intn(len(templates.FolioPrefixes))]
-	digits := 5 + f.rng.Intn(3)
+	digits := folioMinDigits + f.rng.Intn(folioMaxDigits-folioMinDigits+1)
 	lo := 1
 	for i := 1; i < digits; i++ {
 		lo *= 10
