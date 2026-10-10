@@ -2,7 +2,7 @@
 
 Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 1. `../documentos/2907_10433.pdf`: enunciado del caso (consignas a–e).
-2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales, por lo que se encuentra congelado y no se modifica. Toda diferencia entre lo implementado y lo escrito se justifica en un ADR (`docs/adr/`) para la defensa oral.
+2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales, por lo que se encuentra congelado y no se modifica. La implementación lo respeta tanto como sea posible; cualquier diferencia requiere la aprobación previa del usuario (ver "Apego al Trabajo Escrito").
 3. `PLAN.md`: plan por fases. `OPTIMIZATIONS.md` es la checklist viva: marca `[x]` solo lo que verificaste ejecutándolo.
 
 ## Reglas duras (no negociables)
@@ -13,6 +13,7 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 - **`internal/db` (tiempo de ejecución) nunca importa `internal/db/build`.** La creación de archivos, la DDL y el `VACUUM` viven solo en `build`; `internal/db` solo lee (`OpenReadOnly`, `SplitCutoff`).
 - **Determinismo (invariante I-3):** nada de timestamps, nada de iterar mapas al escribir y PRAGMAs fijos. Dos ejecuciones con la misma semilla deben producir archivos byte a byte idénticos.
 - **No dar por hecho nada que no se ejecutó.** Antes de afirmar que algo pasa, córrelo.
+- **Apego al Trabajo Escrito.** Se implementa lo que dice el TE. Si no se puede cumplir tal cual, o si parece haber una opción mejor, **no se implementa ni se decide por cuenta propia: se valida primero con el usuario**, con el procedimiento de "Apego al Trabajo Escrito".
 
 ## Regresión del corpus
 
@@ -28,7 +29,7 @@ Cosas que cambian el SHA sin que se note:
 - **El texto de la DDL en `internal/db/schema/*.sql`.** SQLite guarda literalmente cada sentencia `CREATE` en `sqlite_master`, así que un espacio, una sangría o un comentario de más lo alteran. Los `.sql` no llevan comentarios; la explicación va en `schema.go`.
 - **El orden o la longitud de cualquier slice de `templates`** y el orden de las llamadas al rng en `internal/corpus`.
 
-Si un cambio *debe* alterar el corpus, es una decisión de diseño: regenera `data/corpus.db` y el reporte, actualiza el SHA aquí, en el `Makefile`, en `README.md` y en `OPTIMIZATIONS.md`. Si el cambio se aparta del Trabajo Escrito, solo procede si el caso lo exige y no hay alternativa fiel al TE, y entonces va en el ADR que el TE promete para ese tema (ver "Política de ADR").
+Si un cambio *debe* alterar el corpus, es una decisión de diseño: regenera `data/corpus.db` y el reporte, actualiza el SHA aquí, en el `Makefile`, en `README.md` y en `OPTIMIZATIONS.md`. Si el cambio se aparta del Trabajo Escrito, primero se valida con el usuario (ver "Apego al Trabajo Escrito").
 
 ## Metodología: TDD estricto
 
@@ -51,7 +52,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 
 1. Crear la rama (ver arriba).
 2. Antes de diseñar, lanzar el agente `mapeo-reuso` con la descripción de la tarea.
-3. El plan cita qué reutiliza (`archivo:línea`) y justifica cualquier código nuevo que se parezca a algo existente.
+3. El plan cita la sección del TE que implementa y qué reutiliza (`archivo:línea`), y justifica cualquier código nuevo que se parezca a algo existente. Si el plan se aparta del TE, se detiene aquí y se valida con el usuario.
 4. Ciclo rojo → verde → refactor, con un commit por paso.
 5. `make verify` en verde.
 6. Pedir aprobación para el merge.
@@ -63,7 +64,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 - [ ] Commits rojo → verde → refactor visibles en la rama.
 - [ ] Pruebas nombradas con su ID del plan cuando exista.
 - [ ] Sin código duplicado respecto a lo que reportó `mapeo-reuso`.
-- [ ] Toda desviación del Trabajo Escrito tiene su ADR.
+- [ ] Ninguna desviación del Trabajo Escrito sin aprobación explícita del usuario; las aprobadas están registradas en el ADR que el TE promete para ese tema.
 - [ ] `OPTIMIZATIONS.md` y el "Mapa del código" de este archivo actualizados si cambiaron.
 - [ ] Ningún `[x]` marcado sin haberlo ejecutado.
 
@@ -98,23 +99,35 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `internal/testutil`: helpers de prueba compartidos (`MustExec`, `ExpectErr`, `Scalar`).
 - Por crear según `PLAN.md`: `internal/regex`, `internal/lexer` (stoplist versionada en `internal/lexer/stoplist/v1.json`), `cmd/simulador`, `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
 
-## Política de ADR y apego al Trabajo Escrito
+## Apego al Trabajo Escrito
 
-Precedencia: el caso (`2907_10433.pdf`) manda; después, el Trabajo Escrito tanto como sea posible. Solo hay ADR para lo que el TE promete documentar:
+Precedencia: el caso (`2907_10433.pdf`) manda; después, el Trabajo Escrito tanto como sea posible. Los sinodales ya tienen el TE, así que cada diferencia con lo implementado es una pregunta potencial en la defensa oral.
+
+Antes de apartarte del TE, o si crees que hay una opción mejor:
+1. Busca una alternativa fiel al TE que cumpla el caso y, si es posible, verifícala ejecutándola. Si existe, úsala; no hace falta preguntar.
+2. Si no existe, o si la opción distinta parece mejor, **detente y pregúntale al usuario antes de implementar**. Incluye:
+   - la sección del TE afectada;
+   - el motivo: qué consigna del caso la exige, o por qué la otra opción es mejor;
+   - las alternativas fieles al TE que evaluaste y por qué no bastan;
+   - la evidencia (pruebas o mediciones ejecutadas);
+   - tu recomendación.
+3. Solo con la aprobación explícita del usuario se implementa, y se registra en el ADR que el TE promete para ese tema. Si no hay un ADR prometido para ese tema, también se pregunta dónde registrarlo.
+
+Esto también aplica a las "mejoras": robustez extra, índices, tablas, validaciones o pasos que el TE no menciona. Contradicciones internas del TE: no elijas por tu cuenta; plantea las opciones al usuario.
+
+Solo hay ADR para lo que el TE promete documentar:
 - ADR-001: SQLite.
 - ADR-002: simulación directa del AFN-ε.
 - ADR-003: stoplist y homógrafos.
 - ADR-004: modelo.
 - ADR-005: despliegue.
 
-No agregues desviaciones nuevas del TE si existe una alternativa fiel que cumpla el caso.
-
 Ya implementado como lo dice el TE (no lo "mejores"):
 - `corpus.db` en WAL, `resultados.db` en DELETE (Anexo I). Lectura con `mode=ro&immutable=1` (§5.1.4). Integridad cruzada con `ATTACH` (§6.1.3).
 - DDL literal del Anexo I: sin índices ni tablas extra. La fila global duplicada que admite la PK la detecta la consulta I-2 del TE.
 - Split temporal global (§5.2.2) como consulta (`db.SplitCutoff`), sin tabla.
 
-Decisiones para las fases siguientes:
+Decisiones para las fases siguientes, ya aprobadas por el usuario (no se vuelven a preguntar):
 - **I-2**: consulta literal del TE §6.3.3; cada `resultados.db` contiene una sola corrida (lo implican `forma_canonica UNIQUE` y el I-3).
 - **IDF**: sale solo de train ("precalculados durante el entrenamiento", §6.4.2); el catálogo de `resultados.db` usa el corpus completo.
 - **Fase 4**: el embed se escribe en el directorio temporal del usuario y se abre con `mode=ro&immutable=1`; `ATTACH` en tiempo de ejecución; sin `Deserialize`.

@@ -70,7 +70,7 @@ Las pruebas tienen estilo TDD: oráculos independientes, verificación directa s
   - [ ] Necesario para la prueba de linealidad I-4 (barridos de 1k/10k/30k/50k/73k).
 - [ ] **Revisión manual de la muestra.** §6.1.4 dice "detección manual"; lo implementado es un chequeo de cordura automático más la impresión de la muestra.
   - [ ] Revisar a mano los 250 comentarios y dejar constancia (fecha, revisor, observaciones) en `docs/reports/`.
-- [x] **ADR-007 no hace falta.** El diseño del TE (WAL, `go:embed`, `mode=ro&immutable=1`, `ATTACH`) funciona con modernc; se verificó ejecutándolo. ADR-002 y ADR-006 se retiraron por el mismo criterio (ver "Política de ADR" en `CLAUDE.md`).
+- [x] **ADR-007 no hace falta.** El diseño del TE (WAL, `go:embed`, `mode=ro&immutable=1`, `ATTACH`) funciona con modernc; se verificó ejecutándolo. ADR-002 y ADR-006 se retiraron por el mismo criterio (ver "Apego al Trabajo Escrito" en `CLAUDE.md`).
 - [x] **`CHECK` sobre `frecuencias.categoria_id`**: descartado, sería una desviación del Anexo I; la integridad se verifica con `ATTACH`.
 - [x] **`lexemas.forma_canonica UNIQUE` frente a "unicidad dentro de una corrida"**: se queda como en el Anexo I; cada `resultados.db` contiene una sola corrida, lo que también hace correcta la consulta I-2 literal.
 
