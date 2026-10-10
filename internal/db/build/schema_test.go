@@ -320,8 +320,8 @@ func TestInsertCategoriasIsAtomicOnConflict(t *testing.T) {
 	testutil.Scalar(t, d, 5, `SELECT COUNT(*) FROM categorias`)
 }
 
-func TestFinalizeRejectsNonDeleteJournal(t *testing.T) {
-	// An in-memory database cannot use the rollback journal: journal_mode stays "memory".
+func TestFinalizeRejectsUnsupportedJournal(t *testing.T) {
+	// An in-memory database cannot use DELETE or WAL: journal_mode stays "memory".
 	d, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		t.Fatal(err)
