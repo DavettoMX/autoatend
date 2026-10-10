@@ -1,11 +1,11 @@
-CREATE TABLE corridas (
+CREATE TABLE IF NOT EXISTS corridas (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     semilla       INTEGER NOT NULL,
     parametros    TEXT    NOT NULL,
     total_lexemas INTEGER NOT NULL CHECK(total_lexemas > 0)
 );
 
-CREATE TABLE lexemas (
+CREATE TABLE IF NOT EXISTS lexemas (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     forma_canonica    TEXT    NOT NULL UNIQUE,
     expresion_regular TEXT    NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE lexemas (
                               REFERENCES corridas(id)
 );
 
-CREATE TABLE frecuencias (
+CREATE TABLE IF NOT EXISTS frecuencias (
     lexema_id    INTEGER NOT NULL REFERENCES lexemas(id),
     corrida_id   INTEGER NOT NULL REFERENCES corridas(id),
     categoria_id INTEGER,
@@ -21,7 +21,7 @@ CREATE TABLE frecuencias (
     PRIMARY KEY (lexema_id, corrida_id, categoria_id)
 );
 
-CREATE TABLE variantes (
+CREATE TABLE IF NOT EXISTS variantes (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     lexema_id  INTEGER NOT NULL REFERENCES lexemas(id),
     forma      TEXT    NOT NULL,
@@ -29,10 +29,8 @@ CREATE TABLE variantes (
     UNIQUE (lexema_id, forma)
 );
 
-CREATE INDEX idx_frecuencias_lexema ON frecuencias(lexema_id);
+CREATE INDEX IF NOT EXISTS idx_frecuencias_lexema ON frecuencias(lexema_id);
 
-CREATE INDEX idx_frecuencias_corrida ON frecuencias(corrida_id);
+CREATE INDEX IF NOT EXISTS idx_frecuencias_corrida ON frecuencias(corrida_id);
 
-CREATE INDEX idx_variantes_lexema ON variantes(lexema_id);
-
-CREATE UNIQUE INDEX uq_frecuencias_global ON frecuencias(lexema_id, corrida_id) WHERE categoria_id IS NULL;
+CREATE INDEX IF NOT EXISTS idx_variantes_lexema ON variantes(lexema_id);

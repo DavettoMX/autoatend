@@ -1,21 +1,18 @@
 // Package schema holds the DDL of the two SQLite files of the case: corpus.db
 // (baseline Anexo I, part A) and resultados.db (part B). The statements live in
-// corpus.sql and resultados.sql and are embedded at build time.
+// corpus.sql and resultados.sql, written as in Anexo I (CREATE ... IF NOT EXISTS),
+// and are embedded at build time.
 //
-// Deviation (ADR-007): both files use journal_mode=DELETE, not WAL. It is set
-// through the connection PRAGMAs in internal/db/build, not here.
-//
-// Deviation (ADR-006): resultados.db declares uq_frecuencias_global, which restores
-// uniqueness of the global (categoria_id IS NULL) row. The composite PRIMARY KEY
-// of frecuencias cannot enforce it because SQLite treats NULLs as distinct in a
-// PRIMARY KEY.
+// The Anexo I PRAGMAs are not part of the scripts: journal_mode (WAL for
+// corpus.db, DELETE for resultados.db) and foreign_keys are set through the
+// connection in internal/db/build.
 //
 // Phase 1 addition: corpus.db also carries the particiones table, the
 // materialized deterministic train/test assignment (see build.ApplySplit).
 //
 // frecuencias.categoria_id references corpus.db's categorias(id), but that
-// cross-file check is not expressible in DDL: it lives in build.CheckCategoriaIntegrity
-// (generation pipeline only, ADR-007).
+// cross-file check is not expressible in DDL: it is verified with ATTACH
+// DATABASE (build.CheckCategoriaIntegrity), as Anexo I states.
 package schema
 
 import (
