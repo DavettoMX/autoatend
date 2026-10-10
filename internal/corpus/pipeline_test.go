@@ -64,11 +64,11 @@ func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
 		t.Fatalf("persisted stats = %+v", p)
 	}
 	for i := 0; i < 5; i++ {
-		if p.Train[i]+p.Test[i] != p.PerCategory[i] || p.Train[i] != p.PerCategory[i]*80/100 {
+		if p.Train[i]+p.Test[i] != p.PerCategory[i] || p.Train[i] == 0 || p.Test[i] == 0 {
 			t.Errorf("category %d split %d/%d of %d", i+1, p.Train[i], p.Test[i], p.PerCategory[i])
 		}
-		if p.MaxTrainDate[i] > p.MinTestDate[i] {
-			t.Errorf("category %d leaks: %s > %s", i+1, p.MaxTrainDate[i], p.MinTestDate[i])
+		if !(p.MaxTrainDate[i] < p.Cutoff && p.Cutoff <= p.MinTestDate[i]) {
+			t.Errorf("category %d: train ends %s, test starts %s, cut-off %s", i+1, p.MaxTrainDate[i], p.MinTestDate[i], p.Cutoff)
 		}
 	}
 	if len(p.SHA256) != 64 {

@@ -4,6 +4,7 @@ import (
 	"math"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"autoatend/internal/db"
 	"autoatend/internal/testutil"
@@ -85,29 +86,52 @@ func TestLevel4aGencorpusToCorpusDB(t *testing.T) {
 	}
 	testutil.Scalar(t, d, 0, `SELECT COUNT(*) FROM pragma_foreign_key_check`)
 
-	// The persisted split covers every row and is stratified and leak-free at full size.
-	testutil.Scalar(t, d, 73000, `SELECT COUNT(*) FROM particiones`)
+	// Global temporal split (TE §5.2.2). Independent oracle: 100 comments per day,
+	// so the first 80% are exactly the first Total*80/100/PerDay days.
+	cfg := DefaultConfig()
+	start, err := time.Parse("2006-01-02", cfg.Start)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cut := start.AddDate(0, 0, cfg.Total*80/100/cfg.PerDay).Format("2006-01-02")
+	if got, err := db.SplitCutoff(d); err != nil || got != cut {
+		t.Fatalf("SplitCutoff = %q (%v), want %s", got, err, cut)
+	}
+	var maxTrain, minTest string
+	if err := d.QueryRow(`SELECT MAX(fecha) FROM comentarios WHERE fecha < ?`, cut).Scan(&maxTrain); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.QueryRow(`SELECT MIN(fecha) FROM comentarios WHERE fecha >= ?`, cut).Scan(&minTest); err != nil {
+		t.Fatal(err)
+	}
+	if maxTrain >= minTest {
+		t.Errorf("temporal leakage: max(train.fecha)=%s >= min(test.fecha)=%s", maxTrain, minTest)
+	}
+	testutil.Scalar(t, d, 14600, `SELECT COUNT(*) FROM comentarios WHERE fecha >= '`+cut+`'`)
+
+	// Stratification: per category ~80% train, and the class mix of both sets
+	// matches the corpus, within ±1%.
 	srows, err := d.Query(`
-		SELECT c.categoria_id, SUM(p.conjunto = 'train'), COUNT(*),
-		       MAX(CASE WHEN p.conjunto = 'train' THEN c.fecha END),
-		       MIN(CASE WHEN p.conjunto = 'test'  THEN c.fecha END)
-		FROM comentarios c JOIN particiones p ON p.comentario_id = c.id
-		GROUP BY c.categoria_id`)
+		SELECT categoria_id, SUM(fecha < ?), SUM(fecha >= ?), COUNT(*)
+		FROM comentarios GROUP BY categoria_id`, cut, cut)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer srows.Close()
 	for srows.Next() {
-		var cat, train, n int
-		var maxTrain, minTest string
-		if err := srows.Scan(&cat, &train, &n, &maxTrain, &minTest); err != nil {
+		var cat, train, test, n int
+		if err := srows.Scan(&cat, &train, &test, &n); err != nil {
 			t.Fatal(err)
 		}
 		if share := float64(train) / float64(n); math.Abs(share-0.80) > 0.01 {
-			t.Errorf("category %d train share %.4f", cat, share)
+			t.Errorf("category %d train share %.4f, want 0.80 ± 0.01", cat, share)
 		}
-		if maxTrain > minTest {
-			t.Errorf("category %d: temporal leakage %s > %s", cat, maxTrain, minTest)
+		all := float64(n) / 73000
+		if mix := float64(train) / 58400; math.Abs(mix-all) > 0.01 {
+			t.Errorf("category %d train mix %.4f vs corpus %.4f", cat, mix, all)
+		}
+		if mix := float64(test) / 14600; math.Abs(mix-all) > 0.01 {
+			t.Errorf("category %d test mix %.4f vs corpus %.4f", cat, mix, all)
 		}
 	}
 }

@@ -119,6 +119,13 @@ func objectNames(t *testing.T, d *sql.DB, typ string) map[string]bool {
 	return out
 }
 
+// The corpus.db objects are exactly those of Anexo I: two tables, three indexes.
+func TestCorpusObjectsMatchAnexoI(t *testing.T) {
+	d, _ := newCorpus(t)
+	assertObjects(t, d, "table", "categorias", "comentarios")
+	assertObjects(t, d, "index", "idx_comentarios_cat_fecha", "idx_comentarios_categoria", "idx_comentarios_fecha")
+}
+
 func TestCorpusIndexes(t *testing.T) {
 	d, _ := newCorpus(t)
 	got := objectNames(t, d, "index")
