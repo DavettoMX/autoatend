@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/url"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -18,8 +19,14 @@ func FileURI(path string, pragmas []string, extra url.Values) (string, error) {
 	return fileURI(abs, pragmas, extra), nil
 }
 
-// fileURI renders the URI of an absolute path.
+// fileURI renders the URI of an absolute path. Windows paths (C:\...) become
+// file:///C:/...: without the leading slash SQLite would parse "C:..." as the URI
+// authority and reject it.
 func fileURI(abs string, pragmas []string, extra url.Values) string {
+	abs = filepath.ToSlash(abs)
+	if !strings.HasPrefix(abs, "/") {
+		abs = "/" + abs
+	}
 	q := url.Values{}
 	for k, v := range extra {
 		q[k] = v
