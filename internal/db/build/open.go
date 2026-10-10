@@ -38,7 +38,7 @@ func create(path string, ddl []string) (*sql.DB, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return nil, fmt.Errorf("db: create parent dir of %s: %w", path, err)
 	}
-	name, err := db.DSN(path, buildPragmas, nil)
+	name, err := db.FileURI(path, buildPragmas, nil)
 	if err != nil {
 		return nil, err
 	}

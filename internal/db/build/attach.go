@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"net/url"
-	"path/filepath"
+
+	"autoatend/internal/db"
 )
 
 // CheckCategoriaIntegrity verifies the logical cross-file foreign key
@@ -16,11 +17,10 @@ import (
 // Generation pipeline only (ADR-007): it needs both files on disk, which is not
 // the case at runtime, where the databases are in-memory deserialized buffers.
 func CheckCategoriaIntegrity(resultados *sql.DB, corpusPath string) ([]int64, error) {
-	abs, err := filepath.Abs(corpusPath)
+	uri, err := db.FileURI(corpusPath, nil, url.Values{"mode": {"ro"}})
 	if err != nil {
 		return nil, err
 	}
-	uri := (&url.URL{Scheme: "file", Path: abs, RawQuery: url.Values{"mode": {"ro"}}.Encode()}).String()
 
 	ctx := context.Background()
 	// ATTACH is per connection: pin one for attach, query and detach.

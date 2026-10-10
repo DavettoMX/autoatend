@@ -8,13 +8,18 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// DSN builds a modernc.org/sqlite connection string for the file at path, with
-// the given PRAGMAs and any extra query parameters.
-func DSN(path string, pragmas []string, extra url.Values) (string, error) {
+// FileURI builds a modernc.org/sqlite connection string (a SQLite file: URI) for
+// the file at path, with the given PRAGMAs and any extra query parameters.
+func FileURI(path string, pragmas []string, extra url.Values) (string, error) {
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		return "", err
 	}
+	return fileURI(abs, pragmas, extra), nil
+}
+
+// fileURI renders the URI of an absolute path.
+func fileURI(abs string, pragmas []string, extra url.Values) string {
 	q := url.Values{}
 	for k, v := range extra {
 		q[k] = v
@@ -23,13 +28,13 @@ func DSN(path string, pragmas []string, extra url.Values) (string, error) {
 		q.Add("_pragma", p)
 	}
 	u := url.URL{Scheme: "file", Path: abs, RawQuery: q.Encode()}
-	return u.String(), nil
+	return u.String()
 }
 
 // OpenReadOnly opens an existing database file for reading only
 // (mode=ro plus PRAGMA query_only=ON). It fails if the file does not exist.
 func OpenReadOnly(path string) (*sql.DB, error) {
-	name, err := DSN(path, []string{"query_only(1)", "foreign_keys(1)"}, url.Values{"mode": {"ro"}})
+	name, err := FileURI(path, []string{"query_only(1)", "foreign_keys(1)"}, url.Values{"mode": {"ro"}})
 	if err != nil {
 		return nil, err
 	}
