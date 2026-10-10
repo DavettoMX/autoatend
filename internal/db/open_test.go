@@ -44,10 +44,6 @@ func TestOpenReadOnlyRejectsWrites(t *testing.T) {
 	if _, err := ro.Exec(`DELETE FROM categorias`); err == nil {
 		t.Fatal("write through read-only opener: expected error")
 	}
-	var qo int
-	if err := ro.QueryRow(`PRAGMA query_only`).Scan(&qo); err != nil || qo != 1 {
-		t.Fatalf("PRAGMA query_only = %d (err %v), want 1", qo, err)
-	}
 }
 
 func TestOpenReadOnlyMissingFile(t *testing.T) {

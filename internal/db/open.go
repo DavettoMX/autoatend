@@ -38,10 +38,15 @@ func fileURI(abs string, pragmas []string, extra url.Values) string {
 	return u.String()
 }
 
+// ReadOnlyParams are the URI parameters of a read-only open (TE §5.1.4): mode=ro
+// rejects writes and immutable=1 reads the file as a fixed image, with no
+// locking and no -wal/-shm sidecars.
+func ReadOnlyParams() url.Values { return url.Values{"mode": {"ro"}, "immutable": {"1"}} }
+
 // OpenReadOnly opens an existing database file for reading only
-// (mode=ro plus PRAGMA query_only=ON). It fails if the file does not exist.
+// (mode=ro&immutable=1). It fails if the file does not exist.
 func OpenReadOnly(path string) (*sql.DB, error) {
-	name, err := FileURI(path, []string{"query_only(1)", "foreign_keys(1)"}, url.Values{"mode": {"ro"}})
+	name, err := FileURI(path, []string{"foreign_keys(1)"}, ReadOnlyParams())
 	if err != nil {
 		return nil, err
 	}

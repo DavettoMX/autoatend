@@ -47,6 +47,9 @@ func TestCheckCategoriaIntegrityCleanAndOrphans(t *testing.T) {
 func TestCheckCategoriaIntegrityLeavesNothingAttached(t *testing.T) {
 	corpus, corpusPath := newCorpus(t)
 	seedCategorias(t, corpus)
+	if err := Finalize(corpus); err != nil {
+		t.Fatal(err)
+	}
 	res, _ := newResultados(t)
 
 	if _, err := CheckCategoriaIntegrity(res, corpusPath); err != nil {
