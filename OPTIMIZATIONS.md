@@ -41,7 +41,7 @@ Las pruebas tienen estilo TDD: oráculos independientes, verificación directa s
 - [x] **[MEDIA]** Criterios de éxito ejecutables: `make verify` y sección "Criterios de éxito" en `CLAUDE.md`.
 - [x] **[MEDIA]** Agente `mapeo-reuso` para mapear código reutilizable antes de cada tarea.
 - [ ] **[BAJA]** Reemplazar `testing.Short()` por la etiqueta de compilación `//go:build integration` en las pruebas de nivel 4.
-- [ ] **[BAJA]** `VACUUM` y `ON DELETE RESTRICT` solo los cubre `make corpus-sha` (sobreviven a una mutación en `go test`).
+- [x] **[BAJA]** `VACUUM` y `ON DELETE RESTRICT` solo los cubre `make corpus-sha` (sobreviven a una mutación en `go test`).
 
 ---
 
@@ -65,8 +65,8 @@ Las pruebas tienen estilo TDD: oráculos independientes, verificación directa s
 
 - [ ] **Procedencia del corpus.** El TE §6.1.4 dice que la tasa de ruido "se documenta en el campo `parametros` de la tabla `corridas`". No se agrega nada a `corpus.db` (sería una desviación del Anexo I).
   - [ ] En la Fase 2, `cmd/simulador` escribe en `corridas.parametros` la semilla, el `NoiseConfig` y el total del corpus, además de la versión de la stoplist.
-- [ ] **El generador no se configura por línea de comandos.** El diseño dice que el ruido es configurable; `main.go` solo acepta `-out` y `-report`.
-  - [ ] Agregar flags `-seed`, `-total` y `-noise-rate` (los valores por defecto deben dar el mismo SHA del corpus).
+- [x] **El generador no se configura por línea de comandos.** El diseño dice que el ruido es configurable; `main.go` solo acepta `-out` y `-report`.
+  - [x] Agregar flags `-seed`, `-total` y `-noise-rate` (los valores por defecto deben dar el mismo SHA del corpus).
   - [ ] Necesario para la prueba de linealidad I-4 (barridos de 1k/10k/30k/50k/73k).
 - [ ] **Revisión manual de la muestra.** §6.1.4 dice "detección manual"; lo implementado es un chequeo de cordura automático más la impresión de la muestra.
   - [ ] Revisar a mano los 250 comentarios y dejar constancia (fecha, revisor, observaciones) en `docs/reports/`.
@@ -81,7 +81,7 @@ Las pruebas tienen estilo TDD: oráculos independientes, verificación directa s
 - [ ] `internal/corpus/pipeline.go`: `defer f.Close()` ignora el error al cerrar el reporte, así que un reporte truncado pasaría sin aviso. Revisar el error de `Close`.
 - [ ] `internal/corpus/pipeline.go`: si `verifyCorpus` falla después de `Persist`, el `corpus.db` se queda en disco. Borrarlo para mantener el "todo o nada".
 - [ ] `internal/corpus/noise.go`: `typo()` sobre una letra mayúscula siempre termina duplicándola, porque `qwertyNeighbors` solo tiene minúsculas. Normalizar con `unicode.ToLower` antes de buscar.
-- [ ] `CHECK (fecha GLOB '????-??-??')` (Anexo I) acepta fechas imposibles como `2024-13-99`; solo la batería de validación revisa fechas reales. Limitación conocida, sin cambio de DDL.
+- [x] `CHECK (fecha GLOB '????-??-??')` (Anexo I) acepta fechas imposibles como `2024-13-99`; solo la batería de validación revisa fechas reales. Limitación conocida, sin cambio de DDL.
 - [x] `corpus.db` movido a `data/`.
 - [x] `.gitignore` (`dist/`, `*.out`, `*.test`, `*.db-wal`, `*.db-shm`, `*.db-journal`; `data/corpus.db` sí se versiona).
 - [x] `README.md` y `CLAUDE.md`.
@@ -156,6 +156,6 @@ Checklist (cada paso es un refactor **sin cambio de comportamiento**: el SHA-256
 3. [x] Reestructura de §5. Quedan para la Fase 4 `internal/assets/` y el chequeo `go list -deps`.
 4. [x] Alinear la Fase 1 con el TE (`fase1/apego-te`): WAL, DDL literal, `mode=ro&immutable=1`, split global, URI de Windows, retiro de ADR-002 y ADR-006.
 5. [ ] Verificar `gencorpus.exe` ejecutando en Windows (§2).
-6. [ ] Flags del generador (§3).
+6. [x] Flags del generador (§3).
 7. [ ] Arrancar la Fase 2 con commits rojo-verde-refactor, pruebas nombradas con su ID del plan y la stoplist según ADR-003.
 8. [ ] En la Fase 3: métrica sin duplicados y prueba de cordura con un modelo trivial (§2).
