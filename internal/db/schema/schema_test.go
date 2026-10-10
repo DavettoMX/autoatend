@@ -6,8 +6,8 @@ import (
 )
 
 func TestStatementCounts(t *testing.T) {
-	if n := len(Corpus()); n != 6 {
-		t.Errorf("Corpus() has %d statements, want 6", n)
+	if n := len(Corpus()); n != 5 {
+		t.Errorf("Corpus() has %d statements, want 5", n)
 	}
 	if n := len(Resultados()); n != 7 {
 		t.Errorf("Resultados() has %d statements, want 7", n)

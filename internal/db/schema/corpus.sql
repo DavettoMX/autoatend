@@ -25,10 +25,3 @@ CREATE INDEX IF NOT EXISTS idx_comentarios_categoria ON comentarios(categoria_id
 CREATE INDEX IF NOT EXISTS idx_comentarios_fecha ON comentarios(fecha);
 
 CREATE INDEX IF NOT EXISTS idx_comentarios_cat_fecha ON comentarios(categoria_id, fecha);
-
-CREATE TABLE IF NOT EXISTS particiones (
-    comentario_id INTEGER PRIMARY KEY
-                          REFERENCES comentarios(id)
-                          ON DELETE RESTRICT,
-    conjunto      TEXT    NOT NULL CHECK (conjunto IN ('train', 'test'))
-);

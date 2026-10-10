@@ -60,7 +60,7 @@ func writeReport(w io.Writer, cfg Config, res Result) error {
 	for i, c := range db.Categories {
 		pf("| %s | %d | %d | %d | %s | %s |\n", c.Nombre, p.PerCategory[i], p.Train[i], p.Test[i], p.MaxTrainDate[i], p.MinTestDate[i])
 	}
-	pf("\nEmpty texts: %d. Split rule: per category, ordered by (fecha, id), oldest %d%% train, newest remainder test.\n", p.Empty, db.TrainPercent)
+	pf("\nEmpty texts: %d. Split rule (global, temporal): the cut-off is the fecha at position %d%% of the corpus in chronological order; train is fecha < %s, test is fecha >= %s, so every training comment precedes every test comment.\n", p.Empty, db.TrainPercent, p.Cutoff, p.Cutoff)
 	pf("\ncorpus.db SHA-256: `%s`\n\n", p.SHA256)
 
 	pf("## Sample review\n\n%d comments per category, drawn with a dedicated rng stream (seed+1) for manual inspection.\n", sampleSize)

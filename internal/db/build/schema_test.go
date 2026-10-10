@@ -360,7 +360,6 @@ func TestOperationsFailOnClosedDB(t *testing.T) {
 		"applyDDL":         func(d *sql.DB) error { return applyDDL(d, []string{"CREATE TABLE a(x)"}) },
 		"InsertCategorias": InsertCategorias,
 		"Finalize":         Finalize,
-		"ApplySplit":       ApplySplit,
 		"CheckCategoriaIntegrity": func(d *sql.DB) error {
 			_, err := CheckCategoriaIntegrity(d, corpusPath)
 			return err

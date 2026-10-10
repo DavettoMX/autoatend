@@ -13,8 +13,8 @@ import (
 
 // Persist builds a new corpus.db at path: the five categories, then every
 // comment in chronological order (so ids follow time) in one bulk-insert
-// transaction, then the 80/20 temporal-stratified split, then Finalize
-// (journal_mode=DELETE + VACUUM). On any error the partial file is removed.
+// transaction, then Finalize (VACUUM + WAL checkpoint). The train/test split is
+// not stored: it is the db.SplitCutoff query. On any error the partial file is removed.
 func Persist(path string, cs []Comment) (err error) {
 	d, err := build.CreateCorpus(path)
 	if err != nil {
@@ -31,9 +31,6 @@ func Persist(path string, cs []Comment) (err error) {
 		return err
 	}
 	if err = bulkInsert(d, cs); err != nil {
-		return err
-	}
-	if err = build.ApplySplit(d); err != nil {
 		return err
 	}
 	return build.Finalize(d)
@@ -63,6 +60,7 @@ func bulkInsert(d *sql.DB, cs []Comment) error {
 type PersistedStats struct {
 	Rows         int
 	PerCategory  [5]int
+	Cutoff       string // first fecha of the test set (db.SplitCutoff)
 	Train, Test  [5]int
 	MaxTrainDate [5]string
 	MinTestDate  [5]string
@@ -80,13 +78,16 @@ func verifyCorpus(path string) (PersistedStats, error) {
 	}
 	defer d.Close()
 
+	if p.Cutoff, err = db.SplitCutoff(d); err != nil {
+		return p, err
+	}
 	rows, err := d.Query(`
-		SELECT c.categoria_id, COUNT(*),
-		       SUM(p.conjunto = 'train'), SUM(p.conjunto = 'test'),
-		       COALESCE(MAX(CASE WHEN p.conjunto = 'train' THEN c.fecha END), ''),
-		       COALESCE(MIN(CASE WHEN p.conjunto = 'test'  THEN c.fecha END), '')
-		FROM comentarios c JOIN particiones p ON p.comentario_id = c.id
-		GROUP BY c.categoria_id ORDER BY c.categoria_id`)
+		SELECT categoria_id, COUNT(*),
+		       SUM(fecha < ?1), SUM(fecha >= ?1),
+		       COALESCE(MAX(CASE WHEN fecha <  ?1 THEN fecha END), ''),
+		       COALESCE(MIN(CASE WHEN fecha >= ?1 THEN fecha END), '')
+		FROM comentarios
+		GROUP BY categoria_id ORDER BY categoria_id`, p.Cutoff)
 	if err != nil {
 		return p, err
 	}

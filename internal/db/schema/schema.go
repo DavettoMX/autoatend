@@ -7,9 +7,6 @@
 // corpus.db, DELETE for resultados.db) and foreign_keys are set through the
 // connection in internal/db/build.
 //
-// Phase 1 addition: corpus.db also carries the particiones table, the
-// materialized deterministic train/test assignment (see build.ApplySplit).
-//
 // frecuencias.categoria_id references corpus.db's categorias(id), but that
 // cross-file check is not expressible in DDL: it is verified with ATTACH
 // DATABASE (build.CheckCategoriaIntegrity), as Anexo I states.
