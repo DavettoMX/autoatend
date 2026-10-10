@@ -141,20 +141,30 @@ func TestForeignKeysEnabled(t *testing.T) {
 	}
 }
 
-// ADR-007: both files use the rollback journal (journal_mode=DELETE), never WAL,
-// so that VACUUMed images can later be embedded and deserialized.
-func TestJournalModeDeleteOnBothFiles(t *testing.T) {
-	for name, mk := range map[string]func(*testing.T) (*sql.DB, string){"corpus": newCorpus, "resultados": newResultados} {
-		d, path := mk(t)
+// Anexo I: corpus.db uses WAL and resultados.db the rollback journal (DELETE).
+// After Finalize and Close each file must be a single self-contained image
+// (no -wal/-shm/-journal sidecar), so it can be embedded as-is.
+func TestJournalModeMatchesAnexoI(t *testing.T) {
+	cases := []struct {
+		name    string
+		mk      func(*testing.T) (*sql.DB, string)
+		mode    string
+		version byte // SQLite header bytes 18/19: 1 = rollback journal, 2 = WAL
+	}{
+		{"corpus", newCorpus, "wal", 2},
+		{"resultados", newResultados, "delete", 1},
+	}
+	for _, c := range cases {
+		d, path := c.mk(t)
 		var mode string
 		if err := d.QueryRow(`PRAGMA journal_mode`).Scan(&mode); err != nil {
 			t.Fatal(err)
 		}
-		if mode != "delete" {
-			t.Errorf("%s: journal_mode = %q, want delete", name, mode)
+		if mode != c.mode {
+			t.Errorf("%s: journal_mode = %q, want %s", c.name, mode, c.mode)
 		}
 		if err := Finalize(d); err != nil {
-			t.Fatalf("%s: Finalize: %v", name, err)
+			t.Fatalf("%s: Finalize: %v", c.name, err)
 		}
 		d.Close()
 
@@ -162,13 +172,12 @@ func TestJournalModeDeleteOnBothFiles(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		// SQLite header bytes 18/19 are the file-format write/read versions: 1 = legacy rollback journal, 2 = WAL.
-		if raw[18] != 1 || raw[19] != 1 {
-			t.Errorf("%s: header write/read version = %d/%d, want 1/1 (not WAL)", name, raw[18], raw[19])
+		if raw[18] != c.version || raw[19] != c.version {
+			t.Errorf("%s: header write/read version = %d/%d, want %d/%d", c.name, raw[18], raw[19], c.version, c.version)
 		}
 		for _, suffix := range []string{"-wal", "-shm", "-journal"} {
 			if _, err := os.Stat(path + suffix); err == nil {
-				t.Errorf("%s: unexpected sidecar file %s", name, path+suffix)
+				t.Errorf("%s: unexpected sidecar file %s", c.name, path+suffix)
 			}
 		}
 	}
