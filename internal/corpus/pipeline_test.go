@@ -3,10 +3,14 @@ package corpus
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"autoatend/internal/corpus/templates"
+	"autoatend/internal/db"
 )
 
 func smallOptions(t *testing.T) Options {
@@ -83,6 +87,14 @@ func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
 		"# Generator validation report", "## Class distribution", "## Validation battery",
 		"## Lexical overlap", "## Noise calibration", "## Persisted corpus verification",
 		"## Sample review", "10433", "Falta de Servicio", "Reconocimientos", p.SHA256,
+		"## Generator parameters",
+		fmt.Sprintf("| Templates per category | %d / %d / %d / %d / %d |", len(templates.Templates[0]), len(templates.Templates[1]),
+			len(templates.Templates[2]), len(templates.Templates[3]), len(templates.Templates[4])),
+		fmt.Sprintf("| Shared openers / closers | %d / %d |", len(templates.Openers), len(templates.Closers)),
+		"| Opener / second template / closer probability | 0.25 / 0.40 / 0.30 |",
+		fmt.Sprintf("| Amount pool / surface formats | %d / 6 |", len(templates.AmountPool)),
+		fmt.Sprintf("| Folio prefixes / digits | %d / 5–7 |", len(templates.FolioPrefixes)),
+		fmt.Sprintf("Test comments with an identical text in train: %d of %d", p.TestInTrain, p.Rows-sum5(p.Train)),
 	} {
 		if !strings.Contains(string(rep), want) {
 			t.Errorf("report lacks %q", want)
@@ -110,5 +122,50 @@ func TestReportIsDeterministic(t *testing.T) {
 	}
 	if shaA != shaB {
 		t.Fatalf("corpus.db SHA-256 differs between identical runs: %s vs %s", shaA, shaB)
+	}
+}
+
+// The train/test duplicate count is checked against an oracle built in Go from
+// the persisted rows, not against the SQL used by verifyCorpus.
+func TestPersistedTestDuplicatesInTrain(t *testing.T) {
+	opts := smallOptions(t)
+	res, err := Run(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, err := db.OpenReadOnly(opts.OutPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	rows, err := d.Query(`SELECT fecha, texto FROM comentarios`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	train := map[string]bool{}
+	var test []string
+	for rows.Next() {
+		var fecha, texto string
+		if err := rows.Scan(&fecha, &texto); err != nil {
+			t.Fatal(err)
+		}
+		if fecha < res.Persisted.Cutoff {
+			train[texto] = true
+		} else {
+			test = append(test, texto)
+		}
+	}
+	want := 0
+	for _, texto := range test {
+		if train[texto] {
+			want++
+		}
+	}
+	if want == 0 {
+		t.Fatal("fixture has no test/train duplicates; the check would be vacuous")
+	}
+	if res.Persisted.TestInTrain != want {
+		t.Fatalf("TestInTrain = %d, want %d", res.Persisted.TestInTrain, want)
 	}
 }
