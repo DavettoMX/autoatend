@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
@@ -190,19 +191,24 @@ func TestCreateRefusesExistingFile(t *testing.T) {
 	}
 }
 
-func TestResultadosTablesAndIndexes(t *testing.T) {
+// The resultados.db objects are exactly those of Anexo I (no extra index).
+func TestResultadosObjectsMatchAnexoI(t *testing.T) {
 	d, _ := newResultados(t)
-	tables := objectNames(t, d, "table")
-	for _, want := range []string{"corridas", "lexemas", "frecuencias", "variantes"} {
-		if !tables[want] {
-			t.Errorf("missing table %s", want)
-		}
+	assertObjects(t, d, "table", "corridas", "frecuencias", "lexemas", "variantes")
+	assertObjects(t, d, "index", "idx_frecuencias_corrida", "idx_frecuencias_lexema", "idx_variantes_lexema")
+}
+
+// assertObjects requires the user-defined objects of type typ to be exactly want (sorted).
+func assertObjects(t *testing.T, d *sql.DB, typ string, want ...string) {
+	t.Helper()
+	got := objectNames(t, d, typ)
+	var names []string
+	for n := range got {
+		names = append(names, n)
 	}
-	indexes := objectNames(t, d, "index")
-	for _, want := range []string{"idx_frecuencias_lexema", "idx_frecuencias_corrida", "idx_variantes_lexema", "uq_frecuencias_global"} {
-		if !indexes[want] {
-			t.Errorf("missing index %s", want)
-		}
+	sort.Strings(names)
+	if strings.Join(names, ",") != strings.Join(want, ",") {
+		t.Errorf("%s objects = %v, want %v", typ, names, want)
 	}
 }
 
@@ -235,18 +241,27 @@ func seedResultados(t *testing.T, d *sql.DB) {
 	testutil.MustExec(t, d, `INSERT INTO lexemas(forma_canonica, expresion_regular, corrida_id) VALUES ('cobro', 'cobro', 1)`)
 }
 
-// ADR-006: SQLite treats NULLs as distinct in a PRIMARY KEY, so the composite PK alone
-// does not stop duplicate global rows; the partial unique index does.
-func TestFrecuenciasGlobalRowIsUnique(t *testing.T) {
+// teI2Query is the frequency-conservation query of TE §6.3.3, verbatim.
+const teI2Query = `
+	SELECT l.forma_canonica,
+	       SUM(CASE WHEN f.categoria_id IS NULL THEN f.valor ELSE 0 END) AS global,
+	       SUM(CASE WHEN f.categoria_id IS NOT NULL THEN f.valor ELSE 0 END) AS suma_categorias
+	FROM lexemas l
+	JOIN frecuencias f ON f.lexema_id = l.id
+	GROUP BY l.id
+	HAVING global != suma_categorias`
+
+// SQLite treats NULLs as distinct in a PRIMARY KEY, so the Anexo I key accepts a
+// second global row for the same (lexema, corrida). The schema keeps the baseline
+// DDL: the TE's own I-2 query is what detects that defect.
+func TestDuplicateGlobalRowIsDetectedByI2Query(t *testing.T) {
 	d, _ := newResultados(t)
 	seedResultados(t, d)
-	testutil.MustExec(t, d, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, NULL, 10)`)
-	testutil.ExpectErr(t, d, "UNIQUE constraint failed", `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, NULL, 3)`)
+	testutil.MustExec(t, d, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, 1, 6), (1, 1, 2, 4), (1, 1, NULL, 10)`)
+	testutil.Scalar(t, d, 0, `SELECT COUNT(*) FROM (`+teI2Query+`)`)
 
-	// Different lexeme or different corrida: another global row is fine.
-	testutil.MustExec(t, d, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (2, 1, NULL, 4)`)
-	testutil.MustExec(t, d, `INSERT INTO corridas(semilla, parametros, total_lexemas) VALUES (10433, '{}', 1)`)
-	testutil.MustExec(t, d, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 2, NULL, 7)`)
+	testutil.MustExec(t, d, `INSERT INTO frecuencias(lexema_id, corrida_id, categoria_id, valor) VALUES (1, 1, NULL, 10)`)
+	testutil.Scalar(t, d, 1, `SELECT COUNT(*) FROM (`+teI2Query+`)`)
 }
 
 func TestFrecuenciasPerCategoryRowsKeepCompositePK(t *testing.T) {
