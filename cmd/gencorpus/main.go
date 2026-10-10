@@ -15,9 +15,17 @@ import (
 func main() {
 	out := flag.String("out", "data/corpus.db", "path of the corpus.db to create (must not exist)")
 	report := flag.String("report", "docs/reports/generator_validation_report.md", "path of the validation report")
+	seed := flag.Int64("seed", 10433, "random seed")
+	total := flag.Int("total", 73000, "approximate total comments")
+	noiseRate := flag.Float64("noise-rate", 0.30, "lexical noise rate")
 	flag.Parse()
 
-	res, err := corpus.Run(corpus.Options{Config: corpus.DefaultConfig(), OutPath: *out, ReportPath: *report})
+	cfg := corpus.DefaultConfig()
+	cfg.Seed = *seed
+	cfg.Total = *total
+	cfg.Noise.Rate = *noiseRate
+
+	res, err := corpus.Run(corpus.Options{Config: cfg, OutPath: *out, ReportPath: *report})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "gencorpus:", err)
 		os.Exit(1)
