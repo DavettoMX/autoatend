@@ -2,3 +2,6 @@ dist/
 *.out
 *.test
 /tmp/
+*.db-wal
+*.db-shm
+*.db-journal

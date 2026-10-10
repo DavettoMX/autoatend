@@ -37,7 +37,7 @@ make cross              # binarios estáticos en dist/ para windows/amd64 y darw
 ```bash
 make clean-data && make gen
 sha256sum data/corpus.db
-# c0343583040f51afa54cfddb5bebe608bac3a02aa1416286582ae97744adfb05
+# ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219
 ```
 
 `gencorpus` no sobrescribe un archivo existente. Antes de escribir, ejecuta una batería de validación (conteos por categoría, textos vacíos, fechas, tasa de ruido, solapamiento léxico y una muestra de 50 comentarios por categoría); si algo falla, no persiste nada. El resultado queda en [`docs/reports/generator_validation_report.md`](docs/reports/generator_validation_report.md).

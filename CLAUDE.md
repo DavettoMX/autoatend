@@ -20,7 +20,7 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 
 ```bash
 d=$(mktemp -d); go run ./cmd/gencorpus -out $d/c.db -report $d/r.md
-sha256sum $d/c.db   # debe ser c0343583040f51afa54cfddb5bebe608bac3a02aa1416286582ae97744adfb05
+sha256sum $d/c.db   # debe ser ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219
 diff $d/r.md docs/reports/generator_validation_report.md   # debe salir vacío
 ```
 

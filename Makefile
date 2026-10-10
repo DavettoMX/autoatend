@@ -1,6 +1,6 @@
 GO     ?= go
 CORPUS := data/corpus.db
-CORPUS_SHA ?= c0343583040f51afa54cfddb5bebe608bac3a02aa1416286582ae97744adfb05
+CORPUS_SHA ?= ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
 

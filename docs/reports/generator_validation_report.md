@@ -40,6 +40,16 @@ Jaccard similarity of the 100 most frequent tokens per category (accepted range 
 | Quejas | 0.307 | 0.274 | 0.235 | 1.000 | 0.342 |
 | Reconocimientos | 0.266 | 0.220 | 0.220 | 0.342 | 1.000 |
 
+## Generator parameters
+
+| Parameter | Value |
+|---|---:|
+| Templates per category | 36 / 34 / 34 / 34 / 32 |
+| Shared openers / closers | 10 / 10 |
+| Opener / second template / closer probability | 0.25 / 0.40 / 0.30 |
+| Amount pool / surface formats | 24 / 6 |
+| Folio prefixes / digits | 6 / 5–7 |
+
 ## Noise calibration
 
 | Parameter | Value |
@@ -58,15 +68,17 @@ Measured by re-opening the finished file read-only.
 
 | Category | Rows | Train | Test | max(train.fecha) | min(test.fecha) |
 |---|---:|---:|---:|---|---|
-| Falta de Servicio | 21900 | 17520 | 4380 | 2026-04-03 | 2026-04-03 |
-| Cobros Indebidos | 14600 | 11680 | 2920 | 2026-04-06 | 2026-04-06 |
-| Problemas de Facturación | 14600 | 11680 | 2920 | 2026-04-05 | 2026-04-05 |
-| Quejas | 14600 | 11680 | 2920 | 2026-04-08 | 2026-04-08 |
-| Reconocimientos | 7300 | 5840 | 1460 | 2026-04-10 | 2026-04-10 |
+| Falta de Servicio | 21900 | 17592 | 4308 | 2026-04-05 | 2026-04-06 |
+| Cobros Indebidos | 14600 | 11672 | 2928 | 2026-04-05 | 2026-04-06 |
+| Problemas de Facturación | 14600 | 11695 | 2905 | 2026-04-05 | 2026-04-06 |
+| Quejas | 14600 | 11636 | 2964 | 2026-04-05 | 2026-04-06 |
+| Reconocimientos | 7300 | 5805 | 1495 | 2026-04-05 | 2026-04-06 |
 
-Empty texts: 0. Split rule: per category, ordered by (fecha, id), oldest 80% train, newest remainder test.
+Empty texts: 0. Split rule (global, temporal): the cut-off is the fecha at position 80% of the corpus in chronological order; train is fecha < 2026-04-06, test is fecha >= 2026-04-06, so every training comment precedes every test comment.
 
-corpus.db SHA-256: `c0343583040f51afa54cfddb5bebe608bac3a02aa1416286582ae97744adfb05`
+Test comments with an identical text in train: 2860 of 14600 (19.59%). A temporal split does not prevent exact repeats of a template draw.
+
+corpus.db SHA-256: `ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219`
 
 ## Sample review
 
