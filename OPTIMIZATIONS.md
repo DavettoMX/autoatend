@@ -49,7 +49,7 @@ Las pruebas tienen estilo TDD: oráculos independientes, verificación directa s
 
 - [x] **El split violaba el TE §5.2.2** ("todos los comentarios del conjunto de entrenamiento son temporalmente anteriores a todos los del conjunto de prueba"): era temporal por categoría y globalmente el train llegaba al 2026-04-10 con el test empezando el 2026-04-03. Corregido: corte global (`db.SplitCutoff`).
 - [x] **URI de archivo inválida en Windows.** `file://C:%5C…` que SQLite rechaza ("invalid uri authority"); afectaba a `gencorpus.exe`, `OpenReadOnly` y el `ATTACH`. Corregido: `db.FileURI` produce `file:///C:/…`.
-  - [ ] Ejecutar `dist/gencorpus.exe` en Windows real o con Wine (no está instalado) y comprobar que el SHA del corpus es el mismo.
+  - [ ] Ejecutar `dist/gencorpus.exe` en Windows real (partición propia) y `dist/gencorpus-macos-arm64` en la Mac, y comprobar que el SHA del corpus es el mismo. ~~Wine~~: cancelado, no se verificará desde Linux.
 - [ ] **Duplicados exactos entre train y test.** 2,860 de 14,600 comentarios de test (**19.6 %**) tienen su texto idéntico en train (355 de ellos en Reconocimientos); ningún texto se repite entre categorías distintas. El reporte de validación lo mide. Esto infla CPM01/CPM02.
   - [ ] En la Fase 3, reportar además el Macro-F1 y el recall de Reconocimientos sobre el subconjunto de test **sin duplicado en train**.
   - [ ] Evaluar si conviene deduplicar antes de evaluar, y registrar la decisión en ADR-004.
@@ -67,7 +67,7 @@ Las pruebas tienen estilo TDD: oráculos independientes, verificación directa s
   - [ ] En la Fase 2, `cmd/simulador` escribe en `corridas.parametros` la semilla, el `NoiseConfig` y el total del corpus, además de la versión de la stoplist.
 - [x] **El generador no se configura por línea de comandos.** El diseño dice que el ruido es configurable; `main.go` solo acepta `-out` y `-report`.
   - [x] Agregar flags `-seed`, `-total` y `-noise-rate` (los valores por defecto deben dar el mismo SHA del corpus).
-  - [ ] Necesario para la prueba de linealidad I-4 (barridos de 1k/10k/30k/50k/73k).
+  - [x] Necesario para la prueba de linealidad I-4 (barridos de 1k/10k/30k/50k/73k).
 - [ ] **Revisión manual de la muestra.** §6.1.4 dice "detección manual"; lo implementado es un chequeo de cordura automático más la impresión de la muestra.
   - [ ] Revisar a mano los 250 comentarios y dejar constancia (fecha, revisor, observaciones) en `docs/reports/`.
 - [x] **ADR-007 no hace falta.** El diseño del TE (WAL, `go:embed`, `mode=ro&immutable=1`, `ATTACH`) funciona con modernc; se verificó ejecutándolo. ADR-002 y ADR-006 se retiraron por el mismo criterio (ver "Apego al Trabajo Escrito" en `CLAUDE.md`).
@@ -155,7 +155,7 @@ Checklist (cada paso es un refactor **sin cambio de comportamiento**: el SHA-256
 2. [x] Subir la cobertura de `internal/db` a ≥ 80 % (§1).
 3. [x] Reestructura de §5. Quedan para la Fase 4 `internal/assets/` y el chequeo `go list -deps`.
 4. [x] Alinear la Fase 1 con el TE (`fase1/apego-te`): WAL, DDL literal, `mode=ro&immutable=1`, split global, URI de Windows, retiro de ADR-002 y ADR-006.
-5. [ ] Verificar `gencorpus.exe` ejecutando en Windows (§2).
+5. [ ] Verificar `gencorpus.exe` en Windows (partición propia) y `gencorpus-macos-arm64` en la Mac (§2).
 6. [x] Flags del generador (§3).
 7. [ ] Arrancar la Fase 2 con commits rojo-verde-refactor, pruebas nombradas con su ID del plan y la stoplist según ADR-003.
 8. [ ] En la Fase 3: métrica sin duplicados y prueba de cordura con un modelo trivial (§2).
