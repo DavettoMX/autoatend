@@ -40,6 +40,7 @@ type Result struct {
 	Lexemas     int           // lexemes in the catalogue
 	Tokens      int           // catalogued word occurrences (after the stoplist)
 	ZeroDF      int           // lexemes that never occur in a training comment
+	ERFallbacks int           // lexemes whose generated ER failed its round-trip and fell back to the canonical form (expected 0)
 	SHA256      string        // of the finished resultados.db
 	Elapsed     time.Duration // wall time of the whole run
 }
@@ -79,7 +80,7 @@ func Run(opts Options) (res Result, err error) {
 	if err != nil {
 		return res, err
 	}
-	if err := persist(opts.OutPath, entries, opts.Seed, params); err != nil {
+	if res.ERFallbacks, err = persist(opts.OutPath, entries, opts.Seed, params); err != nil {
 		return res, err
 	}
 	defer func() {
