@@ -251,6 +251,7 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | Macro-F1 y recall sin duplicados en train | se reporta | | |
 | Latencia P99 de `/api/clasificar` | < 50 ms | | |
 | `--selftest` | < 3 s, salida 0 | | |
+| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | 250/250 sin observaciones (`docs/reports/muestra_250_borrador.md`); el corpus anterior tenía 93 de 250 con defectos y se corrigió | 2026-10-12 |
 | L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado b810bad2…) | 2026-10-12 |
 | L-2 lexemas con una sola variante | se reporta | 91.6 % (5,759 de 6,289; la mayoría son erratas del ruido o formas irregulares) | 2026-10-12 |
 
