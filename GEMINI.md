@@ -21,7 +21,7 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 
 ```bash
 d=$(mktemp -d); go run ./cmd/gencorpus -out $d/c.db -report $d/r.md
-sha256sum $d/c.db   # debe ser 0ac4ac13bb7bd81b6c254244614f150d9e1226bc3483b169b6e8a0bb6b8515b6
+sha256sum $d/c.db   # debe ser 86eb43035be94edb7a6e5c653187696aa4fd7eddc7837cff1adc05ad201f1876
 diff $d/r.md docs/reports/generator_validation_report.md   # debe salir vacío
 ```
 
@@ -145,7 +145,7 @@ Decisiones para las fases siguientes, ya aprobadas por el usuario (no se vuelven
 ## Pendientes conocidos que afectan el diseño
 
 Consulta `PLAN.md` §3 antes de empezar la Fase 2:
-- El 24.8 % de los comentarios de test (3,617 de 14,600) tiene un duplicado exacto en train, lo que infla CPM01.
+- El 25.3 % de los comentarios de test (3,690 de 14,600) tiene un duplicado exacto en train, lo que infla CPM01.
 
 ## Idioma
 

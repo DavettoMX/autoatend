@@ -96,7 +96,7 @@ Se conserva, ya aprobado: la stoplist de ADR-003, el IDF solo de train, el embed
 
 Entregado y verificado con `make verify` en verde:
 - `data/corpus.db`: semilla 10433, 73,000 comentarios, distribución 30/20/20/20/10, del 2024-08-30 al 2026-08-29.
-- SHA-256 `0ac4ac13bb7bd81b6c254244614f150d9e1226bc3483b169b6e8a0bb6b8515b6`.
+- SHA-256 `86eb43035be94edb7a6e5c653187696aa4fd7eddc7837cff1adc05ad201f1876`.
 - Reporte en `docs/reports/generator_validation_report.md`.
 - Corpus regenerado el 12-oct por defectos de coherencia detectados en la revisión de la muestra (TE §6.1.4): un solo problema por comentario (base + complemento de la misma categoría), precios de plan coherentes con los cobros, huecos que concuerdan dentro de la oración y aperturas/cierres por categoría. Pruebas `TestCoherence_*` en `internal/corpus`.
 - Split temporal global `db.SplitCutoff`: corte 2026-04-06, 58,400 / 14,600.
@@ -104,9 +104,9 @@ Entregado y verificado con `make verify` en verde:
 - `gencorpus` acepta los flags `-seed`, `-total` y `-noise-rate` (los usa la medición I-4).
 
 **Hechos que afectan las fases siguientes:**
-- El 24.8 % del test (3,617 de 14,600) tiene un texto idéntico en train, lo que infla CPM01/CPM02. Las métricas también se reportan sin duplicados (Bloque C).
-- El ruido escribe `q` por "que" y `x` por "por" (5,853 y 3,083 comentarios). Ya están cubiertos en ADR-003.
-- El Jaccard del reporte se calcula sin stoplist, así que el rango 0.21–0.33 refleja sobre todo palabras funcionales. Se recalcula con la stoplist v1 (Bloque A, P2).
+- El 25.3 % del test (3,690 de 14,600) tiene un texto idéntico en train, lo que infla CPM01/CPM02. Las métricas también se reportan sin duplicados (Bloque C).
+- El ruido escribe `q` por "que" y `x` por "por" (5,965 y 3,212 comentarios). Ya están cubiertos en ADR-003.
+- El Jaccard del reporte se calcula sin stoplist, así que el rango 0.20–0.36 refleja sobre todo palabras funcionales. Se recalcula con la stoplist v1 (Bloque A, P2).
 
 **Deuda conocida, no bloqueante (después de la demo):**
 - `internal/corpus/pipeline.go`: `defer f.Close()` ignora el error al cerrar el reporte.
@@ -207,7 +207,7 @@ Entregado y verificado con `make verify` en verde:
 
 | Prioridad | Tarea |
 |---|---|
-| P0 | **Windows (partición propia):** `gencorpus.exe` reproduce el SHA `0ac4ac13…`; `autoatend.exe --selftest` = 0; el guion completo de 5 pasos |
+| P0 | **Windows (partición propia):** `gencorpus.exe` reproduce el SHA `86eb4303…`; `autoatend.exe --selftest` = 0; el guion completo de 5 pasos |
 | P0 | **Mac:** lo mismo con `gencorpus-macos-arm64` y `autoatend-macos-arm64` |
 | P1 | I-4: barrido con `gencorpus -total` de 1k, 10k, 30k, 50k y 73k → R² y T(73k) (CPP04, medido) |
 | P1 | Cobertura por paquete (`make cover`, se informa) |
@@ -251,7 +251,7 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | Macro-F1 y recall sin duplicados en train | se reporta | | |
 | Latencia P99 de `/api/clasificar` | < 50 ms | | |
 | `--selftest` | < 3 s, salida 0 | | |
-| L-1 sub-filtrado de homógrafos | se reporta | 85.5 % (171 cerrada / 29 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado 0ac4ac13…) | 2026-10-12 |
+| L-1 sub-filtrado de homógrafos | se reporta | 85.0 % (170 cerrada / 30 léxica, 0 duda; 200 tokens de test en 15 de los 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado 86eb4303…) | 2026-10-12 |
 | L-2 lexemas con una sola variante | se reporta | | |
 
 ---

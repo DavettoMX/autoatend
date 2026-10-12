@@ -30,10 +30,10 @@ El archivo es una tabla cerrada `forma → clase`, versionada y embebida con `go
 | variantes de superficie | `segun` (preposición), `ole` (interjección), `q` (conjunción) y `x` (preposición) |
 
 - Las contracciones `al` y `del` se clasifican como `articulo` para conservar las cuatro clases cerradas del caso. Es una etiqueta, no hay efecto sobre el filtrado.
-- **Variantes de superficie.** `segun` y `ole` son las formas sin tilde de `según` y `olé` (la consigna e admite entrada libre). `q` y `x` son las abreviaturas que el generador de ruido escribe por `que` y por `por`: aparecen en 5,853 y 3,083 comentarios del corpus. Sin ellas, esas abreviaturas llegarían al catálogo como lexemas (hueco detectado durante el desarrollo). CPU14 exige que cada variante quede en la misma clase que su forma original.
+- **Variantes de superficie.** `segun` y `ole` son las formas sin tilde de `según` y `olé` (la consigna e admite entrada libre). `q` y `x` son las abreviaturas que el generador de ruido escribe por `que` y por `por`: aparecen en 5,965 y 3,212 comentarios del corpus. Sin ellas, esas abreviaturas llegarían al catálogo como lexemas (hueco detectado durante el desarrollo). CPU14 exige que cada variante quede en la misma clase que su forma original.
 - **Se retienen los homógrafos del TE:** `bajo`, `para`, `sobre`, `entre`, `como`, `más`, `solo`, `aun`. La tabla es plana y consulta solo la forma, así que no distingue el uso funcional del uso de contenido (`bajo` preposición contra `bajo` adjetivo; `solo` adverbio contra `sólo`). Se prefiere conservar a perder señal: el costo es que algunos usos funcionales llegan al catálogo (sub-filtrado). Ese costo es el que mide L-1 (TE §6.3.10) sobre una muestra de 200 apariciones. La limitación se declara; no se intenta resolver por contexto.
 - **No se filtran** `se`, `no`, `este` ni `eso`, porque no pertenecen a ninguna de las cuatro clases (pronombre, adverbio de negación, demostrativos). Tampoco `él`, `qué`, `sí` ni `té`, que se distinguen de `el`, `que`, `si` y `te` precisamente por la tilde. CPU14 verifica todos estos casos.
-- Consecuencia medida: entre los lexemas más frecuentes del catálogo figuran `me` (52,257), `mi` (41,878), `no` (34,372) y `ya`, `es`, `esto`. Son palabras funcionales que la política deja pasar a propósito, porque no pertenecen a las cuatro clases cerradas.
+- Consecuencia medida: entre los lexemas más frecuentes del catálogo figuran `me` (50,568), `mi` (42,257), `no` (34,344) y `ya`, `es`, `esto`. Son palabras funcionales que la política deja pasar a propósito, porque no pertenecen a las cuatro clases cerradas.
 
 ### 2. Sin plegado de acentos
 
@@ -58,9 +58,9 @@ El TE §6.2.2 pide agrupar variantes en un lexema pero no define el criterio. Se
 - Sin plegado de acentos (decisión 2).
 - La clave de agrupación es la raíz. **El nombre del lexema es su variante más frecuente** (empate: la menor en orden lexicográfico), no la raíz. Por eso el catálogo muestra `factura` con la ER `factur(a|ación|as)`.
 
-Es un criterio de agrupación, no un análisis morfológico, y sus límites son medibles. Con el corpus completo (6,230 lexemas):
+Es un criterio de agrupación, no un análisis morfológico, y sus límites son medibles. Con el corpus completo (6,297 lexemas):
 
-- **L-2:** 5,729 de 6,230 lexemas (92.0 %) tienen una sola variante observada. La mayoría son errores tipográficos o formas raras, cada uno con su propio lexema (`cobraan`, `cobranndo`).
+- **L-2:** 5,745 de 6,297 lexemas (91.2 %) tienen una sola variante observada. La mayoría son errores tipográficos o formas raras, cada uno con su propio lexema (`cobraan`, `cobranndo`).
 - **Sobreagrupación:** la raíz mínima de 3 runas funde palabras distintas: `est(a|ado|e|o)`, `pla(n|no)`, `sol(a|o)`, `hac(e|er)`.
 - **Subagrupación:** `cobraron` (`cobr(ando|ar|aron|o|os|s)`) y `cobran` (`cobra(n|na|no)`) quedan en lexemas distintos, porque `n` no es un sufijo de la lista.
 
@@ -72,7 +72,7 @@ Se descartó el lematizador completo o un diccionario: añaden datos o dependenc
 
 ## Propuesta de mejora (no implementada): folios clave-valor
 
-El corpus incluye folios con prefijo, guion y dígitos: 1,103 comentarios contienen `TKT-` seguido de un número (por ejemplo `TKT-583128`), y la propuesta cubre también formatos como `TK-35699A` o `REP-2026-35`. Con el AFD actual el guion es un separador, así que `TKT-583128` se parte en `tkt` (palabra, que entra al catálogo como lexema con 1,149 apariciones) y `583128` (número, descartado). El folio se pierde como unidad, y los de forma `TK-35699A` dejarían además un `a` suelto (descartado como preposición).
+El corpus incluye folios con prefijo, guion y dígitos: 1,078 comentarios contienen `TKT-` seguido de un número (por ejemplo `TKT-583128`), y la propuesta cubre también formatos como `TK-35699A` o `REP-2026-35`. Con el AFD actual el guion es un separador, así que `TKT-583128` se parte en `tkt` (palabra, que entra al catálogo como lexema con 1,129 apariciones) y `583128` (número, descartado). El folio se pierde como unidad, y los de forma `TK-35699A` dejarían además un `a` suelto (descartado como preposición).
 
 **Propuesta:** catalogar el folio completo como un token único. Para ello:
 
