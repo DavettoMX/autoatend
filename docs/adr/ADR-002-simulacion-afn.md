@@ -12,7 +12,7 @@ Restricciones: Go puro sin CGo, prohibido `import "regexp"` y cualquier generado
 
 ## Decisión
 
-El AFN-ε de Thompson se **simula directamente por conjuntos de estados**, sin construir un AFD (Thompson 1968; Aho et al. 2006, §3.7.4 para la construcción, §3.7.2 y algoritmo 3.22 para la simulación, §3.7.3 para su eficiencia; Hopcroft et al. 2007, §2.5.3 para la clausura respecto de ε y §4.3.2 para la comprobación de pertenencia):
+El AFN-ε de Thompson se **simula directamente por conjuntos de estados**, sin construir un AFD (Thompson 1968; Aho et al. 2006, §3.7.4 para la construcción, §3.7.2, algoritmo 3.22 y fig. 3.37 (p. 156) para la simulación, §3.7.3 para su eficiencia; Hopcroft et al. 2007, §2.5.3 para la clausura respecto de ε y §4.3.2 para la comprobación de pertenencia):
 
 1. El estado inicial del recorrido es `S₀ = ε-cerradura({inicio})`.
 2. Por cada runa `c` de la cadena, `S' = ε-cerradura(movida(S, c))`.
