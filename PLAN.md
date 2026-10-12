@@ -240,11 +240,11 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 
 | Criterio | Umbral (TE) | Medido | Fecha |
 |---|---|---|---|
-| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,720 lexemas, 7,439 variantes; `TestCPP01_I1_RoundTripCatalogue`) | 2026-10-12 |
-| I-2 conservación de frecuencias | 0 lexemas con discrepancia | | |
-| I-3 idempotencia | SHA-256 idéntico en 2 corridas | | |
+| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,289 lexemas, 6,967 variantes; `TestCPP01_I1_RoundTripCatalogue`; corpus b810bad2…) | 2026-10-12 |
+| I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`) | 2026-10-12 |
+| I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `236cb9f6…1cc1` (`make sweep-sha`) | 2026-10-12 |
 | I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |
-| Cobertura | ≥ 80 % (líneas) | | |
+| Cobertura | ≥ 80 % (líneas) | Fases 1–2: corpus 91.8 %, db 87.5 %, db/build 90.8 %, db/schema 100 %, lexer 99.4 %, regex 98.7 %, sweep 82.3 % (`make cover`) | 2026-10-12 |
 | Paridad Python ↔ Go | 0 discrepancias en 1,000 | | |
 | Macro-F1 (CPM01) | ≥ 0.85 en test | | |
 | Recall de Reconocimientos (CPM02) | ≥ 0.70 | | |
@@ -252,7 +252,7 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | Latencia P99 de `/api/clasificar` | < 50 ms | | |
 | `--selftest` | < 3 s, salida 0 | | |
 | L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado b810bad2…) | 2026-10-12 |
-| L-2 lexemas con una sola variante | se reporta | | |
+| L-2 lexemas con una sola variante | se reporta | 91.6 % (5,759 de 6,289; la mayoría son erratas del ruido o formas irregulares) | 2026-10-12 |
 
 ---
 
