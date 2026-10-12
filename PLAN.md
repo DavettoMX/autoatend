@@ -105,7 +105,7 @@ Entregado y verificado con `make verify` en verde:
 
 **Hechos que afectan las fases siguientes:**
 - El 24.4 % del test (3,560 de 14,600) tiene un texto idéntico en train, lo que infla CPM01/CPM02. Las métricas también se reportan sin duplicados (Bloque C).
-- El ruido escribe `q` por "que" y `x` por "por" (6,007 y 3,152 comentarios). Ya están cubiertos en ADR-003.
+- El ruido escribe `q` por "que" y `x` por "por" (5,893 y 3,213 comentarios). Ya están cubiertos en ADR-003.
 - El Jaccard del reporte se calcula sin stoplist, así que el rango 0.19–0.34 refleja sobre todo palabras funcionales. Se recalcula con la stoplist v1 (Bloque A, P2).
 
 **Criterio de separabilidad registrado antes de tocar las plantillas (12-oct-2026, aprobado por el usuario).** Con el corpus `b810bad2…` el modelo obtuvo Macro-F1 = 1.0000 y una matriz diagonal, lo que contradice el TE §6.1.4 ("evita que el corpus sea trivialmente separable"). Antes de cambiar el generador se fijan tres compuertas de la batería, que no se modifican después. Si alguna falla, el corpus no se persiste:
@@ -241,6 +241,23 @@ Otras reglas:
 
 ---
 
+## Estado al 12-oct (noche)
+
+**Desarrollo completo:**
+- los bloques A–D implementados y el Bloque E hecho en la Mac (la v1.0.3 verificada por el usuario);
+- la v1.0.4 publicada;
+- `make verify` en verde.
+
+**Desde ahora todo se trabaja en la Mac** (clon de GitHub; el repo de la PC queda congelado).
+
+Pendientes, con el detalle en `docs/CONTEXTO_SESION.md` §8:
+1. la revisión del corpus de oro por parte del usuario;
+2. la prueba de integración 4c;
+3. la constancia de las 47 plantillas nuevas;
+4. la presentación.
+
+---
+
 ## 5. Criterios de aceptación de la demo
 
 Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
@@ -268,14 +285,15 @@ Mac verificada por el usuario el 12-oct con la versión 1.0.0 (MacBook Air, Appl
 | I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`; corpus 37f285ff…) | 2026-10-12 |
 | I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `9620196f…79f3` (`make sweep-sha`; corpus 37f285ff…) | 2026-10-12 |
 | I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | R² = 0.9938 (`make i4`; tres corridas posteriores de `TestCPP04_I4_Linealidad` dieron 0.9956, 0.9961 y 0.9988); pendiente 4.9e-06 s por comentario; T(73k) = 0.37 s medido (`docs/reports/i4_linealidad.md`: N = 1k, 10k, 30k, 50k y 73k, mediana de 3 corridas; subcorpus = primeros N comentarios de `data/corpus.db`; AMD Ryzen 9 9900X, Linux). Pendiente en la Mac (opcional) | 2026-10-12 |
-| Cobertura | ≥ 80 % (líneas) | Fases 1–2: corpus 91.8 %, db 87.5 %, db/build 90.8 %, db/schema 100 %, lexer 99.4 %, regex 98.7 %, sweep 82.3 % (`make cover`) | 2026-10-12 |
+| Cobertura | ≥ 80 % (líneas) | casos 93.1 %, corpus 92.5 %, db 85.2 %, db/build 90.9 %, db/schema 100.0 %, lexer 99.4 %, ml 94.0 %, regex 98.7 %, sweep 84.9 %, web 82.9 % (`make cover`, 12-oct) | 2026-10-12 |
 | Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.1e-16 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`; corpus 37f285ff…) | 2026-10-12 |
 | Macro-F1 (CPM01) | ≥ 0.85 en test | 0.9795 en test (14,600) con `modelo.json` (RLS, línea base, C = 1); NBM 0.9708. Un solo entrenamiento, después de que la batería K1–K3 pasó (corpus 37f285ff…). El corpus anterior b810bad2… daba 1.0000 (trivialmente separable) | 2026-10-12 |
 | Recall de Reconocimientos (CPM02) | ≥ 0.70 | 0.9819 (1,495 Reconocimientos de test); NBM 0.9746 | 2026-10-12 |
 | Macro-F1 y recall sin duplicados en train | se reporta | Test sin duplicados (11,040): RLS 0.9826 y recall 0.9877; NBM 0.9726 y 0.9793. Test sin el subconjunto ambiguo (13,348): RLS 0.9997 y 0.9986; NBM 0.9952 y 0.9910. Plantillas no vistas (solo reporte, `docs/reports/plantillas_no_vistas.md`): RLS 0.8350 de media (0.7637–0.8855), NBM 0.7592 | 2026-10-12 |
 | Latencia P99 de `/api/clasificar` | < 50 ms | 0.11–0.17 ms en Linux (5 corridas de `TestLatencia_P99DeClasificar`: 100 llamadas HTTP consecutivas por loopback con un comentario de longitud media, 111 caracteres; mediana 0.04 ms). Pendiente medir en el hardware objetivo (Windows y Mac) en el Bloque E | 2026-10-12 |
 | `--selftest` | < 3 s, salida 0 | Salida 0 en 0.05 s en Linux y 5/5 ok en la Mac (`autoatend --selftest`: 73,000 comentarios, 6,196 ER compiladas y 6,891 variantes aceptadas, `gold5` 5/5, puerto 8471 libre; corpus 37f285ff…; `TestSelftestExit0` y las pruebas de salida 1). Pendiente medir en Windows y Mac (Bloque E) | 2026-10-12 |
-| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | Pendiente para el corpus 37f285ff…: borrador `docs/reports/muestra_250_borrador.md` (Auto 250/250 ok; Tipo base 202, contexto cruzado 33, compartida 15) y `docs/reports/plantillas_nuevas.md` (47 plantillas para revisar). La revisión anterior (250/250 sin observaciones) era del corpus b810bad2… | |
+| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | 250/250 OK y 0 observaciones sobre el corpus 37f285ff… (`docs/reports/muestra_250_borrador.md`, revisor: Joshue R. García Butrón). El chequeo automático (`Auto`) también dio 250/250. La revisión del corpus anterior detectó 93 de 250 con defectos, lo que motivó la corrección de coherencia | 2026-10-12 |
+| Corpus de oro (TE §6.3.5c, integración 4c) | 100 comentarios anotados por el sustentante; el pipeline coincide salvo limitaciones documentadas | Pendiente: borrador en `docs/reports/corpus_oro.csv`, en revisión por el usuario; después, `TestIntegracion4c_CorpusDeOro` | |
 | L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en los mismos 16 contextos, sin contextos nuevos que etiquetar; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; las etiquetas del usuario se reaplicaron por contexto; corpus 37f285ff…) | 2026-10-12 |
 | L-2 lexemas con una sola variante | se reporta | 91.4 % (5,660 de 6,196; la mayoría son erratas del ruido o formas irregulares; corpus 37f285ff…) | 2026-10-12 |
 

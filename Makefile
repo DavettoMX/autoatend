@@ -5,11 +5,13 @@ DF     := data/df_train.json
 CORPUS_SHA ?= 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
-VERSION ?= 1.0.3
+# Portable SHA-256 (GNU coreutils on Linux, shasum on macOS).
+SHA256 ?= $(shell command -v sha256sum >/dev/null 2>&1 && echo sha256sum || echo "shasum -a 256")
+VERSION ?= 1.0.4
 ASSETS_DIR := internal/assets/data
 ASSET_FILES := corpus.db resultados.db modelo.json modelo_alternativo.json gold5.json
 
-.PHONY: i4 casos gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets build fmt-check vet corpus-sha verify
+.PHONY: i4 casos gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross cross-sha sweep train assets build fmt-check vet corpus-sha verify
 
 # Generates data/corpus.db, data/corpus_ambiguos.json and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
@@ -58,17 +60,39 @@ lint-regexp:
 	if [ -n "$$hits" ]; then echo 'lint-regexp: forbidden cgo (import "C") in:'; echo "$$hits"; exit 1; fi; \
 	echo "lint-regexp: ok"
 
-# Static, CGO-free cross-builds of the offline generator.
+# Static, CGO-free cross-builds (Windows x86-64, macOS ARM64 and macOS Intel for the service).
+# -buildvcs=false keeps git state out of the binaries so the same source gives the same bytes (cross-sha).
 cross: assets
 	mkdir -p $(DIST)
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus.exe ./cmd/gencorpus
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus-macos-arm64 ./cmd/gencorpus
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador.exe ./cmd/simulador
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador-macos-arm64 ./cmd/simulador
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar.exe ./cmd/tokenizar
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar-macos-arm64 ./cmd/tokenizar
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend.exe ./cmd/autoatend
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus.exe ./cmd/gencorpus
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus-macos-arm64 ./cmd/gencorpus
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w" -o $(DIST)/simulador.exe ./cmd/simulador
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w" -o $(DIST)/simulador-macos-arm64 ./cmd/simulador
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar.exe ./cmd/tokenizar
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar-macos-arm64 ./cmd/tokenizar
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend.exe ./cmd/autoatend
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend-macos-intel ./cmd/autoatend
+
+# Reproducibility of the release binaries: builds `cross` twice into temp dirs and requires identical
+# SHA-256 for every binary. The second build runs from a copy of the tree outside any git checkout, so it
+# also proves the bytes do not depend on VCS state (commit, dirty tree, untracked files).
+cross-sha: assets
+	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
+	$(MAKE) --no-print-directory cross DIST="$$d/a" >/dev/null || exit 1; \
+	mkdir -p "$$d/src"; \
+	tar --exclude=./dist -cf - . | tar -xf - -C "$$d/src" || exit 1; \
+	$(MAKE) --no-print-directory -C "$$d/src" cross DIST="$$d/b" >/dev/null || exit 1; \
+	n=0; fail=0; \
+	for f in "$$d"/a/*; do \
+	  b=$$(basename "$$f"); n=$$((n+1)); \
+	  ha=$$($(SHA256) "$$f" | cut -d' ' -f1); hb=$$($(SHA256) "$$d/b/$$b" 2>/dev/null | cut -d' ' -f1); \
+	  if [ "$$ha" = "$$hb" ]; then echo "cross-sha: ok   $$ha  $$b"; else echo "cross-sha: FAIL $$b $$ha != $$hb"; fail=1; fi; \
+	done; \
+	[ "$$(ls "$$d/a" | wc -l)" = "$$(ls "$$d/b" | wc -l)" ] || { echo "cross-sha: FAIL different file sets"; fail=1; }; \
+	[ "$$n" -gt 0 ] || { echo "cross-sha: FAIL no binaries"; exit 1; }; \
+	[ "$$fail" = 0 ] || exit 1; \
+	echo "cross-sha: PASS ($$n binaries)"
 
 # Sweeps data/corpus.db into data/resultados.db and data/df_train.json.
 # Fails if either exists (the catalogue is built once); use make clean-results first.
@@ -78,7 +102,7 @@ sweep:
 # Invariant I-4 (TE §6.3.3, CPP04): sweep time over subcorpora of 1k..73k comments, regression line, R2 and
 # T(73k). Writes docs/reports/i4_linealidad.md; the corpus is only read.
 i4:
-	$(GO) run ./cmd/linealidad -equipo "$$(uname -sm), $$(nproc 2>/dev/null || sysctl -n hw.ncpu) CPU, $$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2 | sed 's/^ //' || true)"
+	$(GO) run ./cmd/linealidad -equipo "$$(uname -sm), $$(nproc 2>/dev/null || sysctl -n hw.ncpu) CPU, $$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2 | sed 's/^ //' || sysctl -n machdep.cpu.brand_string 2>/dev/null || true)"
 
 # Renders docs/CASOS_PRUEBA.md (Anexo II matrix) from internal/assets/ui/casos_prueba.json and fails if a
 # listed test does not exist or a TestCP*NN_* function is missing from the matrix (TE §6.3 traceability).
@@ -93,7 +117,7 @@ ML_ENV := OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 EVAL_REPORT := docs/reports/evaluacion_modelo.md
 train:
 	mkdir -p $(DIST) testdata
-	$(GO) build -o $(DIST)/tokenizar ./cmd/tokenizar
+	$(GO) build -buildvcs=false -o $(DIST)/tokenizar ./cmd/tokenizar
 	$(ML_ENV) uv run --project ml python -m autoatend_ml.train
 	$(GO) test -count=1 -v -run TestCPA06 ./internal/ml > $(DIST)/paridad.log || { cat $(DIST)/paridad.log; exit 1; }
 	uv run --project ml python -m autoatend_ml.paridad $(EVAL_REPORT) $(DIST)/paridad.log
@@ -103,7 +127,7 @@ train:
 train-sha:
 	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
 	mkdir -p $(DIST) "$$d/a" "$$d/b"; \
-	$(GO) build -o $(DIST)/tokenizar ./cmd/tokenizar || exit 1; \
+	$(GO) build -buildvcs=false -o $(DIST)/tokenizar ./cmd/tokenizar || exit 1; \
 	for r in a b; do \
 	  $(ML_ENV) uv run --project ml python -m autoatend_ml.train --out "$$d/$$r" --testdata "$$d/$$r" --report "$$d/$$r/r.md" 2>/dev/null || exit 1; \
 	done; \
@@ -111,7 +135,7 @@ train-sha:
 	  cmp -s "$$d/a/$$f" "$$d/b/$$f" || { echo "train-sha: FAIL $$f differs between two trainings"; exit 1; }; \
 	done; \
 	cmp -s "$$d/a/modelo.json" data/modelo.json || { echo "train-sha: FAIL data/modelo.json differs from a fresh training"; exit 1; }; \
-	echo "train-sha: ok $$(sha256sum data/modelo.json | cut -d' ' -f1)"
+	echo "train-sha: ok $$($(SHA256) data/modelo.json | cut -d' ' -f1)"
 
 # Copies the artifacts of data/ that the binary embeds into internal/assets/data/ (go:embed cannot
 # use "..", TE §7). The copies are never edited by hand and are not versioned (.gitignore); they
@@ -124,7 +148,7 @@ assets: $(addprefix $(ASSETS_DIR)/,$(ASSET_FILES))
 
 # The single binary for the host (Linux/macOS/Windows) with the artifacts embedded.
 build: assets
-	CGO_ENABLED=0 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend ./cmd/autoatend
+	CGO_ENABLED=0 $(GO) build -buildvcs=false -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend ./cmd/autoatend
 
 fmt-check:
 	@out=$$(gofmt -l .); if [ -n "$$out" ]; then echo "fmt-check: unformatted files:"; echo "$$out"; exit 1; fi; echo "fmt-check: ok"
@@ -136,7 +160,7 @@ vet: assets
 corpus-sha:
 	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
 	$(GO) run ./cmd/gencorpus -out "$$d/c.db" -report "$$d/r.md" -ambiguos "$$d/a.json" >/dev/null || exit 1; \
-	got=$$(sha256sum "$$d/c.db" | cut -d' ' -f1); \
+	got=$$($(SHA256) "$$d/c.db" | cut -d' ' -f1); \
 	if [ "$$got" != "$(CORPUS_SHA)" ]; then echo "corpus-sha: FAIL got $$got, want $(CORPUS_SHA)"; exit 1; fi; \
 	diff -q "$$d/r.md" $(REPORT) >/dev/null || { echo "corpus-sha: FAIL report differs from $(REPORT)"; exit 1; }; \
 	cmp -s "$$d/a.json" data/corpus_ambiguos.json || { echo "corpus-sha: FAIL data/corpus_ambiguos.json differs"; exit 1; }; \
@@ -147,11 +171,11 @@ sweep-sha:
 	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
 	$(GO) run ./cmd/simulador -corpus $(CORPUS) -out "$$d/a.db" -df "$$d/a.json" >/dev/null || exit 1; \
 	$(GO) run ./cmd/simulador -corpus $(CORPUS) -out "$$d/b.db" -df "$$d/b.json" >/dev/null || exit 1; \
-	a=$$(sha256sum "$$d/a.db" | cut -d' ' -f1); b=$$(sha256sum "$$d/b.db" | cut -d' ' -f1); \
+	a=$$($(SHA256) "$$d/a.db" | cut -d' ' -f1); b=$$($(SHA256) "$$d/b.db" | cut -d' ' -f1); \
 	if [ "$$a" != "$$b" ]; then echo "sweep-sha: FAIL $$a != $$b"; exit 1; fi; \
 	cmp -s "$$d/a.json" "$$d/b.json" || { echo "sweep-sha: FAIL df_train.json differs"; exit 1; }; \
 	echo "sweep-sha: ok $$a"
 
 # Definition of done for a task: everything must pass before asking for a merge.
-verify: fmt-check vet lint-regexp test-integration cover corpus-sha sweep-sha cross
+verify: fmt-check vet lint-regexp test-integration cover corpus-sha sweep-sha cross cross-sha
 	@echo "verify: PASS"

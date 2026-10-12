@@ -14,13 +14,20 @@
 | Qué | Dónde |
 |---|---|
 | Código (solo `proyect/`) | GitHub privado **DavettoMX/autoatend** (rama `main`) |
-| Binarios listos | Releases de ese repo; el último es **v1.0.3** (`autoatend-macos-arm64`, SHA `f160200e…15d0`) |
-| Repo local completo (incluye PDFs) | PC de torre del usuario: `~/proyectos/ceneval-projecto-exoal` |
-| Caso, TE y guías del CENEVAL (PDF) | **No están en GitHub** a propósito: el PDF del caso prohíbe su reproducción e intercambio. El usuario debe copiarlos a la Mac por USB si los necesita para la presentación |
+| Binarios listos | Releases de ese repo; el último es **v1.0.4** (`autoatend-macos-arm64`, SHA `d852edb5…aa84`; la Mac tiene la 1.0.3, verificada, y basta para la demo) |
+| Repo local completo (incluye PDFs) | PC de torre del usuario: `~/proyectos/ceneval-projecto-exoal`. **Congelado desde el 12-oct (noche)**: el usuario viajó a la CDMX sin la PC |
+| Caso, TE y guías del CENEVAL (PDF) | **No están en GitHub** a propósito: el PDF del caso prohíbe su reproducción e intercambio. En la Mac van en una carpeta `documentos/` **al lado del clon** (por ejemplo `~/documentos/` si el clon es `~/autoatend-src`), para que valga la ruta `../documentos/…` de `CLAUDE.md`. Si no están, pídeselos al usuario; **nunca inventes su contenido** |
 
 **El repo de GitHub es una exportación** de `proyect/` con el historial reescrito (`git filter-branch --subdirectory-filter`), así que sus commits no coinciden con los del repo local. Reglas:
 - **Nunca** subir a GitHub el repo local completo.
-- Si se trabaja en la Mac sobre el clon de GitHub, los cambios viven solo ahí. Hay que avisarlo para no perderlos al volver a la PC.
+- **Desde el 12-oct (noche), el clon de GitHub en la Mac es la fuente de trabajo.** Todo cambio se hace ahí (una rama por tarea, merge con aprobación del usuario) y se sube con `git push` a `DavettoMX/autoatend`.
+- Si algún día se vuelve a la PC: en la PC, sobreescribir `proyect/` con el contenido de `main` de GitHub (por ejemplo `git archive` del clon de exportación, o copiar los archivos) y hacer commit en el repo local. No mezclar historiales.
+
+**Herramientas en la Mac, según la tarea:**
+- **Go 1.26 o superior** (instalador de https://go.dev/dl/) y **make** (`xcode-select --install`): pruebas, `make verify` y compilación. El `Makefile` es portable: en macOS usa `shasum -a 256` en lugar de `sha256sum`.
+- **`gh`** (GitHub CLI; `brew install gh` y `gh auth login`): solo para publicar releases.
+- **`uv`/Python**: solo si hubiera que reentrenar el modelo. No está previsto.
+- La demo **no** necesita nada de eso: es el binario descargado.
 
 ## 3. Fuentes de verdad, en orden
 
@@ -81,6 +88,12 @@ Toda desviación del TE se valida con el usuario y se registra (ver `PLAN.md` §
 - **"bajo" y "sobre" no aparecen en el corpus.** L-1 se midió sobre lo que el corpus contiene. Es un hallazgo de validez externa (TE §7.3).
 - **El Anexo II del TE se ve mal en el PDF:** la última columna ("Salida esperada") se corta en el margen, y las barras `|` de las expresiones regulares partieron las celdas (CP-U01 era `"factur(a|as|…)"` y CP-U02 era `"factur(a|)"`). Es un problema de formato, no de contenido. No lo menciones tú. Si alguien lo nota: *"El Anexo II es una selección representativa; los criterios completos están en §6.3 y la matriz completa con su resultado está en el repositorio"*, y abres `/casos-prueba`. Dato a favor: es justo el problema que resuelve el escape `\|` de la gramática del TE §6.2.3.
 - **`facturacion` sin tilde es un lexema aparte:** no hay plegado de acentos (ADR-003) y el stemmer no reconoce "-acion". Es una limitación documentada.
+- **"¿Por qué el test no es exactamente 30/20/20/20/10?"** El TE pide un corte temporal y estratificado a la vez. Un corte único por fecha preserva la distribución, pero no al punto exacto: queda en 29.5/20.1/19.9/20.3/10.2 (desviación ≤ 0.5 pp). Forzar la exactitud obligaría a romper el orden temporal, que es lo que evita la fuga de información (§5.2.2).
+- **"¿Mediste la latencia en la máquina del examen?"** El P99 es de 0.12 ms en Linux contra un umbral de 50 ms, más de 400 veces de margen. En la Mac, `--selftest` da 5/5. Si se pide, se mide en vivo con `go test -run TestLatencia_P99DeClasificar -v ./internal/web/`.
+- **"¿Por qué un lexema clave aporta en negativo?"** Se listan los 5 términos de mayor peso absoluto |w·x|. El signo negativo indica que esa palabra empuja hacia **otra** categoría. Por ejemplo, "veces" en "tuve que insistir 5 veces" empuja hacia Quejas, y eso explica por qué el caso es frontera.
+- **"¿Hay TDD en el entrenamiento en Python?"** El entrenamiento es una herramienta offline que no forma parte del sistema entregado. Su resultado lo verifican pruebas de Go: paridad CPA06, CPM01/CPM02 y `gold5`. Además hay pruebas en `ml/tests`.
+- **"¿Por qué hay páginas que el TE no menciona (`/catalogo`, `/api`, `/casos-prueba`)?"** Son vistas de interfaz sobre los mismos 5 endpoints del TE §6.4.1 y no agregan rutas de API (ADR-005).
+- **Advertencias:** no digas que se verificó en Windows, porque solo se verificó en la Mac. No presentes I-1 como sustituto del corpus de oro: I-1 comprueba que cada ER acepte sus variantes, y el corpus de oro comprueba que de un comentario se extraigan los lexemas correctos.
 
 ## 7. Preferencias de trabajo del usuario
 
@@ -90,9 +103,40 @@ Toda desviación del TE se valida con el usuario y se registra (ver `PLAN.md` §
 - Revisar uno mismo los artefactos (muestras, capturas de la UI) **antes** de pasárselos al usuario.
 - No usar herramientas de SQLite para VS Code; el usuario usa **DBeaver CE**.
 
-## 8. Pendientes al 12-oct
+## 8. Pendientes (estado al 12-oct, noche; todo se hace desde la Mac)
 
-1. Constancia del usuario: `plantillas_nuevas.md` (47 casillas) y `muestra_250_borrador.md`. Registrarla en `PLAN.md` §5.2.
-2. ~~Confirmar en Safari~~: hecho; el usuario confirmó que la UI funciona en Safari en la Mac.
-3. I-4 y la matriz de casos de prueba están hechas en la rama `fase5/casos-prueba` (pendiente de aprobación y merge): `make i4` (R² 0.9938, T(73k) 0.37 s en Linux; subcorpus = primeros N comentarios de `data/corpus.db`, sin `gencorpus -total` porque la batería K1–K3 está registrada para el corpus completo), `make casos` y la página `/casos-prueba` (29 casos del Anexo II + CPU14 como extensión).
-4. Presentación (PPT) de 20 min: portada, diagnóstico, resolución de consignas y resultados (guía del Acuerdo 286), siguiendo el orden del TE. Usa las cifras de §5 y las respuestas de §6.
+**El desarrollo está completo.** Las consignas a–e están implementadas, `make verify` pasa en `main` y la v1.0.3 está verificada en la Mac (selftest 5/5, guion de 5 pasos, Safari). La v1.0.4 está publicada. Agrega valores límite (§6.3.4), la corrección del contador, el binario Intel y las compilaciones reproducibles, y no cambia nada de la demo.
+
+Hechos: constancia de la muestra de 250 (250/250 OK), I-4, matriz de casos, valores límite, correcciones de las auditorías de Kimi K3 y Gemini.
+
+Pendientes, en orden de prioridad:
+
+1. **Corpus de oro (TE §6.3.5c), revisión del usuario.**
+   - Archivo: `docs/reports/corpus_oro.csv` (100 filas). La guía está en `docs/reports/GUIA_REVISION.md` §3.
+   - En cada fila: `x` en `revisado` si es correcta. Si no lo es, la lista correcta en `notas` y en `limitacion` el tipo (`L-1 homógrafos`, `L-2 morfología irregular`, `stemmer`, `sin plegado de acentos`, `ruido/erratas` o `error`).
+   - Discrepancias que ya se esperan:
+     - el stemmer agrupa palabras distintas: `estado→esto`, `plano→plan`, `calle→call`, `tardaron→tarde`, `aplicación→aplicaron`, `seguido→seguimiento`;
+     - `si` y `como` como conectores;
+     - `hola` no está en la stoplist (hallazgo real: falta esa interjección).
+   - **No se corrige el analizador antes del examen**; se reporta.
+2. **Prueba de integración 4c** (Claude en la Mac, después de la revisión del usuario):
+   - `TestIntegracion4c_CorpusDeOro` en `internal/ml`, TDD con commit `test: … (red)` y luego `feat: … (green)`.
+   - Lee `docs/reports/corpus_oro.csv` con `encoding/csv`.
+   - Para cada fila con `revisado = x`, calcula la salida real con la misma vía que `cmd/tokenizar`: `ml.LoadCatalogue("../../data/resultados.db")` y después `(*Lexicon).Lexemes(texto)` (`internal/ml/tokenizar.go` y `lexicon.go`), que es exactamente lo que hace `RunTokenizar`. Las formas superficiales se obtienen con `lexer.Analyze(texto)`. Compara contra `lexemas_esperados`, o contra lo que diga `notas` si el usuario corrigió.
+   - Las filas con `limitacion` se cuentan aparte y no hacen fallar la prueba. **La prueba falla si una fila sin `limitacion` discrepa.**
+   - Con `t.Logf` registra las coincidencias exactas, las filas con limitación (por tipo) y los errores.
+   - Luego anota las cifras en `PLAN.md` §5.2 (fila "Corpus de oro") y en `docs/CASOS_PRUEBA.md` como integración 4c. Va fuera de los IDs del Anexo II: **no** se agrega a `casos_prueba.json` salvo que se decida mostrarla en la UI, y en ese caso hay que publicar un release.
+   - `make verify` en verde. Pedir aprobación para el merge y `git push`.
+3. **Plantillas nuevas:** `docs/reports/plantillas_nuevas.md` (47 casillas). Cuando el usuario termine, registrar la constancia en `PLAN.md` §5.2 (fila "Revisión manual de la muestra" o una nueva "Plantillas nuevas").
+4. **Presentación (PPT) de 20 min y guion hablado:**
+   - estructura: portada, diagnóstico, resolución de las consignas y resultados (guía del Acuerdo 286), siguiendo el orden del TE;
+   - cifras de §5 y respuestas de §6;
+   - en la demo se puede mostrar `/casos-prueba` como la "tabla completa del Anexo II".
+5. **Release nuevo, solo si cambia el binario** (UI, `casos_prueba.json` o código del servicio). Pasos:
+   - subir `VERSION` en el `Makefile`;
+   - `make verify` y `make cross`;
+   - `shasum -a 256 dist/autoatend-macos-arm64 dist/autoatend-macos-intel dist/autoatend.exe dist/gencorpus-macos-arm64 > SHA256SUMS.txt`;
+   - `gh release create vX.Y.Z --repo DavettoMX/autoatend dist/autoatend-macos-arm64 dist/autoatend-macos-intel dist/autoatend.exe dist/gencorpus-macos-arm64 SHA256SUMS.txt`;
+   - actualizar la versión y los SHA en `docs/GUIA_DEMO_MAC.md` y en §2 de este archivo.
+   - **No hace falta para la demo.**
+6. Opcional: `gencorpus` en la Mac para reproducir el SHA del corpus (`PLAN.md` §5.1).

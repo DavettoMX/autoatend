@@ -6,11 +6,11 @@ Atiende las cinco consignas del caso:
 
 | Consigna | Entregable | Estado |
 |---|---|---|
-| a) Base de datos del corpus | `data/corpus.db` (SQLite 3FN) generado por `cmd/gencorpus` | ✅ Fase 1 |
-| b) Programa analizador | Analizador léxico propio (parser de ER → Thompson → AFN-ε) y `cmd/simulador` → `resultados.db` | 🚧 en curso (Fase 2: lexer y barrido listos; falta el motor de ER) |
-| c) Plan de pruebas | TE §6.3 y Anexo II; pruebas en el repo y matriz `docs/CASOS_PRUEBA.md` | ⏳ Fases 2–5 |
-| d) Justificación del plan | TE §6.3 (ISO/IEC 25010, invariantes I-1…I-4); cifras medidas en `PLAN.md` §5.2 | ⏳ Fase 5 |
-| e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | ✅ Fase 4 implementada (servicio, UI y `--selftest` listos en Linux; falta la verificación nativa en Windows y Mac, Bloque E) |
+| a) Base de datos del corpus | `data/corpus.db` (SQLite 3FN, 73,000 comentarios) generado por `cmd/gencorpus` | ✅ |
+| b) Programa analizador | Analizador léxico propio (normalizador NFC, AFD de 4 estados, stoplist, parser de ER → Thompson → simulación del AFN-ε) y `cmd/simulador` → `data/resultados.db` (6,196 lexemas con su ER) | ✅ |
+| c) Plan de pruebas | TE §6.3 y Anexo II; pruebas en el repo y matriz [`docs/CASOS_PRUEBA.md`](docs/CASOS_PRUEBA.md) (29 casos + 1 extensión, todos pasan; también en la página `/casos-prueba`) | ✅ |
+| d) Justificación del plan | TE §6.3 (ISO/IEC 25010, invariantes I-1…I-4); cifras medidas en `PLAN.md` §5.2 | ✅ |
+| e) Servicio web clasificador | `cmd/autoatend`: servicio en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json`; verificado en la Mac (v1.0.3) | ✅ |
 
 El plan de ejecución hacia la demo, con su checklist de aceptación, está en [`PLAN.md`](PLAN.md).
 

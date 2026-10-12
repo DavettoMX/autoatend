@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"math"
 	"sort"
 )
 
@@ -65,6 +66,11 @@ func (t *Table) Insert(form string, cat int) (*Entry, error) {
 	if e == nil {
 		e = &Entry{Stem: key, Variants: make(map[string]int)}
 		t.byStem[key] = e
+	}
+	// TE §6.3.4: no counter may silently wrap around; the insert is rejected
+	// before any of them changes.
+	if e.Global == math.MaxInt || e.PerCat[cat-1] == math.MaxInt || e.Variants[form] == math.MaxInt {
+		return nil, fmt.Errorf("lexer: frequency counter of %q at its maximum (%d)", form, math.MaxInt)
 	}
 	e.Variants[form]++
 	e.PerCat[cat-1]++

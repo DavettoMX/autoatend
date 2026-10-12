@@ -1,10 +1,11 @@
-# Guía de revisión manual: L-1 y muestra de 250 comentarios
+# Guía de revisión manual: L-1, muestra de 250 comentarios y corpus de oro
 
-El TE compromete dos revisiones que hace el sustentante:
+El TE compromete tres revisiones que hace el sustentante:
 - **L-1** (§6.3.10): etiquetado manual de homógrafos retenidos por la stoplist.
 - **Muestra** (§6.1.4): detección manual sobre la muestra del corpus.
+- **Corpus de oro** (§6.3.5c): 100 comentarios con los lexemas esperados, anotados por ti.
 
-Los archivos son borradores generados de forma automática. **El juicio es tuyo:** no copies la etiqueta de nadie, y anota la duda cuando la tengas. Tiempo estimado: entre 1 y 1.5 h en total.
+Los archivos son borradores generados de forma automática. **El juicio es tuyo:** no copies la etiqueta de nadie, y anota la duda cuando la tengas. Tiempo estimado: entre 1 y 1.5 h en total para L-1 y la muestra, más entre 40 y 60 min para el corpus de oro.
 
 ## Checklist
 
@@ -14,7 +15,8 @@ Los archivos son borradores generados de forma automática. **El juicio es tuyo:
 - [ ] **Muestra**: marcar *OK* u *Observación* en los 250 comentarios de `muestra_250_borrador.md`.
 - [ ] **Muestra**: llenar la tabla "Constancia de revisión" (fecha, revisor, total revisado, observaciones generales).
 - [ ] **Muestra**: guardar el archivo como `muestra_250_revision.md`.
-- [ ] Hacer el commit de los dos archivos en una rama `docs/revision-manual`.
+- [ ] **Corpus de oro**: revisar las 100 filas de `corpus_oro.csv` (sección 3): `x` en `revisado` si la fila está bien; si no, la lista correcta en `notas` y la causa en `limitacion`.
+- [ ] Hacer el commit de los archivos revisados en una rama `docs/revision-manual`.
 
 ---
 
@@ -86,3 +88,42 @@ Si algo falla, deja *OK* vacío y escribe un motivo corto en *Observación*:
 **Al terminar**, llena la constancia: fecha, revisor (tu nombre), `250/250` y un resumen como "*N de 250 con observación: X slot incoherente, Y temas mezclados, Z contradicción; categoría correcta en W de 250*".
 
 **Para la réplica.** El TE (§6.1.4) pide que la revisión manual detecte inconsistencias y que el corpus solo persista si pasan las validaciones. La primera revisión las detectó y se corrigió el generador (cambió el SHA y todo lo que depende de él, y quedó registrado en `PLAN.md` §3). Los comentarios con observación que aparezcan en esta segunda muestra tampoco se corrigen a mano: se reportan como hallazgo de validez del corpus sintético, ligado a la limitación de validez externa del TE §7.3 (plantillas finitas: el 20 % de los textos es duplicado exacto).
+
+---
+
+## 3. Corpus de oro (TE §6.3.5c)
+
+**Qué es y para qué sirve.** Son 100 comentarios reales del corpus (de la partición de **test**) con los lexemas que el sistema produce para cada uno. El TE pide que **tú** los revises a mano, para que sirvan de **oráculo independiente**: una vez que tú confirmes que la lista de cada fila es la correcta, una prueba de integración compara lo que el analizador produce hoy contra tu lista. Si el analizador cambia y se rompe algo, esa prueba lo detecta. Es la evidencia de la consigna (b): que el pipeline da el resultado correcto sobre entradas conocidas.
+
+**Qué hay en el archivo `corpus_oro.csv`.** Un borrador generado de forma automática con la semilla 10433: 30 de Falta de Servicio, 20 de Cobros Indebidos, 20 de Problemas de Facturación, 20 de Quejas y 10 de Reconocimientos, sin textos repetidos. Incluye frases compartidas entre categorías, frases de contexto cruzado, comentarios con ruido (erratas, sin tildes, `q`, `x`, mayúsculas), homógrafos (`para`, `como`, `entre`) y números o folios. **El juicio es tuyo:** la lista viene del propio sistema, así que puede traer sus mismos errores y tu trabajo es encontrarlos.
+
+**Columnas.**
+- `n`, `id`, `categoria`, `texto`: la fila y el comentario.
+- `lexemas_esperados`: pares `forma→canónico` en el orden del texto, separados por `; `. La forma es como aparece escrita (ya en minúsculas) y el canónico es el lexema del catálogo al que el sistema la asigna. Ejemplo: `cobraron→cobro; doble→doble; factura→factura`.
+- `revisado`, `limitacion`, `notas`: las llenas tú.
+
+**Qué revisar en cada fila (unos 25 segundos por fila).**
+
+1. **Qué palabras aparecen.** Debe estar **toda palabra con significado**. No debe estar ningún artículo, preposición, conjunción ni interjección (stoplist v1, ADR-003).
+   - Se filtran: `el, la, de, en, con, por, a, sin, desde, hasta, y, o, ni, que, pero, porque, aunque, ah, ay`, y las abreviaturas de ruido `q` y `x`.
+   - Se **conservan** a propósito los homógrafos `para`, `como`, `entre`, `bajo` y `sobre` (L-1), y también `se`, `no`, `este`, `eso`, `mi`, `su`, `me`.
+   - Los **números no se catalogan**: `$299`, `3`, `48` y la parte numérica de un folio (`ref. folio 4985234`) no deben aparecer; sí aparece la palabra (`folio`, `ticket`, `ref`).
+2. **Que cada forma vaya al lexeme correcto.** `cobraron→cobro` es correcto (el mismo verbo cobrar). Es **error** si el agrupador (stemmer) juntó dos palabras distintas, por ejemplo `estado→esto` (el sustantivo *estado* quedó junto con *este/esta/esto*) o `plano→plan`. Que el lexema canónico tenga otra terminación no es error por sí solo (`esperando→espero`): solo importa que sea la misma palabra.
+3. **Marcar.** Si la fila está bien, escribe `x` en `revisado`. Si el sistema se equivoca, **no cambies la columna `lexemas_esperados`**: escribe en `notas` la lista correcta (o solo lo que cambia, por ejemplo `estado→estado`) y en `limitacion` una de estas causas:
+
+| Valor en `limitacion` | Cuándo |
+|---|---|
+| `L-1` | Un homógrafo (`para`, `como`, `entre`) que aquí cumple función de preposición o conjunción y debió filtrarse (o al revés) |
+| `L-2` | Morfología irregular: formas del mismo verbo o palabra que quedan en lexemas distintos (por ejemplo `tuve` y `tengo`) |
+| `stemmer` | El stemmer juntó dos palabras distintas (`estado→esto`) |
+| `sin plegado de acentos` | Dos escrituras de la misma palabra con y sin tilde quedan como lexemas distintos (`facturacion` y `facturación`) |
+| `ruido/erratas` | La errata o la abreviatura impide reconocer la palabra (`ecsribo`, `diinero`) |
+| `error` | Ninguna de las anteriores: un defecto no documentado |
+
+Si una fila falla por varias causas, anota la principal y menciona las otras en `notas`. Una fila **con limitación documentada no es un fallo del sistema**: es una limitación conocida del diseño. Lo que importa es que quede registrada.
+
+**Al terminar.** Cuenta cuántas filas quedaron con `x`, cuántas con cada limitación y cuántas con `error`, y avísame para escribir la prueba de integración del corpus de oro (4c) con tu lista ya validada. Si hay filas con limitación, la prueba las separa en un grupo aparte con lo que tú indicaste.
+
+**Dónde mirar con más cuidado.** Las agrupaciones del stemmer (por ejemplo `este/esta/estado/estar→esto`, `seguido/seguir→seguimiento`, `plano→plan`, `calle→call`), las palabras de saludo o conectores que no están en la stoplist (`hola`, `si`) y los homógrafos.
+
+**Para la réplica.** El corpus de oro es independiente en el sentido que importa: la lista final la decide una persona leyendo el texto, no el código. Los defectos que encuentres no se corrigen a mano: se registran con su limitación, porque la stoplist y el stemmer son una versión congelada (v1).

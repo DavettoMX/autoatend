@@ -8,7 +8,7 @@ No necesitas instalar nada. AutoAtend es **un solo archivo** que ya trae dentro 
 
 ---
 
-> **Si ya tenías una versión anterior:** descarga la 1.0.3 y repite los pasos 1.4 a 1.7. El comando `mv` reemplaza el archivo anterior.
+> **Si ya tenías una versión anterior:** descarga la 1.0.4 y repite los pasos 1.4 a 1.7. El comando `mv` reemplaza el archivo anterior.
 
 ## Parte 1. Preparación en casa (una sola vez, ~15 minutos, con internet)
 
@@ -22,7 +22,7 @@ No necesitas instalar nada. AutoAtend es **un solo archivo** que ya trae dentro 
 ### 1.2 Descarga el programa desde GitHub
 
 1. Abre Safari o Chrome e inicia sesión en **github.com** con tu cuenta **DavettoMX**. El repositorio es privado, así que sin sesión no vas a ver nada.
-2. Entra a: **https://github.com/DavettoMX/autoatend/releases/tag/v1.0.3**
+2. Entra a: **https://github.com/DavettoMX/autoatend/releases/tag/v1.0.4**
 3. En la sección **Assets**, haz clic en el archivo que te tocó en el paso 1.1 (`autoatend-macos-arm64` o `autoatend-macos-intel`) y también en **`SHA256SUMS.txt`**.
 4. Los dos archivos quedan en tu carpeta **Descargas**.
 
@@ -64,8 +64,8 @@ Debe imprimir exactamente uno de estos códigos (también vienen en `SHA256SUMS.
 
 | Archivo | SHA-256 |
 |---|---|
-| `autoatend-macos-arm64` | `f160200e799d44d35752f4262c80576ef6ec08913280b35a614e451666bf15d0` |
-| `autoatend-macos-intel` | `2b2ecadfe1558fbffc12907affe08df93d7bf46316f46da47bae715c0f0309ba` |
+| `autoatend-macos-arm64` | `d852edb5013b635837edca6484a76b69c9cf6283ccc3b9d2986a75199f8aaa84` |
+| `autoatend-macos-intel` | `4e1c9f5a1c89dace63a870a681889f98e2b46c1a0bd9691017ee5eeb4bc94982` |
 
 Si el código no coincide, el archivo se descargó mal: bórralo y descárgalo otra vez.
 
@@ -83,7 +83,7 @@ ok     integridad: quick_check ok en corpus.db y resultados.db; ...
 ok     catalogo: 6196 lexemas, 6196 expresiones regulares compiladas y 6891 variantes aceptadas (I-1); ...
 ok     gold5: 5 de 5 comentarios de oro clasificados con su categoria esperada (modelo rls/linea_base)
 ok     puerto: 127.0.0.1:8471 libre
-selftest: todas las verificaciones pasaron (version 1.0.3)
+selftest: todas las verificaciones pasaron (version 1.0.4)
 ```
 
 Para confirmar el código de salida, escribe:
@@ -108,7 +108,7 @@ Solo pasa la primera vez.
 
 1. La Terminal muestra:
    ```text
-   AutoAtend 1.0.3 - clasificador de comentarios de TelArg
+   AutoAtend 1.0.4 - clasificador de comentarios de TelArg
    Servicio listo en http://127.0.0.1:8471
    Abra esa direccion en el navegador. Para terminar presione Ctrl+C o cierre esta ventana.
    ```
@@ -263,7 +263,7 @@ curl -s -X POST http://127.0.0.1:8471/api/clasificar -H 'Content-Type: applicati
 
 ## Parte 4. Datos útiles para responder preguntas
 
-- **Versión:** 1.0.3. `GET /api/health` responde `{"ok":true,"version":"1.0.3","lexemas":6196,"puerto":8471}`.
+- **Versión:** 1.0.4. `GET /api/health` responde `{"ok":true,"version":"1.0.4","lexemas":6196,"puerto":8471}`.
 - **Corpus:** 73,000 comentarios, semilla 10433, SHA-256 `37f285ff…`.
 - **Catálogo:** 6,196 lexemas. I-1: 0 fallos; I-2: 0 filas; I-3: SHA idéntico en dos corridas.
 - **Modelo:** Regresión Logística Softmax. Macro-F1 0.9795 en test temporal; 0.835 con plantillas no vistas (cifra realista). Detalles en `docs/reports/evaluacion_modelo.md` y en ADR-004.

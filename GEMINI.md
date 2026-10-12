@@ -5,6 +5,8 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales, por lo que se encuentra congelado y no se modifica. La implementación lo respeta tanto como sea posible; cualquier diferencia requiere la aprobación previa del usuario (ver "Apego al Trabajo Escrito").
 3. `PLAN.md`: plan hacia la demo del 13-oct-2026. Su §5 es la checklist viva: marca `[x]` solo lo que verificaste ejecutándolo.
 
+**Trabajo desde la Mac (a partir del 12-oct, noche):** el clon de GitHub `DavettoMX/autoatend` es la fuente de trabajo. En la Mac, los PDF de las fuentes 1 y 2 van en `../documentos/` respecto de la raíz del clon. Si no están, pídeselos al usuario y no inventes su contenido. El `Makefile` funciona igual en Linux y en macOS.
+
 **Contexto de la sesión de desarrollo** (decisiones del usuario, cifras, respuestas para la réplica, pendientes y preferencias): lee `docs/CONTEXTO_SESION.md` al empezar.
 
 ## Reglas duras (no negociables)
@@ -63,7 +65,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 ## Criterios de éxito
 
 ### Por tarea (Definition of Done)
-- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover` (informa la cobertura; no bloquea hasta la demo), `corpus-sha`, `sweep-sha` y `cross`.
+- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover` (informa la cobertura; no bloquea hasta la demo), `corpus-sha`, `sweep-sha`, `cross` y `cross-sha`.
 - [ ] Commits rojo → verde → refactor visibles en la rama.
 - [ ] Pruebas nombradas con su ID del plan cuando exista.
 - [ ] Sin código duplicado respecto a lo que reportó `mapeo-reuso`.
@@ -71,7 +73,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 - [ ] `PLAN.md` §5 y el "Mapa del código" de este archivo actualizados si cambiaron.
 - [ ] Ningún `[x]` marcado sin haberlo ejecutado.
 
-**Estado actual:** `make verify` en verde desde `fase1/apego-te` (cobertura: corpus 91.5 %, db 87.5 %, db/build 90.8 %, db/schema 100 %).
+**Estado actual:** `make verify` en verde en `main` (cobertura por paquete: casos 93.1 %, corpus 92.5 %, db 85.2 %, db/build 90.9 %, db/schema 100.0 %, lexer 99.4 %, ml 94.0 %, regex 98.7 %, sweep 84.9 %, web 82.9 %).
 
 ### Por fase (umbrales de `PLAN.md`)
 
@@ -87,7 +89,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 
 ```bash
 make verify       # criterio de terminado: todos los gates en orden
-make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | sweep-sha | cross
+make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | sweep-sha | cross | cross-sha
 make assets       # copia data/* a internal/assets/data/ (requisito de todo lo que compila Go)
 make build        # dist/autoatend para este equipo; ./dist/autoatend --selftest debe salir con 0
 make gen          # se niega a sobrescribir data/corpus.db; usa make clean-data antes
@@ -117,7 +119,7 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `ml/` (Python 3.11 + scikit-learn 1.9.1 con `uv`, solo desarrollo, nunca en el binario): `autoatend_ml.train` (split con la misma consulta SQL de `db.SplitCutoff`, TF-IDF de train, NBM y RLS × 3 estrategias de desbalance, CV estratificada de 5, evaluación en test con y sin duplicados, exportación), `export` (JSON determinista y escalador de referencia), `report`, `paridad`. `make train` regenera `data/modelo.json`, `data/modelo_alternativo.json`, `data/gold5.json`, `testdata/paridad_1000.json` y `docs/reports/evaluacion_modelo.md`; `make train-sha` comprueba que dos entrenamientos dan los mismos bytes. `make verify` no requiere Python: las pruebas Go leen los JSON versionados (CPA06, equivalencia lineal, `gold5`, CPM01/CPM02 medidos).
 - `internal/assets`: `go:embed` (no admite `..`) de `data/{corpus.db,resultados.db,modelo.json,modelo_alternativo.json,gold5.json}` y `ui/{index,catalogo,api,casos}.html` y `ui/casos_prueba.json`. `make assets` copia los cinco de `data/` a `internal/assets/data/` (copias ignoradas por git, nunca se editan; todo objetivo que compila Go depende de `assets`). La UI (`ui/index.html`) sí está versionada.
 - `internal/web`: servicio de la consigna e (ADR-005). `Boot` (artefactos a `os.MkdirTemp`, `db.OpenReadOnly`, `db.CheckCategoriaIntegrity` por ATTACH, `ml.Load`), `Handler` (`GET /`, `GET /catalogo`, `GET /api` (documentación, ruta exacta), `GET /casos-prueba` (matriz del Anexo II con el JSON inyectado al arrancar por `loadCasosPage`, sin ruta `/api` nueva), `POST /api/clasificar`, `GET /api/lexemas`, `GET /api/categorias`, `GET /api/health`; solo consultas parametrizadas, `MaxBytesReader` de 1 MB), `Listen` (127.0.0.1:8471, fallback 8472–8480), `Banner`, `BrowserCommand` (único `runtime.GOOS`), `Selftest` y `Run`. La salida de consola es ASCII (cmd.exe no es UTF-8). No importa `internal/db/build`.
-- `cmd/autoatend`: flags `-modelo principal|alternativo`, `-no-browser`, `--selftest`; versión con `-ldflags -X main.version`; SIGINT/SIGTERM cancelan el contexto y se borra el temporal. `TestNoDependeDeDBBuild` comprueba con `go list -deps` que no enlaza `internal/db/build`. `make build` → `dist/autoatend`; `make cross` → `dist/autoatend.exe` y `dist/autoatend-macos-arm64`.
+- `cmd/autoatend`: flags `-modelo principal|alternativo`, `-no-browser`, `--selftest`; versión con `-ldflags -X main.version`; SIGINT/SIGTERM cancelan el contexto y se borra el temporal. `TestNoDependeDeDBBuild` comprueba con `go list -deps` que no enlaza `internal/db/build`. `make build` → `dist/autoatend`; `make cross` → `dist/autoatend.exe`, `dist/autoatend-macos-arm64` y `dist/autoatend-macos-intel` (`-trimpath -buildvcs=false`; `make cross-sha` exige binarios idénticos byte a byte en dos compilaciones).
 
 ## Apego al Trabajo Escrito
 
