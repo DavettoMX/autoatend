@@ -150,6 +150,7 @@ func TestCoherence_ComplementsFitEveryBaseTemplateOfTheirCategory(t *testing.T) 
 		"promised date":    {"fecha", "hoy mismo"},
 		"specific service": {"fácil", "rápid", "cobertura", "señal", "aplicación", "promoci"},
 		"own purchase":     {"no pedí", "contraté"},
+		"count":            {"tres ", "dos ", "cuatro", "cinco", "primera", "segunda"}, // bases already say "4 veces", "cuatro personas"
 	}
 	for ci, cs := range templates.Complements {
 		for _, c := range cs {
