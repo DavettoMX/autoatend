@@ -251,7 +251,7 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | Macro-F1 y recall sin duplicados en train | se reporta | | |
 | Latencia P99 de `/api/clasificar` | < 50 ms | | |
 | `--selftest` | < 3 s, salida 0 | | |
-| L-1 sub-filtrado de homógrafos | se reporta | 86.5 % (173 cerrada / 27 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus) | 2026-10-12 |
+| L-1 sub-filtrado de homógrafos | se reporta | 84.5 % (169 cerrada / 31 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado 5efce99c…) | 2026-10-12 |
 | L-2 lexemas con una sola variante | se reporta | | |
 
 ---

@@ -13,278 +13,279 @@ Borrador generado a partir de la sección *Sample review* de `generator_validati
 
 Criterio de la revisión: cada texto es plausible como comentario de un cliente de TelArg y pertenece a la categoría bajo la que aparece. Marca `x` en la columna *OK* si cumple; si no, anota el motivo en *Observación*.
 
+La columna *Auto* la llena un script con verificaciones automáticas, **no sustituye tu juicio**: coherencia de montos (cobro mayor que el precio), precio igual al del plan, una sola plantilla base por comentario, apertura, cierre y complemento compatibles con la categoría y huecos que concuerdan dentro de la oración. Dice `ok` si no detectó nada o el problema encontrado. El ruido intencional (erratas, abreviaturas) puede ocultar un caso a la coincidencia exacta del script.
+
 ## Falta de Servicio
 
-| # | Comentario | OK | Observación |
-|---|---|---|---|
-| 1 | Hice mi recarga de $129.50 hace quince días y sigo sin datos móviles. Me prometieron restablecer el servicio en 10 días y siguen sin cumplir. | | |
-| 2 | mi línae sigue sin servicio tras la reconexion q pague (ref. reporte 3569964). quedo atento a su respuesta. | | |
-| 3 | Hice mi recarga de $1,499.00 hace cuatro días y sigo sin cobertura. Espero su pronta respuesta. | | |
-| 4 | el modem se queda con la luz roja y no hay internet, llevo quince dias igual. no tengo datos moviles aunque mi saldo es suficiente (ref. ticket 3282927). | | |
-| 5 | Desde que cambiaron la antena en mi casa perdí señal y no lo he recuperado. Me quedé sin cobertura justo cuando más lo necesitaba, ¿hasta cuándo van a arreglarlo? | | |
-| 6 | Les escribo desde San Luis Potosí. El router dice sin servicio desde hace una semana, ya reinicié todo y nada. Activé el roaming para viajar y al llegar a Hermosillo no tuve señal. | | |
-| 7 | El modem se queda con la luz roja y no hay internet, llevo varias horas igual. | | |
-| 8 | Hice mi recarga de $49.50 hace diez días y sigo sin señal. | | |
-| 9 | Activé el roaming para viajar y al llegar a Tijuana no tuve internet. Mi celular dice sin servicio desde hace cuatro días, ya reinicié todo y nada. | | |
-| 10 | Cuando intento llamar solo escucho q el numero no esta disponible, ya van mas de 48 horas asi. | | |
-| 11 | Hola. Hice mi recarga de $599.50 hace dos dias y sigo sin datos moviles. Se pierde servicio de mensajes en las noches en mi barrio, y ya son varios dias con el mismo problema. | | |
-| 12 | Las llamadas se cortan cada minuto y el servicio no funciona bien desde hace mas de 48 horas. x favor avísenme cualquier novedad. | | |
-| 13 | Hola. Me prometieron restablecer el servicio en 7 dias y siguen sin cumplir. | | |
-| 14 | Les escribo desde Puebla. En toda la zona no hay cobertura toda la tarde, parece que la antena está caída. | | |
-| 15 | el internet de mi plan Libre 199 no funciona desde agosto y no hay quien lo repare. | | |
-| 16 | Ayer hubo una caída general de la red en Saltillo y hoy todavía sigue fallando todo. | | |
-| 17 | El internet de mi plan Amigo Sin Límite no funciona desde septiembre y no hay quien lo repare. Necesito señal para trabajar y llevo cinco días sin nada, esto ya es urgente. Espero una respuesta pronto. | | |
-| 18 | Buenas noches. Ya cambié mi teléfono y sigo sin señal, el problema es de la red. | | |
-| 19 | Ya cambié mi teléfono y sigo sin señal, el problema es de la red. Necesito internet para trabajar y llevo dos días sin nada, esto ya es urgente. | | |
-| 20 | Buenos diias. Se pierde internet en las noches en toda la zona, y ya son varios dias con el mismo problema. Quedo atento a su rspuesta... | | |
-| 21 | Saludos. Dicen q hay mantenimiento en León pero ya pasaron tres dias y seguimos sin datos moviles. x favor, avísenme cualquier novedad... | | |
-| 22 | Les escribo porque necesito ayuda. El técnico nunca llegó a revisar la falla de señal, ya van diez días de espera. | | |
-| 23 | La portabilidad de mi numero no se completo y estoy sin linea desde hace diez dias. Dicen que hay mantenimiento en Hermosillo perro ya pasaron una semana y seguimos sin cobertura. Es mi número de linea el q aparece en el sistema. | | |
-| 24 | Mi chip nuevo no activa, llevo quince días esperando que me den servicio de llamadas. Espero su pronta respuesta. | | |
-| 25 | No tengo servicio de mensajes en toda la zona en las noches, ya levanté un reporte (ref. ticket 801567). | | |
-| 26 | Dicen que hay mantenimiento en Monterrey pero ya pasaron dos días y seguimos sin servicio de llamadas. | | |
-| 27 | Buenas tardes. Necesito internet para trabajar y llevo tres dias sin nada, esto ya es urgente. | | |
-| 28 | Mi línea está suspendida sin motivo y no puedo usar nada. Es mi número de línea el que aparece en el sistema. | | |
-| 29 | Les escribo desde Villahermosa. Reporté la falla en la sucursal con reporte 4157883 y todavía no me restablecen el servicio. Gracias. | | |
-| 30 | Cuando intento llamar solo escucho que el número no está disponible, ya van cinco días así. | | |
-| 31 | Hice mi recarga de MXN 699 hace varias horas y sigo sin internet. | | |
-| 32 | Dicen que hay mantenimiento en Oaxaca pero ya pasaron dos días y seguimos sin servicio de llamadas. Pagué mi plan Social 299 puntual y aun así me suspendieron el servicio. | | |
-| 33 | Ayer hubo una caída general de la red en Querétaro y hoy todavía sigue fallando todo. | | |
-| 34 | En mi casa no hay cobertura por las mañanas, parece que la antena está caída. Espero una respuesta pronto. | | |
-| 35 | Desde hace una semana estoy sin servicio de llamadas en mi colonia y nadie me da una solución. | | |
-| 36 | No tengo internet en mi trabajo toda la tarde, ya levanté un reporte (ref. caso 9576037). | | |
-| 37 | LES ESCRIBO DESDE PUEBLA. ME QUEDE SIN SERVICIO DE LLAMADAS JUSTO UCANDO MAS LO NECESITABA, ¿HASTA CUÁNDO VAN A ARREGLARLO? GRACIAS. | | |
-| 38 | Mi línea sigue sin servicio tras la reconexión que pagué (ref. ticket 5189648). Es mi número de línea el que aparece en el sistema. | | |
-| 39 | me prometireon restablecer el servicio en 3 dias y siguen sin cumplir... | | |
-| 40 | El módem se queda con la luz roja y no hay internet, llevo diez días igual. | | |
-| 41 | Buenos días. No me llegan los códigos de verificación por SMS desde hace varias horas, creo que hay una falla en la red. Desde que cambiaron la antena en toda mi calle perdí servicio de llamadas y no lo he recuperado. | | |
-| 42 | No me llegan los códigos de verificación por SMS desde hace tres días, creo que hay una falla en la red. Gracias de antemano. | | |
-| 43 | La verdad, el internet está tan lento en horario de oficina que es como no tener servicio de llamadas. Me quedé sin servicio de llamadas justo cuando más lo necesitaba, ¿hasta cuándo van a arreglarlo? | | |
-| 44 | El técnico nunca llegó a revisar la falla de señal, ya van más de 48 horas de espera. Caray, el internet está tan lento por las mañanas que es como no tener internet. | | |
-| 45 | No tengo señal en mi colonia toda la tarde, ya levanté un reporte (ref. #12948). Solo me aparece emergencias en la pantalla, no puedo usar mi línea en fines de semana. | | |
-| 46 | Les escribo desde Tijuana. Cambié de SIM y quedé incomunicado, sin servicio de llamadas desde hace quince días. Por favor, avísenme cualquier novedad. | | |
-| 47 | No puedo mandar ni recibir mensajes de texto en Saltillo desde hace más de 48 horas. | | |
-| 48 | No tengo datos móviles aunque mi saldo es suficiente (ref. reporte 2870089). | | |
-| 49 | Les escribo desde Monterrey. Se me fue por completo la señal en Chihuahua y no he podido hacer ni recibir llamadas. | | |
-| 50 | La verdad, llevo varias horas sin señal y sigo pagando mi plan Nocturno 79. Dicen que hay mantenimiento en Tijuana pero ya pasaron varias horas y seguimos sin servicio de mensajes. | | |
+| # | Comentario | Auto | OK | Observación |
+|---|---|---|---|---|
+| 1 | No puedo mandar ni recibir mensajes de texto en Chihuahua desde hace tres días. | ok | | |
+| 2 | mi chip nuevo no activa, llevo dos dias esperando que me den cobertura. ya perdi la cuenta de las veces que he insistido. | ok | | |
+| 3 | No tengo datos móviles aunque mi saldo es suficiente (ref. #96750). Nadie me da una fecha concreta de solución. | ok | | |
+| 4 | Hola. Mi línea no registra en la red desde hace tres días, llevo todo ese tiempo sin poder comunicarme. | ok | | |
+| 5 | saludos. en ttoda la zona no hay cobertura toda la tarde, parece que la antena está caída. x favor, avísenme cualquier novedad!!! | ok | | |
+| 6 | Hola. Pagué mi plan Joven 149 puntual y aun así me suspendieron el servicio. | ok | | |
+| 7 | Tengo la línea a mi nombre. Ya cambié el router y sigo sin señal, el problema es de la red. | ok | | |
+| 8 | Me quedé sin señal justo cuando más lo necesitaba, ¿hasta cuándo van a arreglarlo? Nadie me da una fecha concreta de solución. Muchas gracias por su atención. | ok | | |
+| 9 | La neta, otra vez sin internet, ya es la tercera vez este mes que se cae. Cada vez que llamo me dicen que ya está en proceso. | ok | | |
+| 10 | Dicen que hay mantenimiento en Monterrey pero ya pasaron una semana y seguimos sin internet. Por favor, avísenme cualquier novedad. | ok | | |
+| 11 | Mi línea esta suspendida sin motivo y no puedo usar nada. | ok | | |
+| 12 | Soy cliente de TelArg desde hace años. No tengo datos moviles aunque mi saldo es suficiente (ref. ticket 83142). x favor, avisenme cualquier novedad!!! | ok | | |
+| 13 | La portabilidad de mi número no se completó y estoy sin línea desde hace cuatro días. Muchas gracias por su atención. | ok | | |
+| 14 | Solo me aparece emergencias en la pantalla, no puedo usar mi línea en horario de oficina. | ok | | |
+| 15 | Hola. Se me fue x completo la señal en Querétaro y no he podido hacer ni reccibir llamadas. Ya me habia pasado antes este mes. Quedo al pendiente. | ok | | |
+| 16 | No me llegan los códigos de verificación por SMS desde hace diez días, creo que hay una falla en la red. Espero su pronta respuesta. | ok | | |
+| 17 | Mi chip nuevo no activa, llevo diez dias esperando que me den servicio de mensajes. Muchas gracias x su atencion. | ok | | |
+| 18 | El tecnico nunca llegó a revisar la fallla de señal, ya van cuatro días de espera. Ya me habia pasado antes este mes. | ok | | |
+| 19 | Hice mi recarga de MXN 399 hace una semana y sigo sin cobertura. Muchas gracias por su atención. | ok | | |
+| 20 | En mi casa nunca hay señal, tengo que salir a la calle para poder llamar. | ok | | |
+| 21 | Se me fue por completo la señal en Veracruz y no he podido hacer ni recibir llamadas. Muchas gracias por su atención. | ok | | |
+| 22 | Me quedé sin servicio de mensajes justo cuando más lo necesitaba, ¿hasta cuándo van a arreglarlo? Ya probé todo lo que me dijeron y sigue igual. | ok | | |
+| 23 | Ya cambie el modem y siyo sin señal, el problema es de la red. | ok | | |
+| 24 | Se me fue por completo la señal en Saltillo y no he podido hacer ni recibir llamadas. Gracias de antemano. | ok | | |
+| 25 | No tengo cobertura en el centro en horario de oficina, ya levanté un reporte (ref. caso 776634). Lo necesito a diario y ya me está afectando en el trabajo. | ok | | |
+| 26 | Hola. Cuando intento llamar solo escucho que el número no está disponible, ya van cuatro días así. | ok | | |
+| 27 | Cambie de SIM y quede incomunicado sin servicio de llamadas desde hace dos dias. Quedo al pendiente. | ok | | |
+| 28 | Mi línea no registra en la red desde hace cinco días, llevo todo ese tiempo sin poder comunicarme. | ok | | |
+| 29 | Tengo un problema con mi servicio. Mi linea no registra en la red desde hace diez dias, llevo todo ese tiempo sin poder comunicarme. Nadie me da una fecha concreta de solución. Muchas gracias por su atencion. | ok | | |
+| 30 | Soy cliente de TelArg desde hace años. Ayer hubo una caída general de la red en Tampico y hoy todavía sigue fallando todo. Ya llame tres veces y nadie me resuelve. | ok | | |
+| 31 | Hice mi recarga de 129 pesos hace cinco días y sigo sin cobertura. Espero una respuesta pronto. | ok | | |
+| 32 | El técnico nunca llegó a revisar la falla de servicio de mensajes, ya van cinco días de espera. | ok | | |
+| 33 | Hola. Hice mi recarga de $199 MXN hace diez días y sigo sin cobertura. | ok | | |
+| 34 | La verdad, llevo una semana sin servicio de llamadsa y sigo pagando mi plan Empresarial 899. Muxhas gracias por su atencion... | ok | | |
+| 35 | Buenas noches. Mi línea no registra en la red desde hace dos días, llevo todo ese tiempo sin poder comunicarme. Espero su pronta respuesta. | ok | | |
+| 36 | Mi línea sigue sin servicio tras la reconexión que pagué (ref. reporte 5361551). Esto afecta a toda mi familia. Quedo al pendiente. | ok | | |
+| 37 | ya basta, otra vez sin datos moviles, ya es la tercera vez este mes que se cae!!! | ok | | |
+| 38 | Mi celular dice sin servicio desde hace quince dias, ya reinicié todo y nada. Espero una respuesta pronto. | ok | | |
+| 39 | El tecnico nunca llego a revisar la falla de servicio de mensajes, ya van tres dias de espera. | ok | | |
+| 40 | Mi linea esta suspendida sin motivo y no puedo usar nada. Saludos cordiales. | ok | | |
+| 41 | Saludos. Mi línea está suspendida sin motivo y no puedo usar nada. | ok | | |
+| 42 | El módem se queda con la luz roja y no hay internet, llevo dos días igual. | ok | | |
+| 43 | Mi chip nuevo no activa, llevo cinco días esperando que me den internet. Espero su pronta respuesta. | ok | | |
+| 44 | Ayer hubo una caida general de la red en San Luis Potosi y hoy todavía sigue ffallando todo. | ok | | |
+| 45 | Mi chip nuevo no activa, llevo cinco dias esperando que me den internet. | ok | | |
+| 46 | Tengo un problema con mi servicio. El módem se queda con la luz roja y no hay internet, llevo una semana igual. Ya probé todo lo que me dijeron y sigue igual. Espero su pronta respuesta. | ok | | |
+| 47 | No tengo datos móviles aunque mi saldo es suficiente (ref. #409964). Ya llamé tres veces y nadie me resuelve. | ok | | |
+| 48 | Caray, llevo dos días sin servicio de mensajes y sigo pagando mi plan Total 399. Espero que lo atiendan hoy mismo. Muchas gracias por su atención. | ok | | |
+| 49 | Mi chip nuevo no activa, llevo dos días esperando que me den servicio de mensajes. | ok | | |
+| 50 | El modm se queda con la luz roja y no hay internet, llevo quince días igual. | ok | | |
 
 ## Cobros Indebidos
 
-| # | Comentario | OK | Observación |
-|---|---|---|---|
-| 1 | Quiero que me reembolsen los $399 que me cobraron de más (ticket 70362). Activaron renta de equipo sin pedírmelo y me cobraron MXN 149 en el estado de mi tarjeta. | | |
-| 2 | El débito automático me quitó $2,499 MXN dos veces en octubre, necesito el reembolso. Gracias. | | |
-| 3 | Quiero que me reembolsen los $129 que me cobraron de más (reporte 2613641). | | |
-| 4 | Mi banco me reporta un cargo no reconocido de TelArg por $149.50, quiero aclararlo. | | |
-| 5 | el debito automatico me quitó $199 dos veces en junio, necesito el reembolso. | | |
-| 6 | Saludos. Pedí la cancelación de mi línea y aun así me cobraron $1,499.50 en septiembre. | | |
-| 7 | Cobran 79 pesos por plan adicional y nunca me avisaron q se activaba. | | |
-| 8 | Mi plan Libre 199 cuesta $149 MXN y me estan cobrando $599.50, no es lo que acordamos... | | |
-| 9 | me descontaron 449 pesos de mi saldo sin haber usado nada (ticket 68518). por favor, avisenme cualquier novedad... | | |
-| 10 | hice la recarga de $349.50 y me cobraron una comision q no me explicaron. me hicieron un cobro doble de $79 mxn en abril, exijo la devolución | | |
-| 11 | Me cobran 1,199 pesos de más desde que cambié de plan a Navega 249, es un cobro indebido. Gracias. | | |
-| 12 | Me suscribieron a servicio premium sin mi consentimiento y ya van 3 cobros. Saludos cordiales. | | |
-| 13 | Cobro indebido: me descontaron $169 y 999 pesos el mismo dia x lo mismo... | | |
-| 14 | Activaron renta de equipo sin pedírmelo y me cobraron 249 pesos en el estado de mi tarjeta. Me cobraron 349 pesos por plan adicional que nunca contraté. | | |
-| 15 | Pagué mi mensualidad completa y me volvieron a cobrar $49.00 por chat. Por favor, avísenme cualquier novedad. | | |
-| 16 | Buenos días. Cobran $199 MXN por roaming internacional y nunca me avisaron que se activaba. Mi banco me reporta un cargo no reconocido de TelArg por $149.00, quiero aclararlo. | | |
-| 17 | Ya reclamé el cobro de renta de equipo por correo y nadie me devuelve mi dinero (TKT-88848). Me cobraron MXN 169 por plan adicional que nunca contraté. | | |
-| 18 | Activaron membresía de juegos sin pedírmelo y me cobraron 899 pesos en el estado de mi tarjeta. Me hicieron un cobro doble de MXN 99 en abril, exijo la devolución. | | |
-| 19 | Me aplicaron un cargo por reconexión de $229.50 cuando mi línea nunca estuvo suspendida. | | |
-| 20 | Me cobraron $79 por una promoción que nunca acepté (#181138). Me descontaron $1,999 de mi saldo sin haber usado nada (folio 6108588). | | |
-| 21 | Cancelé paquete de datos extra hace meses y me siguen descontando $129 cada mes. Me cobran $169 MXN de más desde que cambié de plan a Ahorro 99, es un cobro indebido. | | |
-| 22 | Saludos. Chale, me robaron $449 de saldo en un solo día sin hacer llamadas ni usar datos. | | |
-| 23 | Me cobran plan adicional como si lo hubiera pedido, ya me cansé de pagar por lo que no uso. | | |
-| 24 | Buenas noches. Desconozco el cobro de $549.00 del día 15 de marzo, quiero que lo reviertan. Cobran $1,999.00 por servicio premium y nunca me avisaron que se activaba. | | |
-| 25 | Hola. Pedí la cancelación de mi línea y aun así me cobraron $1,499 MXN en mayo. Muchas gracias por su atención. | | |
-| 26 | Mi plan Joven 149 cuesta 699 pesos y me estan cobrando $399.50 no es lo q acordamos. Cargos que no reconozco en enero: MXN 699 por suscripcion de musica. Exijo q los eliminen. | | |
-| 27 | Les escribo desde Cancún. Pagué mi mensualidad completa y me volvieron a cobrar $169 en la app. Gracias de antemano. | | |
-| 28 | Desconozco el cobro de MXN 249 del día 10 de febrero, quiero que lo reviertan. Es mi número de línea el que aparece en el sistema. | | |
-| 29 | Tengo la líjea a mi nombre. Me hicieron un cobro doble de $129.50 en febrero, exijo la devolución. Me quitaron el saldo de mi recarga de $79.50 sin explicacion alguna. Quedo atento a su respuesta... | | |
-| 30 | Ya reclamé el cobro de contenido de terceros por chat y nadie me devuelve mi dinero (TKT-224585). Cargos que no reconozco en mayo: $169.00 por reconexión. Exijo que los eliminen. Saludos cordiales. | | |
-| 31 | pedi la devolucion de $299.00 hace varias horas y todavia no me abonan nada. me cobraron $549 mxn por una promocion que nunca acepé (tkt-1577520)... | | |
-| 32 | A quien corresponda. En mi tarjeta aparece un cargo de $499.50 de TelArg que desconozco. Espero una respuesta pronto. | | |
-| 33 | Pagué mi mensualidad completa y me volvieron a cobrar $499.00 por correo. Me cobraron 449 pesos por una promoción que nunca acepté (TKT-7049339). | | |
-| 34 | Pedí la devolución de $999.50 hace una semana y todavia no me abonan nada. Cargos que no reconozco en julio: $2,499.50 x plan adicional. Exijo q los eliminen. Saludos cordiales. | | |
-| 35 | Chale, me robaron 399 pesos de saldo en un solo día sin hacer llamadas ni usar datos. Me descontaron $1,199 MXN de mi saldo sin haber usado nada (folio 399218). | | |
-| 36 | Mi plan Premium 999 cuesta $229 y me están cobrando $699.50, no es lo que acordamos. Gracias. | | |
-| 37 | Me cargaron MXN 1,199 a mi tarjeta despues de cancelar mi plan Total 399. | | |
-| 38 | Pagué mi mensualidad completa y me volvieron a cobrar MXN 1,999 por chat. | | |
-| 39 | Se me cobró una penalización de $399.00 que no corresponde porque ya cumplí mi contrato. Espero una respuesta pronto. | | |
-| 40 | Me aplicaron un cargo por reconexión de $599 MXN cuando mi línea nunca estuvo suspendida. Por favor, avísenme cualquier novedad. | | |
-| 41 | Me cargaron MXN 349 a mi tarjeta despies de cancelar mi plan Joven 149. | | |
-| 42 | Me aplicaron un cargo por reconexión de $449 cuando mi línea nunca estuvo suspendida. | | |
-| 43 | Mi plan Familiar 549 cuesta 129 pesos y me están cobrando MXN 1,999, no es lo que acordamos. Cargos que no reconozco en mayo: $1,499 por roaming internacional. Exijo que los eliminen. | | |
-| 44 | Buenos días. Me descontaron MXN 699 de mi saldo sin haber usado nada (caso 4155474). Me cargaron MXN 129 a mi tarjeta después de cancelar mi plan Social 299. Gracias de antemano. | | |
-| 45 | Buenas tardes. Activaron plan adicional sin pedírmelo y me cobraron $699.00 en el estado de mi tarjeta. | | |
-| 46 | Me cobraron 799 pesos por paquete de datos extra que nunca contraté. Mi banco me reporta un cargo no reconocido de TelArg por $199, quiero aclararlo. | | |
-| 47 | Saludos. Me cobran servicio premium como si lo hubiera pedido, ya me cansé de pagar por lo que no uso. Mi banco me reporta un cargo no reconocido de TelArg por $699.50, quiero aclararlo. | | |
-| 48 | Ya reclame el cobro de servicio premium por tel y nadie me devuelve mi dinero (reporte 74921). Quiero que me reembolsen los $999 que me cobraron de más (caso 8531462). | | |
-| 49 | Me siguen cobrando la línea que di de baja, ya llevo 15 meses pagando de más. Me cobraron roaming internacional de 299 pesos sin salir de Saltillo. | | |
-| 50 | hola. me Aplicaron Un Cargo X Reconexion De $1,999.00 cuando mi lijea nunca estuvo suspendida. Mi plan hogar 449 Cuesta $999 MXN y me Estan cobrando $169.50, No Es lo que acordamos. saludos Cordiales. | | |
+| # | Comentario | Auto | OK | Observación |
+|---|---|---|---|---|
+| 1 | Les escribo por un cobro que no reconozco. Me cobran recarga automática como si lo hubiera pedido, ya me cansé de pagar por lo que no uso. Quiero una explicación clara de este cargo. Gracias de antemano. | ok | | |
+| 2 | Mi plan Ahorro 99 cuesta $99 y me están cobrando $129.00, no es lo que acordamos. Quiero que me devuelvan mi dinero. Gracias de antemano. | ok | | |
+| 3 | Pedí la devolución de $699 hace cinco días y todavía no me abonan nada. Quedo atento a su respuesta. | ok | | |
+| 4 | Les Escribo Porque necesito Ayuda. Me Aplicaron un Cargo X reconexion De $129.50 cuando mi línea Nunca estuvo Suspendida. Ya revise mi cuenta y no Hay explicacion Alguna. | ok | | |
+| 5 | Quiero que me reembolsen los $549 MXN que me cobraron de más (caso 5725858). Por favor, avísenme cualquier novedad. | ok | | |
+| 6 | Cargos que no reconozco en noviembre: $249.00 x renta de equipo. Exijo que los eliminen. Quiero que me devuelvan mi dinero. Por favor, avisenme cualquier novdead | ok | | |
+| 7 | Me cobran servicio premium como si lo hubiera pedido ya me canse de pagar x lo q no uso. No pienso pagar algo q no pedi. | ok | | |
+| 8 | En mi tarjeta aparece un cargo de $899.00 de TelArg que desconozco. | ok | | |
+| 9 | Pedi la devolucion de MXN 1,999 hace cuatro días y todavia no me abonan nada. Gracias de antemano. | ok | | |
+| 10 | Quiero que me reembolsen los 549 pesos que me cobraron de más (TKT-8924738). | ok | | |
+| 11 | Terminé de pagar el equipo hace meses y aún me cargan $999.00 mensuales. Es muy frustrante que pase esto con mi dinero. | ok | | |
+| 12 | Desde que cambié de plan a Empresarial 899 me cobran $49 MXN de más, es un cobro indebido. | ok | | |
+| 13 | Ya reclamé el cobro de reconexión en la app y nadie me devuelve mi dinero (reporte 187262). Quiero que me devuelvan mi dinero. | ok | | |
+| 14 | Cancelé renta de equipo hace meses y me siguen descontando MXN 99 cada mes. Quiero una explicación clara de este cargo. | ok | | |
+| 15 | Me cobraron roaming internacional de $1,999 MXN sin salir de Toluca. Ya pedí una aclaración y sigo sin respuesta. | ok | | |
+| 16 | Me activaron paquete de datos extra sin avisarme y ahora me cobran 249 pesos... | ok | | |
+| 17 | Cargos que no reconozco en marzo: $79 MXN por renta de equipo. Exijo que los eliminen. | ok | | |
+| 18 | Mi plan Familiar 549 cuesta MXN 549 y me están cobrando MXN 899, no es lo que acordamos. | ok | | |
+| 19 | Mi banco me reporta un Cargo No reconocido de TelArg por 2,499 pesos, quiero Aclararlo. nunca me avisaron De este Cargo. Muchas gracias x su Atencion. | ok | | |
+| 20 | Hola. Ya reclame el cobro de recarga automática en la app y nadie me devuelve mi dinero (ticket 226778). | ok | | |
+| 21 | Chale, aparece un cargo de $49.00 por membresía de juegos y yo no autoricé nada. Nadie me da una respuesta concreta. Espero una respuesta pronto. | ok | | |
+| 22 | Soy cliente de TelArg desde hace años. Me cobraron $2,499.50 por una promoción que nunca acepté (TKT-64993). Por favor, avísenme cualquier novedad. | ok | | |
+| 23 | Les escribo porque necesito ayuda. Me aplicaron un cargo por reconexión de MXN 79 cuando mi línea nunca estuvo suspendida. | ok | | |
+| 24 | Cobro indebido: me descontaron $1,999 dos veces el mismo día x lo mismo. | ok | | |
+| 25 | YA RECLAME EL COBRO DE PAQUETE DE DATOS EXTRA POR CORREO Y NADIE ME DEVUELVE MI DINERO (#514346). | ok | | |
+| 26 | Me suscribieron a contenido de terceros sin mi consentimiento y ya van 4 cobros. | ok | | |
+| 27 | El debito automatico me quito $249 MXN dos veces en septiembre, necesiito el reembolso. Es dinero q me hace falta. | ok | | |
+| 28 | Me siguen cobrando la línea que di de baja, ya llevo 12 meses pagando de más. Es dinero que me hace falta. Muchas gracias por su atención. | ok | | |
+| 29 | Saludos. Me activaron seguro de equipo sin avisarme y ahora me cobran $449. Muchas gracias por su atención. | ok | | |
+| 30 | Se me cobro una penalizacion de 399 pesos q no correspponde porque ya cumpli mi contrato. No pienso pagar algo q no pedi. | ok | | |
+| 31 | descconozco el cobro de $799.50 del dia 20 de junio, quiero que lo reviertan. quedo atento a su respuesta. | ok | | |
+| 32 | Les escribo desde Puebla. Mi banco me reporta un cargo no reconocido de TelArg por $499 MXN, quiero aclararlo. Ya revisé mi cuenta y no hay explicación alguna. | ok | | |
+| 33 | Activaron seguro de equipo sin pedírmelo y me cobraron $449.50 en el estado de mi tarjeta. | ok | | |
+| 34 | Hola. Cada mes se me va dinero extra por mensajes premium y no sé cómo quitarlo. Quiero una explicación clara de este cargo. | ok | | |
+| 35 | Activaron recarga automática sin pedírmelo y me cobraron $399 en el estado de mi tarjeta. Muchas gracias por su atención. | ok | | |
+| 36 | En mi tarjeta aparece un cargo de $229.00 de TelArg que desconozco. Gracias de antemano. | ok | | |
+| 37 | Me hicieron un cobro doble de $699 en julio, exijo la devolucion. | ok | | |
+| 38 | Les escribo desde Veracruz. Me quitaron el saldo de mi recarga de $79.00 sin explicación alguna. | ok | | |
+| 39 | Desde que cambié de plan a Hogar 449 me cobran MXN 229 de más, es un cobro indebido. Por favor, avísenme cualquier novedad. | ok | | |
+| 40 | Ay no, aparece un cargo de $199.50 por reconexión y yo no autoricé nada. | ok | | |
+| 41 | Cancelé renta de equipo hace meses y me siguen descontando $99.50 cada mes. Ya pedí una aclaración y sigo sin respuesta. | ok | | |
+| 42 | Me cobraron $199 por una promoción que nunca acepté (ticket 77264). Ya revisé mi cuenta y no hay explicación alguna. Gracias de antemano. | ok | | |
+| 43 | Me suscribieron a suscripción de música sin mi consentimiento y ya van 2 cobros. Exijo que lo revisen cuanto antes. | ok | | |
+| 44 | Quiero que me reembolsen los $299 q me cobraron de más (TKT-10484). Nadie me da una respuesta concreta... | ok | | |
+| 45 | Me activaron servicio premium sin avisarme y ahora me cobran $249.00. Quiero que me devuelvan mi dinero. | ok | | |
+| 46 | Me cobraron $999.00 por una promoción que nunca acepté (reporte 3778724). Quedo atento a su respuesta. | ok | | |
+| 47 | Pague mi mensualidad completa en la sucursal y me volvieron a cobrar 249 pesos. | ok | | |
+| 48 | Les escribo desde San Luis Potosí. Me descontaron 549 pesos de mi saldo sin haber usado nada (TKT-2399968). Ya llamé tres veces y nadie me resuelve. | ok | | |
+| 49 | Pedí la devolución de $449 MXN hace una semana y todavía no me abonan nada. Nunca me avisaron de este cargo. | ok | | |
+| 50 | Pedí la cancelación de mi línea y aun así me cobraron $399.00 en diciembre. Quiero una explicación clara de este cargo. Saludos cordiales. | ok | | |
 
 ## Problemas de Facturación
 
-| # | Comentario | OK | Observación |
-|---|---|---|---|
-| 1 | Falta el Folio fiscal en mi Factura De abril Y No Puedo deducirla. Gracias. | | |
-| 2 | Mi factura llega con los datos de mi domicilio anterior aunque ya lo actualicé. Los consumos en mi factura de septiembre no corresponden con mi historial de llamadas. | | |
-| 3 | El RFC de mi factura está mal capturado, necesito una factura corregida. Recibo mi factura 15 días tarde cada mes, ya casi vence cuando la tengo. Espero una respuesta pronto. | | |
-| 4 | No me llega mi factura por ccorreo electronico desde marzo. Muchas gracias x su atencion. | | |
-| 5 | Quiero cambiar mi factura a entrega por correo electrónico y no encuentro la opción por ningún lado. Mi factura sale a nombre de otra persona y necesito que corrijan los datos. | | |
-| 6 | Buenas tardes. El desglose de mi factura no incluye los impuestos y no entiendo cómo llegan a 499 pesos. El portal muestra un monto de factura distinto al del recibo que me llegó, $129.00 contra MXN 229. | | |
-| 7 | Les escribo porque necesito ayuda. El estado de cuenta de marzo no detalla los conceptos, solo trae un total de 129 pesos. Es mi numero de linea el q aparece en el sistema. | | |
-| 8 | Pedí la factura de mi equipo y me mandaron la de otro número de línea. Mi pago de 79 pesos sí se hizo pero la factura todavía marca vencido. | | |
-| 9 | Pedí la factura de mi equipo y me mandaron la de otro número de línea. Cambié de plan a Amigo Sin Límite y la factura sigue mostrando la tarifa anterior. | | |
-| 10 | Mi factura llega con los datos de mi domicilio anterior aunque ya lo actualice | | |
-| 11 | Mi pago de $399 sí se hizo pero la factura todavía marca vencido. Me llegó la factura en blanco, sin importes, desde que activé la entrega en la app. Gracias de antemano. | | |
-| 12 | Falta el folio fiscal en mi factura de febrero y no puedo deducirla. | | |
-| 13 | saludos. el portal muestra un monto de factura distinto al del recibo que me lllego, 79 pesos contra $249 mxn. la fecha de vencimiento de mi recibo no es la q me dieron, por eso se me juntan los periodos. | | |
-| 14 | Buenas tardes. La factura de agoosto viene con el plan equivocado, aparece Social 299 y yo contrate otro. | | |
-| 15 | Mi factura de diciembre dice que tengo adeudo pero el sistema de pagos dice que estoy al corriente. Mi recibo viene con fecha límite de pago distinta a la que me indicaron por chat. Espero una respuesta pronto. | | |
-| 16 | Solicite fact electrónica por correo electrónico y me siguen enviando el recibo impreso. Quedo atento a su respuesta | | |
-| 17 | No puedo registrar mi correo para facturación, la página me regresa un error (TKT-341466). | | |
-| 18 | La fecha de vencimiento de mi recibo no es la que me dieron, por eso se me juntan los periodos. Espero una respuesta pronto. | | |
-| 19 | La factura trae un saldo anterior que ya pagué, el pago de $499.00 no aparece reflejado. Quiero cambiar mi factura a entrega por WhatsApp y no encuentro la opción por ningún lado. Quedo al pendiente. | | |
-| 20 | mi factura llega con los datos de mi domicilio anterior aunque ya lo actualice. no puedo registrar mi correo para fact, la pagina me regresa un error (caso 9210069)... | | |
-| 21 | MI DIRECCION DE FACT ES INCORRECTA Y X ESO NO LLEGAN MIS RECIBOS. QUEDO ATENTO A SU RESPUESTA | | |
-| 22 | Buenos días. La fecha de vencimiento de mi recibo no es la que me dieron, por eso se me juntan los periodos. | | |
-| 23 | Hola. Los consumos en mi factura de noviembre no corresponden con mi historial de llamadas. El RFC de mi factura está mal capturado, necesito una factura corregida. | | |
-| 24 | La factura trae un saldo anterior que ya pagué, el pago de $549 MXN no aparece reflejado. Saludos cordiales. | | |
-| 25 | Soy cliente de TelArg desde hace años. Necesito el comprobante fiscal (CFDI) de febrero y el sistema no me lo genera (ticket 147951). | | |
-| 26 | Solicité factura electrónica en papel y me siguen enviando el recibo impreso. | | |
-| 27 | necesito aclarar mi estado de cuenta, hay conceptos que no entiendo y el total no cuadra. Quedo atento a su respuesta. | | |
-| 28 | La fact de mi linea empresarial llega a otra razon social, ya mabde los documentos por correo. No puedo descargar mi fctura en el portal web, marac error cada vez. x favor, avísenme cualquier novedad. | | |
-| 29 | Hola. El desglose de mi factura no incluye los impuestos y no entiendo cómo llegan a 99 pesos. | | |
-| 30 | No puedo registrar mi correo para facturación, la página me regresa un error (ticket 801409). Saludos cordiales. | | |
-| 31 | Mi factura sale a nombre de otra persona y necesito que corrijan los datos. El desglose de mi factura no incluye los impuestos y no entiendo cómo llegan a $199. | | |
-| 32 | la Fact Trae Un Saldo Anterior Q ya Pague, el Pago de $399 no aparece reflejado. eEspero su Pronta Respuesta. | | |
-| 33 | Mi recibo viene con fecha límite de pago distinta a la que me indicaron en la sucursal. | | |
-| 34 | les escribo desde morelia. la fact de septiembre viene con el plan equivocado, aparece joven 149 y yo contrate otro. mi recibo viene con fecha limite de pago distinta a la que me indicaron x chat. espero una respuesta pronto. | | |
-| 35 | BUENAS TARDES. EL RFC DE MI FACTURA ESTA MAL CAPTURADO, NECESITO UNA FACT CORREGIDA. NO PUEDO REGISTRAR MI ORREO PARA FACT, LA PAGINA ME REGRESA UN ERROR (TKT-424701). | | |
-| 36 | Quiero cambiar mi factura a entrega en la app y no encuentro la opción por ningún lado. Recibo mi factura 30 días tarde cada mes, ya casi vence cuando la tengo. | | |
-| 37 | Quiero cambiar mi factura a entrega por WhatsApp y no encuentro la opción por ningún lado. Muchas gracias por su atención. | | |
-| 38 | Mi dirección de facturación es incorrecta y por eso no llegan mis recibos. En mi factura el monto total es de $449.50 pero mi plan Empresarial 899 debería ser distinto. | | |
-| 39 | EL CICLO DE FACTURACION CAMBIO Y AHORA TENGO DOS RECIBOS CASI JUNTOS, UNO DE $1,999 | | |
-| 40 | El estado de cuenta de octubre no detalla los conceptos, solo trae un total de 2,499 pesos. Solicite factura electronica x correo electronico y me siguen enviando el recibo impreso. | | |
-| 41 | Mi pago de $1,499.50 sí se hizo pero la factura todavía marca vencido. | | |
-| 42 | El RFC de mi factura está mal capturado, necesito una factura corregida. Mi recibo no muestra el descuento prometido en el área de cobranza, solo el total de $399.00. | | |
-| 43 | El portal muestra un monto de fact distinto al del recibo que me llego, MXN 149 contra $49.00. | | |
-| 44 | El RFC de mi factura está mal capturado, necesito una factura corregida. Espero una respuesta pronto. | | |
-| 45 | Mi direccion de ffacturación es incorrecta y x eso no llegan mis recibos... | | |
-| 46 | Buenas tardes. Recibo mi factura 5 días tarde cada mes, ya casi vence cuando la tengo. El ciclo de facturación cambió y ahora tengo dos recibos casi juntos, uno de $449 MXN. | | |
-| 47 | Cambié de plan a Premium 999 y la factura sigue mostrando la tarifa anterior. No puedo registrar mi correo para facturación, la página me regresa un error (TKT-40588). | | |
-| 48 | Falta el folio fiscal en mi factura de noviembre y no puedo deducirla. Quiero cambiar mi factura a entrega en papel y no encuentro la opción por ningún lado. | | |
-| 49 | La factura trae un saldo anterior que ya pagué, el pago de $249 no aparece reflejado. | | |
-| 50 | hola. solicite fact electronica en la app y me siguen enviando el recibo impreso. | | |
+| # | Comentario | Auto | OK | Observación |
+|---|---|---|---|---|
+| 1 | Recibo mi factura 3 días tarde cada mes, ya casi vence cuando la tengo. | ok | | |
+| 2 | Mi plan Premium 999 cuesta 999 pesos, pero en mi fact el monto total es de $1,199.50. Ya me habia pasado antes con otro periodo. Quedo al pendiente. | ok | | |
+| 3 | Mi pago de $799.50 sí se hizo pero la factura todavía marca vencido. | ok | | |
+| 4 | La factura trae un saldo anterior que ya pagué, el pago de $129 no aparece reflejado. Necesito el documento correcto con urgencia. | ok | | |
+| 5 | Necesito el comprobante fiscal (CFDI) de marzo y el sistema no me lo genera (caso 668448). Nadie me da una explicación clara. | ok | | |
+| 6 | Buenas tardes. Mi factura de noviembre dice que tengo adeudo pero el sistema de pagos dice que estoy al corriente. No me gusta quedarme con dudas de lo que pago. Saludos cordiales. | ok | | |
+| 7 | Quiero cambiar mi factura a entrega en papel y no encuentro la opción por ningún lado. | ok | | |
+| 8 | Recibo mi factura 5 días tarde cada mes, ya casi vence cuando la tengo. | ok | | |
+| 9 | Mi fact sale a nombre de otra persona y necesito que corrijan los datos. | ok | | |
+| 10 | Me emitieron dos facturas por el mismo periodo de mayo, una de ellas está duplicada!!! | ok | | |
+| 11 | Mi recibo viene con efcha límite de pago distinta a la q me indicaron por teléfono | ok | | |
+| 12 | Hola. No me llega mi factura por WhatsApp desde febrero. | ok | | |
+| 13 | Mi factura llega con los datos de mi domicilio anterior aunque ya lo actualice. No me gusta quedarme con dudas de lo que pago. | ok | | |
+| 14 | No puedo registrar mi correo para facturación, la página me regresa un error (TKT-594213). | ok | | |
+| 15 | Mi factura llega con los datos de mi domicilio anterior aunque ya lo actualicé. Necesito que lo corrijan cuanto antes. | ok | | |
+| 16 | Buenos días. Falta el folio fiscal en mi factura de marzo y no puedo deducirla. | ok | | |
+| 17 | Mi fact llega con los datos de mi domicilio anterior aunque ya lo actualice. Espero una respuesta pronto... | ok | | |
+| 18 | Cambié de plan a Nocturno 79 y la factura sigue mostrando la tarifa anterior. Ya me había pasado antes con otro periodo. | ok | | |
+| 19 | Les escribo por un tema de facturación. No me llega mi factura por correo electrónico desde junio. No me gusta quedarme con dudas de lo que pago. | ok | | |
+| 20 | La factura trae un saldo anterior que ya pagué, el pago de $499.00 no aparece reflejado. Quedo al pendiente. | ok | | |
+| 21 | Los consumos en mi factura de noviembre no corresponden con mi historial de llamadas. | ok | | |
+| 22 | Caray, mi estado de cuenta no coincide con lo q me dijeron en el área de cobranza. Me urge tenerlo en regla... | ok | | |
+| 23 | La fecha de vencimiento de mi recibo no es la q me dieron, por eso se me juntan los periodos. Muchas gracias x su atencion. | ok | | |
+| 24 | Mi recibo no muestra el descuento prometido en ventas, solo el total de 1,499 pesos. | ok | | |
+| 25 | Quiero cambiar mi fact a entrega x correo electronico y no encuentro la opcion x ningun lado. Saludos cordiakes. | ok | | |
+| 26 | Falta el folio fiscal en mi factura de ferbero y no puedo deducirla. No me gusta quedarme con dudas de lo q pago!!! | ok | | |
+| 27 | La factura de mi línea empresarial llega a otra razón social, ya mandé los documentos por correo. Es muy molesto andar aclarando lo mismo cada mes. | ok | | |
+| 28 | O sea, mi estado de cuenat no coincide con lo que me dijeron en el área de cobranza... | ok | | |
+| 29 | No aparece el pago que hice en la app en mi estado de cuenta, sigo con saldo pendiente. | ok | | |
+| 30 | El ciclo de facturación cambió y ahora tengo dos recibos casi juntos, uno de $499. | ok | | |
+| 31 | Cambie de plan a Max 699 y la factura sigue mostrando la tarifa anterior... | ok | | |
+| 32 | Hola. Mi factura llega con los datos de mi domicilio anterior ahnque ya lo actualice. Mucchas gracias x su atencion. | ok | | |
+| 33 | Soy cliente de TelArg desde hace años. No puedo registrar mi correo para facturación, la página me regresa un error (#74626). | ok | | |
+| 34 | Soy cliente de TelArg desde hace años. La factura de mi línea empresarial llega a otra razón social, ya mandé los documentos en la app. Ya llamé tres veces y nadie me resuelve. Espero su pronta respuesta. | ok | | |
+| 35 | Buenas tardes. Necesito aclarar mi estado de cuenta, hay conceptos que no entiendo y el otal no cuadra. Espero una respuesta pdonto. | ok | | |
+| 36 | Mi pago de $299 sí se hizo pero la factura todavía marca vencido. Quedo al pendiente. | ok | | |
+| 37 | Mi factura llega con los datos de mi domicilio anterior aunque ya lo actualicé. | ok | | |
+| 38 | Solicité factura electrónica en la app y me siguen enviando el recibo impreso. No me gusta quedarme con dudas de lo que pago. Saludos cordiales. | ok | | |
+| 39 | mi fechha de corte cambio al dia 5 sin avisarme y ahora el estado de cuenta viene desfasado. saludos cordiales. | ok | | |
+| 40 | Buenos días. Necesito aclarar mi estado de cuenta, hay conceptos que no entiendo y el total no cuadra. Espero una respuesta pronto. | ok | | |
+| 41 | Quiero cambiar mi factura a entrega en la app y no encuentro la opción por ningún lado. Espero una respuesta pronto. | ok | | |
+| 42 | Saludos. Pedi la factura de mi equipo y me mandaron la de otro numero de linea. Gracias. | ok | | |
+| 43 | Mi fact sale a nombre de otra persona y necesito que corrijan los datos. Gracias. | ok | | |
+| 44 | Mi factura de julio dice que tengo adeudo pero el sistema de pagos dice que estoy al corriente. | ok | | |
+| 45 | La factura trae un saldo anterior que ya pagué, el pago de $999.50 no aparece reflejado. Ya lo reporté y sigue igual. | ok | | |
+| 46 | No me llega mi factura en la app desde enero. | ok | | |
+| 47 | Les escribo por un tema de facturación. Mi fecha de corte cambió al día 20 sin avisarme y ahora el estado de cuenta viene desfasado. Me urge tenerlo en regla. Quedo al pendiente. | ok | | |
+| 48 | Recibo mi fact 7 dias tarde cada mes, ya casi vence cuando la tengo. | ok | | |
+| 49 | Necesito el comprobante fiscal (CFDI) de agosto y el sistema no me lo genera (reporte 56184). | ok | | |
+| 50 | La fecha de vencimiento de mi recibo no es la que me dieron, x eso se me juntan los periodos. Ya llame tres veces y nadie me resuelve. | ok | | |
 
 ## Quejas
 
-| # | Comentario | OK | Observación |
-|---|---|---|---|
-| 1 | Ya presenté mi inconformidad en la app y no tengo respuesta, qué falta de seriedad. Exijo que me atiendan como cliente, no es la primera vez que me ignoran por chat. | | |
-| 2 | Les escribo porque necesito ayuda. Me prometieron una llamada de vuelta y después de diez días sigo esperando (#7096680). Me vendieron el plan Social 299 con condiciones que no cumplen, publicidad engañosa. | | |
-| 3 | Mi queja: el call center cuelga cuando pido hablar con un supervisor. Qué barbaridad, el trato de Alejandro en atención a clientes fue grosero, no pienso aguantar eso. | | |
-| 4 | En atención a clientes me dijeron que no era su responsabilidad y me mandaron a otra área. El chat de TelArg es inútil, solo responden con mensajes automáticos. | | |
-| 5 | Exijo que me atiendan como cliente, no es la primera vez que me ignoran en la app. | | |
-| 6 | Cada vez que llamo me piden los mismos datos y no resuelven nada, estoy harto del servicio de atención. Espero su pronta respuesta. | | |
-| 7 | Mi queja es por la falta de interés en atención a clientes, nunca devuelven las llamadas. | | |
-| 8 | Esperé cuarenta minutos en el área de cobranza y nadie me contestó. Quedo al pendiente. | | |
-| 9 | El chat de TelArg es inútil, solo responden con mensajes automáticos. Qué onda, qué mala atención, desde agosto estoy tratando de aclarar un tema y nadie me resuelve. | | |
-| 10 | Mala experiencia x correo: tuve q repetir mi problema a cuatro personas distintas. Las promociones q anuncian no aplican nunca para clientes que ya tenemos años con ustedes!!! | | |
-| 11 | Esperé una hora en soporte técnico y nadie me contestó. | | |
-| 12 | No manches, el trato de Laura en el área de cobranza fue grosero, no peinso aguantar eso. Me vendieron el plan Hogar 449 con condiciones q no cumplen, publicidad engañosa. | | |
-| 13 | Buenas tardes. Me vendieron el plan Hogar 449 con condiciones que no cumplen, publicidad engañosa. | | |
-| 14 | Para cancelar mi linea me pnen mil trabas, es un proceso interminable. No hay quien resuelva dudas en ventas, todo son excusas y tiempos de espera. | | |
-| 15 | ME PROMETIERON UNA LLAMADA DE VUELTA Y DESPUES DE DOS DIAS SIGO ESPERANDO (REPORTE 960624)... | | |
-| 16 | esperé media hora en soporte técnico y nadie me contesto. | | |
-| 17 | Me cambiaron las condiciones de mi plan Empresarial 899 sin pedirme autorizacion ya no es lo q contraté. Saludos cordiales. | | |
-| 18 | Buenos días. El chat de TelArg es inútil, solo responden con mensajes automáticos. | | |
-| 19 | El chat de TelArg es inútil, solo responden con mensajes automáticos. Me vendieron el plan Max 699 con condiciones que no cumplen, publicidad engañosa. | | |
-| 20 | Mala experiencia por correo: tuve que repetir mi problema a cuatro personas distintas. Quedo atento a su respuesta. | | |
-| 21 | Caray, no es posible que una empresa tan grande tenga una atención tan lenta. | | |
-| 22 | Ándale, no es posible que una empresa tan grande tenga una atención tan lenta. Muchas gracias por su atención. | | |
-| 23 | Ya presenté mi inconformidad en la sucursal y no tengo respuesta, qué falta de seriedad. | | |
-| 24 | Me prometieron una llamada de vuelta y después de más de 48 horas sigo esperando (reporte 122991). | | |
-| 25 | Saludos. La atención en la sucursal de Querétaro es pésima, hacen fila más de una hora para nada. Exijo que me atiendan como cliente, no es la primera vez que me ignoran en el portal web. Gracias. | | |
-| 26 | El chat de TelArg es inútil, solo responden con mensajes automáticos. | | |
-| 27 | Los asesores no saben nada, me dieron 5 respuestas distintas en la misma semana. | | |
-| 28 | La atención en la sucursal de Querétaro es pésima, hacen fila una hora para nada. Espero su pronta respuesta. | | |
-| 29 | Les escribo porque necesito ayuda. La atención en la sucursal de Mérida es pésima, hacen fila cuarenta minutos para nada. Una vergüenza la atención: me dejaron esperando veinte minutos y se me cortó la llamada. | | |
-| 30 | Les escribo porque necesito ayuda. Mala experiencia en la sucursal: tuve que repetir mi problema a cuatro personas distintas. | | |
-| 31 | Cada vez Que Llamo Me Piden los mismos datos y No resuelven Nada, estoy Harto Del Servicio De Atención. Las condiciones del Contrato cambian cada Mes Y nadie Me las explica con Claridad. | | |
-| 32 | Tengo la línea a mi nombre. Pedí una aclaración por escrito y solo me mandan respuestas copiadas y pegadas. Las promociones que anuncian no aplican nunca para clientes que ya tenemos años con ustedes. | | |
-| 33 | Saludos. El equipo que me entregaron llegó tarde y con la caja abierta, muy mal servicio. El proceso para cambiar de plan a Total 399 fue lentísimo y lleno de requisitos absurdos. | | |
-| 34 | me prometieron una llamada de vuelta y despues de una semaan sigo esperando (reporte 87712). | | |
-| 35 | El equipo que me entregaron llegó tarde y con la caja abierta, muy mal servicio. | | |
-| 36 | Ya basta, que mala atencion, desde octubre estoy tratando de aclarar un tema y nadie me resuelve. Espero una respuesta pronto. | | |
-| 37 | El chat de TelArg es inútil, solo responden con mensajes automáticos. Me prometieron una llamada de vuelta y después de dos días sigo esperando (folio 2817080). | | |
-| 38 | Me llaman seguido toda la tarde para ofrecerme promociones aunque ya les pedí que no. Quedo atento a su respuesta. | | |
-| 39 | La sucursal cierra antes del horario que anuncian y ya van 15 veces que voy en balde. Me prometieron una llamada de vuelta y después de varias horas sigo esperando (ticket 89719). | | |
-| 40 | La sucursal cierra qntes del horario que anunciaan y ya van 15 veces q voy en balde. Quiero presentar mi queja porque Ferannda me colgo la llamada en plena aclaracion. Quedo atento a su respuesta... | | |
-| 41 | Me vendieron el plan Total 399 con condiciones que no cuumplen, publicidad engañosa. x favor, avísenme cualquier novedad | | |
-| 42 | Cada vez que llamo me piden los mismos datos y no resuelven nada, estoy harto del servicio de atención. Muchas gracias por su atención. | | |
-| 43 | A quien corresponda. Caray, el trato de Ricardo en la sucursal fue grosero, no pienso aguantar eso. Una vergüenza la atención: me dejaron esperando veinte minutos y se me cortó la llamada. | | |
-| 44 | A quien corresponda. La sucursal cierra antes del horario q anuncian y ya van 30 veces q voy en balde. | | |
-| 45 | Exijo que me atiendan como cliente, no es la primera vez que me ignoran por chat. Es mi número de línea el que aparece en el sistema. | | |
-| 46 | La sucursal cierra antes del horario que anuncian y ya van 7 veces que voy en balde. Es mi número de linea el q aparece en el sistema. | | |
-| 47 | Buenas tardes. Nadie da seguimiento a mi reporte (reporte 814191), siempre me dicen que ya está en proceso. | | |
-| 48 | Saludos. La atención en la sucursal de Cancún es pésima, hacen fila casi dos horas para nada. | | |
-| 49 | Cada vez que llamo me piden los mismos datos y no resuelven nada, estoy harto del servicio de atencion. Gracias. | | |
-| 50 | Subieron el precio de mi plan Total 399 sin avisarme, esto me parece un abuso. | | |
+| # | Comentario | Auto | OK | Observación |
+|---|---|---|---|---|
+| 1 | De planno el trato de Alejando en atencion a clientes fue grosero no pienso aguantar eso. q alguien se haga responsable por favor. Gracias. | ok | | |
+| 2 | Una vergüenza la atención: me dejaron esperando media hora y se me cortó la llamada. Pido que tomen en cuenta mi queja. | ok | | |
+| 3 | El equipo que me entregaron llegó tarde y con la caja abierta, muy mal servicio. | ok | | |
+| 4 | Me hicieron perrder toda la tarde en la sucursal y al final no resolvieron nada. Llevo años con ustedes y no merezco este trato. | ok | | |
+| 5 | Tengo una inconformidad que presentar. Mi queja: el call center cuelga cuando pido hablra con un supervisor. Gracias. | ok | | |
+| 6 | Subieron el precio de mi plan Nocturno 79 sin avisarme, esto me parece un abuso. | ok | | |
+| 7 | Saludos. La atención en la sucursal de Morelia es pésima, hacen fila más de una hora para nada. | ok | | |
+| 8 | A quien corresponda. Esperé casi dos horas en el area de cobranza y nadie me contestó. Quiero q alguien me explique x q | ok | | |
+| 9 | Me vendieron el plan Empresarial 899 con condiciones que no cumplen, publicidad engañosa. Es una falta de respeto con los clientes. | ok | | |
+| 10 | Nadie da seguimiento a mi reporte (TKT-62722), siemmpre me dicen que ya esta en proceso | ok | | |
+| 11 | Cada vez que llamo me piden los mismos datos y no resuelven nada, estoy harto del servicio de atención. Espero que alguien con autoridad me atienda. | ok | | |
+| 12 | Me llaman seguido en fines de semana para ofrecerme promociones aunque ya les pedí que no. Espero su pronta respuesta. | ok | | |
+| 13 | Me prometieron una llamada de vuelta y después de tres días sigo esperando (ticket 70145). | ok | | |
+| 14 | Estoy muy molesto con la forma en que Ricardo me atendió, sin ninguna empatía. Espero su pronta respuesta. | ok | | |
+| 15 | La neta, qué mala atención, desde febrero estoy tratando de aclarar un tema y nadie me resuelve. | ok | | |
+| 16 | Me vendieron el plan Empresarial 899 con condiciones que no cumplen, publicidad engañosa. | ok | | |
+| 17 | Cada vez que llamo me piden los mismos datos y no resuelven nada estoy harto del servicio de atencion. Quiero que alguien me explique por que. | ok | | |
+| 18 | El proceso para cambiar de plan a Empresarial 899 fue lentísimo y lleno de requisitos absurdos. | ok | | |
+| 19 | Me llaman seguido toda la tarde para ofrecerme promociones aunque ya les pedi que no. q alguien se haga responsable, x favor. | ok | | |
+| 20 | Me cambiaron las condiciiones de mi plan Libre 199 sin pedirme autorizacion, ya no es lo que contrate. Estoy pensando seriamente en cambiarme de compañía. | ok | | |
+| 21 | El chat de TelArg es inútil, solo responden con mensajes automáticos. Ya llamé tres veces y nadie me resuelve. | ok | | |
+| 22 | Subieron el precio de mi plan Hogar 449 sin avisarme, esto me parece un abuso. | ok | | |
+| 23 | Buenas tardes. Chale, no es posible que una empresa tan grande tenga una atención tan lenta. Quedo atento a su respuesta. | ok | | |
+| 24 | El equipo que me entregaron llegó tarde y con la caja abierta, muy mal servicio. Espero una respuesta pronto. | ok | | |
+| 25 | Me prometieron una llamada de vuelta y después de cinco días sigo esperando (#74248). | ok | | |
+| 26 | Subieron el precio de mi plan Hogar 449 sin avisarme, esto me parece un abuso. Espero que alguien por fin me responda. | ok | | |
+| 27 | El chat de TelArg es inutil, solo responden con mensajes automaticos. Que alguien se haga responsable, x favor. | ok | | |
+| 28 | Esperé media hora en ventas y nadie me contestó. No es justo que uno tenga que insistir tanto. Espero su pronta respuesta. | ok | | |
+| 29 | Me cambiaron las condiciones de mi plan Empresarial 899 sin pedirme autorización, ya no es lo que contraté. Estoy pensando seriamente en cambiarme de compañía. Espero su pronta respuesta. | ok | | |
+| 30 | Subieron el precio de mi plan Hogar 449 sin avisarme, esto me parece un abuso. Quiero q alguien me expilque por que!!! | ok | | |
+| 31 | Soy cliente de TelArg desde hace años. Subieron el precio de mi plan Total 399 sin avisarme, esto me parece un abuso. | ok | | |
+| 32 | Subieron el precio de mi plan Prepago Basico sin avisarme, esto me parece un abuso. | ok | | |
+| 33 | Me llaman seguido toda la tarde para ofrecerme promociones aunque ya les pedí que no. No es justo que uno tenga que insistir tanto. | ok | | |
+| 34 | La aplicacion se cierra sola y soporte no hace nada, queja formal con ticket 710568. Llevo años con ustedes y no merezco este trato!!! | ok | | |
+| 35 | Les escribo porque quiero presentar una queja. Nadie da seguimiento a mi reporte (TKT-3557024), siempre me dicen que ya esta en proceso... | ok | | |
+| 36 | Mi queja: el call center cuelga cuando pido hablar con un supervisor. Todo esto es muy frustrante. | ok | | |
+| 37 | Esperé una hora en soporte técnico y nadie me contestó. Estoy pensando seriamente en cambiarme de compañía. | ok | | |
+| 38 | Mi queja es por la falta de interés en el call center, nunca devuelven las llamadas. | ok | | |
+| 39 | Ya presenté mi inconformidad en la app y no tengo respuesta que falta de seriedad. No es justo que uno tenga q insistir tanto. Espero su pronta respuesta. | ok | | |
+| 40 | La atención en la sucursal de Puebla es pésima, hacen fila cuarenta minutos para nada. Quiero que alguien me explique por qué. | ok | | |
+| 41 | El chat de TelArg es inútil, solo responden con mensajes automáticos. Gracias. | ok | | |
+| 42 | Subieron el precio de mi plan Joven 149 sin avisarme, esto me parece un abuso. | ok | | |
+| 43 | Me prometieron una llamada de vuelta y después de cuatro días sigo esperando (folio 67020). Espero que alguien por fin me responda. | ok | | |
+| 44 | En la sucursal me dijeron que no era su responsabilidad y me mandaron a otra área. | ok | | |
+| 45 | Saludos. Una vergüenza la atención: me dejaron esperando media hora y se me cortó la llamada. Quiero que alguien me explique por qué. | ok | | |
+| 46 | Hola. En atención a clientes me dijeron que no era su responsabilidad y me mandaron a otra área. Que alguien se haga responsable, por favor. | ok | | |
+| 47 | Me transfirieron 3 veces entre áreas y nadie pudo resolver mi problema. Que alguien se haga responsable, por favor. | ok | | |
+| 48 | Quiero dejar constancia de mi inconformidad. En atención a clientes me dijeron que no era su responsabilidad y me mandaron a otra área. Quedo atento a su respuesta. | ok | | |
+| 49 | De plano, qué mala atención, desde diciembre estoy tratando de aclarar un tema y nadie me resuelve. Pido que tomen en cuenta mi queja. Espero que alguien por fin me responda. | ok | | |
+| 50 | Quiero dejar constancia de mi inconformidad. Quiero presentar mi queja porque Carlos me colgó la llamada en plena aclaración. | ok | | |
 
 ## Reconocimientos
 
-| # | Comentario | OK | Observación |
-|---|---|---|---|
-| 1 | A quien corresponda. El servicio de TelArg ha mejorado muchísimo, se nota el compromiso con los clientes. Agradezco que me hayan devuelto mi dinero tan rápido, excelente respuesta. | | |
-| 2 | Reconozco el esfuerzo que hacen en atención a clientes, siempre están al pendiente de los clientes. Gracias. | | |
-| 3 | Mi experiencia x tel fue de lo mejor, Gerardo se tomo el tiempo de explicarme todo. El cambio a plan Prepago Basico fue sencillo y sin tramites, gracias x facilitarlo. | | |
-| 4 | En la sucursal de Cancún me atendieron de maravilla, todo fue rápido y claro. | | |
-| 5 | Gracias, gracias y gracias, por fin alguien resolvió mi problema de manera ágil. | | |
-| 6 | El equipo que me entregaron llegó antes de lo prometido y en perfecto estado, muchas gracias. La neta, qué gusto que con el área de cobranza se resolvió mi problema al primer intento. | | |
-| 7 | Lllevo años con TelArg y siempre he tenido buen servicio, los recomiendo | | |
-| 8 | Llevo años con TelArg y siempre he tenido buen servicio, los recomiendo. Quiero reconocer públicamente la labor de Miriam en ventas, un verdadero profesional. Espero una respuesta pronto. | | |
-| 9 | No manches, qué buen servicio, en menos de más de una hora me solucionaron todo. Mi señal es excelente incluso en el centro, felicidades a todo el equipo de redes. Gracias de antemano. | | |
-| 10 | Mi reconocimiento al técnico que llegó puntual y dejó mi internet funcionando perfecto. Gracias por la llamada de seguimiento, nunca me había pasado que una empresa se preocupara así. Quedo al pendiente. | | |
-| 11 | En la sucursal de Morelia me atendieron de maravilla, todo fue rápido y claro. Quiero felicitar a Daniela en atención a clientes, la atención fue de lo mejor. | | |
-| 12 | Un diez para atención a clientes: resolvieron mi duda por chat sin darme vueltas. | | |
-| 13 | Me encantó la atención por correo, respondieron en minutos y con mucha amabilidad. Quiero felicitar a Alejandro en el call center, la atención fue impecable. | | |
-| 14 | Soy cliente de TelArg desde hace años. El servicio de TelArg ha mejorado muchísimo, se nota el compromiso con los clientes. Excelente cobertura en Chihuahua, nunca he tenido problemas con mi plan Premium 999. | | |
-| 15 | En la sucursal de Hermosillo me atendieron de maravilla, todo fue rápido y claro. Un diez para el área de cobranza: resolvieron mi duda por correo sin darme vueltas. | | |
-| 16 | Alejandro fue muy atento y profesional, merece un reconocimiento por su trabajo. Espero una respuesta pronto. | | |
-| 17 | Soy cliente de TelArg desde hace años. El cambio a plan Max 699 fue sencillo y sin trámites, gracias por facilitarlo. Excelente cobertura en Saltillo, nunca he tenido problemas con mi plan Libre 199. | | |
-| 18 | gracias A alejandro x la paciencia y la amabilidad Al explicarme Mi Plan navega 249. Espero Su Pronta respueesta. | | |
-| 19 | Felicidades por la cobertura en Querétaro, hasta en carretera tengo señal. | | |
-| 20 | El cambio a plan Joven 149 fue sencillo y sin trámites garcias x facilitarlo. Quiiero agradecer la rapidez con la q atendieron mi reporte (caso 7952123) todo quedo resuelto. | | |
-| 21 | Mi experiencia por teléfono fue de lo mejor, Alejandro se tomó el tiempo de explicarme todo. Quedo al pendiente. | | |
-| 22 | Saludos. Excelente cobertura en Monterrey, nunca he tenido problemas con mi plan Familiar 549. Un diez para ventas: resolvieron mi duda en la app sin darme vueltas. | | |
-| 23 | El servicio de TelArg ha mejorado muchísimo, se nota el compromiso con los clientes. | | |
-| 24 | Les felicito por la aplicación, es muy fácil de usar y puedo ver mis consumos al instante. Quiero reconocer públicamente la labor de Jorge en soporte técnico, un verdadero profesional. Espero una respuesta pronto. | | |
-| 25 | MUCHAS GACIAS X RESOLVER MI PROBLEMA POR CHAT, EL SERVICIO FUE SOBRESALIENTE. | | |
-| 26 | Saludos. Quiero dejar constancia de lo bien que me atendio Jorge, un trato impecable. Gracias. | | |
-| 27 | El cambio a plan Max 699 fue sencillo y sin tramites, gracias x facilitarlo. Gracias, gracias y gracias, x fin alguien resolvio mi problema de manera ágil. | | |
-| 28 | muy contento con el internet de mi plan Hogar 449, la velocidad es increíble. | | |
-| 29 | Reconozco el esfuerzo que hacen en la sucursal, siempre están al pendiente de los clientes. Les agradezco la atención durante diciembre, me ayudaron mucho con mi cambio de línea. | | |
-| 30 | Tengo la linea a mi nombre. Gracias x restablecer mi servicio el mismo dia, atención de primera... | | |
-| 31 | Les escribo porque necesito ayuda. Gracias por la llamada de seguimiento, nunca me había pasado que una empresa se preocupara así. | | |
-| 32 | A quien corresponda. El cambio a plan Prepago Basico fue sencillo y sin tramites, gracias x facilitarlo. Es mi numero de línea el q aparece en el sistema. | | |
-| 33 | quiero felicitar a alejandro en la sucursal, la atención fue excelente. | | |
-| 34 | Soy cliente de TelArg desde hace años. Llevo años con TelArg y siempre he tenido buen servicio, los recomiendo. Les felicito por la aplicación, es muy fácil de usar y puedo ver mis consumos al instante. Gracias de antemano. | | |
-| 35 | Les felicito por la aplicacion, es muy fácil de usar y puedo ver mis consumos al instante. Quiero dejr constancia de lo bien que me atendio Daniela, un trato impecable. | | |
-| 36 | Buenos días. Felicidades por la cobertura en Guadalajara, hasta en carretera tengo señal. | | |
-| 37 | Mi experiencia por chat fue de lo mejor, Laura se tomo el tiempo de explicarme todo. Les felicito por la aplicacion, es muy facil de usar y puedo ver mis consumos al instante. x favor, avisenme cualquier novedad. | | |
-| 38 | Me encantó la atención por correo, respondieron en minutos y con mucha amabilidad. | | |
-| 39 | Buenos días. Mi reconocimiento al técnico que llegó puntual y dejó mi internet funcionando perfecto. Quiero agradecer la rapidez con la que atendieron mi reporte (TKT-5836679), todo quedó resuelto. | | |
-| 40 | Mi señal es excepente incluso en mi casa, felicidades a todo el equipo de redes. Me encanto la atencion en el portal web, respondieron en minutos y con mucha amabilidad... | | |
-| 41 | Me encantó la atención por correo, respondieron en minutos y con mucha amabilidad. Mi señal es excelente incluso en mi trabajo, felicidades a todo el equipo de redes. | | |
-| 42 | Mi reconocimiento al técnico que llegó puntual y dejó mi internet funcionando perfecto. Saludos cordiales. | | |
-| 43 | Les escribo porque necesito ayuda. Quiero reconocer públicamente la labor de Fernanda en el área de cobranza, un verdadero profesional. | | |
-| 44 | Agradezco q me hayan devuelto mi dinero tan rápido, excelente respuesta. | | |
-| 45 | Mi señal es excelente incluso en mi oficina, felicidades a todo el equipo de redes. Llevo años con TelArg y siempre he tenido buen servicio, los recomiendo. | | |
-| 46 | Muchsa gracias x resolver mi problema en el portal web, el servicio fue sobresaliente. | | |
-| 47 | Muy contento con el internet de mi plan Navega 249, la velocidad es increible. | | |
-| 48 | Buenos dias. O sea, que gusto que con el area de cobranza se resolvio mi problema al primer intento. Quiero agradecer la rapidez con la que atendieron mi reporte (reporte 79901), todo quedó resuelto. | | |
-| 49 | Quiero reconocer públicamente la labor de Alejandro en el área de cobranza, un verdadero profesional. | | |
-| 50 | Quiero reconocer públicamente la labor de Daniela en la sucursal, un verdadero profesional. Un diez para la sucursal: resolvieron mi duda por correo sin darme vueltas. Gracias de antemano. | | |
-
+| # | Comentario | Auto | OK | Observación |
+|---|---|---|---|---|
+| 1 | QUIERO AGRADECER LA RAPIDEZ CON LA Q ATENDIERON MI REPORTE (REPORTE 9263662), TODO QUEDO RESUELTO. POR ESTO SIGO CON TELARG. | ok | | |
+| 2 | En la sucursal de Chihuahua me atendieron de maravilla, todo fue rápido y claro. | ok | | |
+| 3 | Quiero reconocer públicamente la labor de Héctor en soporte técnico, un trabajo verdaderamente profesional. Realmente superó mis expectativas. Sigan así. | ok | | |
+| 4 | MIRA NOMAS, QUÉ GUSTO Q CON SOPORTE TECNICO SE RESOLVIO MI PROBLEMA AL PRIMER INTENTO. SEGUIRÉ RECOMENDANDOLOS. | ok | | |
+| 5 | En la sucursal de Toluca me atendieron de maravilla, todo fue rápido y claro. Ojalá todas las empresas atendieran así. | ok | | |
+| 6 | Les escribo con mucho gusto. Me encantó la atención por teléfono, respondieron en minutos y con mucha amabilidad. | ok | | |
+| 7 | Excelente cobertura en Guadalajara, nunca he tenido problemas con mi plan Total 399. Gracias. | ok | | |
+| 8 | Gracias por restablecer mi servicio el mismo día, atención de primera. | ok | | |
+| 9 | Quiero compartir mi experiencia. Un diez para el area de cobranza: resolvieron mi duda en el portal web sin darme vueltas. | ok | | |
+| 10 | Les escribo con mucho gusto. Mi reconocimiento al técnico que llegó puntual y dejó mi internet funcionando perfecto. Saludos cordiales. | ok | | |
+| 11 | Muy contento con el internet de mi plan Prepago Básico, la velocidad es increíble. Eso es lo que uno espera de una buena compañía. | ok | | |
+| 12 | Mi señal es excelente incluso en toda mi calle, felicidades a todo el equipo de redes. Todo el equipo merece un aplauso. | ok | | |
+| 13 | Tengo la linea a mi nombre. Agradezco que me hayan devuelto mi dinero tan rapido, excelente respuessta. | ok | | |
+| 14 | QUIERO COMPARTIR MI EXPERIENCIA. QUIERO FELICITAR A ALEJANDRO EN VENTAS, LA ATENCION FUE SOBRESALIENTE. | ok | | |
+| 15 | Les escribo desde San Luis Potosí. Me encanto la atencion en el portal web, respondieron en minutos y con mucha amabilidad. Con gusto volveria a acudir con usfedes. | ok | | |
+| 16 | La verdad, qué gusto que con la sucursal se resolvió mi problema al primer intento. | ok | | |
+| 17 | A quien corresponda. El cambio a plan Prepago Básico fue sencillo y sin trámites, gracias por facilitarlo. Un saludo a todo el equipo. | ok | | |
+| 18 | Les escribo desde Morelia. Reconoozco el esfuerzo q hacen en ventas soempre estan al pendiente de los clientes. | ok | | |
+| 19 | Soy cliente de TelArg desde hace años. Agradezco que me hayan devuelto mi dinero tan rápido, excelente respuesta. Realmente superó mis expectativas. | ok | | |
+| 20 | Les escribo con una buena noticia. Mi experiencia en el portal web fue de lo mejor Miriam se toko el tiempo de explicarme todo. | ok | | |
+| 21 | Buenas noches. Felicidades por la cobertura en Aguascalientes, hasta en carretera tengo señal. | ok | | |
+| 22 | Buenas tardes. Llevo años con TelArg y siempre he tenido buen servicio, los recomiendo. Eso es lo que uno espera de una buena compañía. | ok | | |
+| 23 | Verónica me atendió con mucha atención y profesionalismo, merece un reconocimiento por su trabajo. Sigan así, de verdad se agradece. | ok | | |
+| 24 | ME ENCANTO LA ATENCIÓN EN LA SUCURSAL, RESPONDIERON EN MINUTOS Y CON MUCHA AMABILIDAD. SEGUIRÉ RECOMENDANDOLOS. | ok | | |
+| 25 | Mi reconocimiento al tecnico que llego puntual y dejo mi internet funcionando perfecto. | ok | | |
+| 26 | Quiero agradecer la rapidez con la que atendieron mi reporte (reporte 290575), todo quedó resuelto. Con gusto volvería a acudir con ustedes. | ok | | |
+| 27 | Las mejores promociones del mercado, sigo con TelArg por el buen servicio. Un saludo a todo el equipo. | ok | | |
+| 28 | El servicio de TelArg ha mejorado muchisimo se nota el compromio con los clientes. | ok | | |
+| 29 | Gracias por La Llamada de Seguimiento, nunca me Habia pasado q una Empresa se Preocupara Asi. es Un gusto q existan Personas asi. | ok | | |
+| 30 | Un diez para el área de cobranza: resolvieron mi duda por chat sin darme vueltas. De verdad quedé muy satisfecho. Muchas gracias por su atención. | ok | | |
+| 31 | Mi reconocimiento al técnico que llegó puntual y dejó mi internet funcionando perfecto. De verdad quedé muy satisfecho. | ok | | |
+| 32 | Muchas gracias por resolver mi problema en el portal web, el servicio fue de diez. De verdad quedé muy satisfecho. Seguiré recomendándolos. | ok | | |
+| 33 | Mira Nomas, q Buen Servicio, En menos De media hora Me Solucionaron todo. me dio mucho Gusto ser su Cliente. Seguire Recomendandolos. | ok | | |
+| 34 | El equipo que me entregaron llego antes de lo prometido y en perfecto estado, muchas gracias. | ok | | |
+| 35 | Mi experiencia en la sucursal fue de lo mejor, Miriam se tomó el tiempo de explicarme todo. Se nota que se preocupan por sus clientes. Seguiré recomendándolos. | ok | | |
+| 36 | A quien corresponda. Excelente cobertura en Guadalajara, nunca he tenido problemas con mi plan Hogar 449. Que tengan un excelente día. | ok | | |
+| 37 | Mi señal es excelente incluso en el centro, felicidades a todo el equipo de redes. Que tengan un excelente día. | ok | | |
+| 38 | Quiero dejar constancia de lo bien que me atendio Fernanda, un trato impecable. q tengan un excelente día. | ok | | |
+| 39 | Un diez para la sucursal: resolvieron mi duda en la sucursal sin darme vueltas. Saludos cordiales. | ok | | |
+| 40 | El Cambio A plan nocturno 79 Fue sencillo y sin Tramites, gracias X Facilitarlo. Defihitivamente Los Voy a Recomendar con mi Familia... | ok | | |
+| 41 | Carlos me atendió con mucha atención y profesionalismo, merece un reconocimiento por su trabajo. Realmente superó mis expectativas. | ok | | |
+| 42 | Buenos dias. Quiero felicitar a Jorge en soporte tecnico, la atencion fue de diez. Saludos cordiales. | ok | | |
+| 43 | Carlos me atendio con mucha atencion y profesionalismo, merece un reconocimiento por su trabajo. Que tengan un excelente dia. | ok | | |
+| 44 | La promoción del plan Nocturno 79 es muy buena, gracias por pensar en los clientes. Realmente superó mis expectativas. | ok | | |
+| 45 | Les escribo con mucho gusto. Muy contento con el internet de mi plan Social 299, la velocidad es increíble. | ok | | |
+| 46 | A quien corresponda. La promoción del plan Libre 199 es muy buena, gracias por pensar en los clientes. De verdad quedé muy satisfecho. Sigan así. | ok | | |
+| 47 | Les felicito por la aplicación, es muy fácil de usar y puedo ver mis consumos al instante. Sigan así, de verdad se agradece. Un saludo a todo el equipo. | ok | | |
+| 48 | Agradezco que me hayan devuelto mi dinero tan rápido, excelente respuesta. Todo el equipo merece un aplauso. | ok | | |
+| 49 | Quiero agradecer la rapidez con la que atendieron mi reporte (caso 6665465), todo quedó resuelto. | ok | | |
+| 50 | Les escribo con una buena noticia. Gracias grracias y gracias x fin alguien resolvio mi problema de manera agil. | ok | | |
