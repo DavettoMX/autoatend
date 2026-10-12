@@ -12,7 +12,7 @@ Restricciones: Go puro sin CGo, prohibido `import "regexp"` y cualquier generado
 
 ## Decisión
 
-El AFN-ε de Thompson se **simula directamente por conjuntos de estados**, sin construir un AFD (Thompson 1968; Aho et al. 2006, §3.7.1 y algoritmo 3.22; Hopcroft et al. 2007, cap. 3, §3.2.3 para la construcción y §2.5.2 para la ε-cerradura):
+El AFN-ε de Thompson se **simula directamente por conjuntos de estados**, sin construir un AFD (Thompson 1968; Aho et al. 2006, §3.7.2 y algoritmo 3.22; Hopcroft et al. 2007, §2.5.3 para la clausura respecto de ε y §4.3.2 para la comprobación de pertenencia):
 
 1. El estado inicial del recorrido es `S₀ = ε-cerradura({inicio})`.
 2. Por cada runa `c` de la cadena, `S' = ε-cerradura(movida(S, c))`.
@@ -35,7 +35,7 @@ La ε-cerradura se calcula con una pila explícita y una marca por estado (sella
 
 | Alternativa | Por qué se descarta |
 |---|---|
-| **AFN → AFD por construcción de subconjuntos**, y recorrer el AFD (Aho et al. 2006, §3.7.2; Hopcroft et al. 2007, §2.3.5) | El AFD hace cada comparación en `O(n)`, pero la construcción cuesta hasta `O(2^m)` en el peor caso y debe repetirse para cada ER. Aquí las ER son cortas y numerosas (una por lexema) y cada una se ejecuta contra unas pocas variantes (7,439 comparaciones para 6,720 ER, es decir 1.1 por ER), de modo que el costo de construcción no se amortiza. Además añade código (estados del AFD como conjuntos canónicos, memoización) que el TE no pide y que habría que defender y probar. |
+| **AFN → AFD por construcción de subconjuntos**, y recorrer el AFD (Aho et al. 2006, §3.7.1; Hopcroft et al. 2007, §2.3.5, Teorema 2.11; el caso exponencial está en §2.3.6, "Un caso desfavorable para la construcción de subconjuntos", y el costo de las conversiones en §4.3.1) | El AFD hace cada comparación en `O(n)`, pero la construcción cuesta hasta `O(2^m)` en el peor caso y debe repetirse para cada ER. Aquí las ER son cortas y numerosas (una por lexema) y cada una se ejecuta contra unas pocas variantes (7,439 comparaciones para 6,720 ER, es decir 1.1 por ER), de modo que el costo de construcción no se amortiza. Además añade código (estados del AFD como conjuntos canónicos, memoización) que el TE no pide y que habría que defender y probar. |
 | **AFD perezoso** (construir los subconjuntos al vuelo y guardarlos en caché) | Mantiene el peor caso lineal, pero complica el motor con una caché por ER y exige sincronización si el NFA se comparte entre goroutines. Con cadenas de pocas runas la caché casi nunca se reutiliza. |
 | **Retroceso** (como el motor de Perl o de PCRE) | Es exponencial en el peor caso: `(a?){n}a{n}` contra `aⁿ`. `TestCPU08_NoBacktrackingBlowup` fija n = 60 y falla si tarda más de un segundo. No ofrece garantía de `O(n·m)`, que es la que promete el TE. |
 | **Usar `regexp` de la biblioteca estándar** | Prohibido por la consigna b (el analizador léxico debe ser propio) y por `make lint-regexp`. |
@@ -55,8 +55,19 @@ La ε-cerradura se calcula con una pila explícita y una marca por estado (sella
 - Cada llamada a `Match` reserva el conjunto y las marcas. Si en la Fase 4 la ruta de inferencia llegara a ejecutar ER en caliente, el remedio es reutilizar esa memoria con un `sync.Pool`; hoy no hace falta, porque la clasificación no ejecuta ER (solo el barrido y la verificación lo hacen).
 - Si en el futuro hubiera pocas ER y millones de cadenas por ER, convendría la conversión a AFD (u otra técnica); no es el caso de este sistema.
 
+## Nota sobre las referencias del Trabajo Escrito
+
+El TE (§5.1.1, §6.2.4 y la tabla de §6.5) atribuye la complejidad `O(n·m)` de la simulación del AFN-ε a Hopcroft et al. (2007, §3.4), y la explosión exponencial de la conversión a AFD al Teorema 2.11. Cotejado con la edición en español del libro:
+
+| Cita del TE | Contenido real | Referencia correcta |
+|---|---|---|
+| §3.4 | "Álgebra de las expresiones regulares" (leyes de equivalencia) | §4.3.2, "Cómo comprobar la pertenencia a un lenguaje regular" (p. 129), y Aho et al. (2006), §3.7.2–§3.7.3 |
+| Teorema 2.11 | Corrección de la construcción de subconjuntos: L(D) = L(N) (§2.3.5) | Correcto para la equivalencia; el peor caso exponencial es §2.3.6 (p. 54), y el costo de convertir AFN en AFD, §4.3.1 (p. 126) |
+
+El TE está congelado y no se modifica. Este ADR usa las referencias correctas. El contenido técnico del TE (algoritmo, complejidad y argumento de diseño) no cambia: solo cambia el número de sección que lo respalda.
+
 ## Referencias
 
 - Thompson, K. (1968). Regular expression search algorithm. *Communications of the ACM*, 11(6), 419-422.
 - Aho, A. V., Lam, M. S., Sethi, R. y Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2.ª ed.), §3.7.
-- Hopcroft, J. E., Motwani, R. y Ullman, J. D. (2007). *Introduction to Automata Theory, Languages, and Computation* (3.ª ed.), cap. 2 y 3.
+- Hopcroft, J. E., Motwani, R. y Ullman, J. D. (2007). *Introduction to Automata Theory, Languages, and Computation* (3.ª ed.; ed. en español: *Introducción a la teoría de autómatas, lenguajes y computación*, Pearson), §2.3.5–§2.3.6, §2.5.3 y §4.3.1–§4.3.2.
