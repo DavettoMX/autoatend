@@ -105,7 +105,7 @@ func TestModelo_LoadErrors(t *testing.T) {
 func TestModelo_Categorias_MatchDB(t *testing.T) {
 	m := loadMini(t)
 	for i, c := range db.Categories {
-		if m.Categorias[i].ID != c.ID || m.Categorias[i].Nombre != c.Name {
+		if m.Categorias[i].ID != c.ID || m.Categorias[i].Nombre != c.Nombre {
 			t.Errorf("category %d = %+v, db has %+v", i, m.Categorias[i], c)
 		}
 	}
