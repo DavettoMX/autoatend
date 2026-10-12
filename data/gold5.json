@@ -1,37 +1,37 @@
 [
  {
-  "id": 72630,
-  "texto": "Tengo un problema con mi servicio. Ayer hubo una caída general de la red en Puebla y hoy todavía sigue fallando todo.",
+  "id": 72686,
+  "texto": "No tengo señal en el centro por las mañanas, ya pedí que lo revisen (ref. #33172).",
   "categoria_id": 1,
   "categoria": "Falta de Servicio",
-  "confianza_python": 0.9996490590931714
+  "confianza_python": 0.9569336063277488
  },
  {
-  "id": 71479,
-  "texto": "Cobro indebido: me descontaron $149.00 dos veces el mismo día por lo mismo. Es dinero que me hace falta.",
+  "id": 71403,
+  "texto": "Me hicieron un cobro doble de $349.00 despues de reportar que no tenia internet.",
   "categoria_id": 2,
   "categoria": "Cobros Indebidos",
-  "confianza_python": 0.9998761785974779
+  "confianza_python": 0.9736293078216472
  },
  {
-  "id": 60892,
-  "texto": "La fecha de vencimiento de mi recibo no es la q me dieron, por eso se me juntan los periodos",
+  "id": 61169,
+  "texto": "Mi paago de $449.00 si se hizo pero la fact todavía marca vencido. Espero que lo resuelvan pronto.",
   "categoria_id": 3,
   "categoria": "Problemas de Facturación",
-  "confianza_python": 0.9994242102126655
+  "confianza_python": 0.9928325305730339
  },
  {
-  "id": 69682,
-  "texto": "Esperé cuarenta minutos en soporte técnico y nadie me contestó. No es justo que uno tenga que insistir tanto.",
+  "id": 69477,
+  "texto": "Me cambiaron las condiciones de mi plan Nocturno 79 sin pedirme autorizacion, ya no es lo que contrate.",
   "categoria_id": 4,
   "categoria": "Quejas",
-  "confianza_python": 0.9991308508982588
+  "confianza_python": 0.9645671602415393
  },
  {
-  "id": 70347,
-  "texto": "Mira nomás, qué buen servicio, en menos de media hora me solucionaron todo.",
+  "id": 70117,
+  "texto": "Hola. Gracias a Daniela por la paciencia y la amabilidad al explicarme mi plan Navega 249.",
   "categoria_id": 5,
   "categoria": "Reconocimientos",
-  "confianza_python": 0.9941135398426165
+  "confianza_python": 0.9753283237583354
  }
 ]

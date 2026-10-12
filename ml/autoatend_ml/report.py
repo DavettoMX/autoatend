@@ -75,7 +75,9 @@ def build_report(c: dict) -> str:
     add("# Evaluación del modelo (Bloque C, consigna e)\n")
     add(
         "Reporte generado por `make train` (`ml/autoatend_ml`). Es determinista: dos corridas producen el mismo archivo. "
-        "Las cifras salen de `data/corpus.db` (SHA `b810bad2…`) y de `data/df_train.json`; ninguna se ajustó sobre test.\n"
+        f"Las cifras salen de `data/corpus.db` (SHA `{c['corpus_sha'][:8]}…`), `data/df_train.json` y `data/corpus_ambiguos.json`; ninguna se ajustó sobre test. "
+        "El generador de este corpus cumple el criterio de separabilidad K1–K3, registrado en `PLAN.md` §3 antes de cambiar las plantillas; "
+        "el modelo se entrenó una sola vez, después de que la batería pasó.\n"
     )
 
     add("## 1. Datos y vocabulario\n")
@@ -84,7 +86,8 @@ def build_report(c: dict) -> str:
     add(f"- Lexemas con **df = 0 en train, excluidos del modelo: {c['df_cero']:,}** (aparecen solo en test; el TE §6.4.2 calcula el vocabulario y el IDF con train).")
     add(f"- Verificación cruzada: la frecuencia de documento recalculada en Python con la salida de `cmd/tokenizar` coincide con `df_train.json` ({c['df_check'][0]} discrepancias, {c['df_check'][1]} lexemas de más).")
     add(f"- Comentarios de test con vector vacío (ningún lexema del vocabulario): {c['n_empty_test']:,}.")
-    add(f"- Duplicados exactos: **{c['n_dup']:,} de {c['n_test']:,}** comentarios de test ({100 * c['n_dup'] / c['n_test']:.1f} %) tienen un texto idéntico en train; el subconjunto sin duplicados tiene **{c['n_nodup']:,}**.\n")
+    add(f"- Duplicados exactos: **{c['n_dup']:,} de {c['n_test']:,}** comentarios de test ({100 * c['n_dup'] / c['n_test']:.1f} %) tienen un texto idéntico en train; el subconjunto sin duplicados tiene **{c['n_nodup']:,}**.")
+    add(f"- Subconjunto ambiguo (K2): {c['n_amb_total']:,} comentarios del corpus cuya oración base aparece, como bolsa de tokens, en dos categorías (plantillas compartidas: ambigüedad controlada, sin ruido de etiquetas). En test son **{c['n_amb_test']:,}**; el test sin ellos tiene **{c['n_noamb']:,}**.\n")
 
     add("## 2. Método\n")
     add("- **Tokenización**: `cmd/tokenizar` (Go) invocado una vez como subproceso (TE §6.3.6). Cada forma → `lexer.Stem` → lexema canónico del catálogo; números y stoplist fuera; raíces fuera del catálogo se descartan.")
@@ -114,10 +117,13 @@ def build_report(c: dict) -> str:
     add("")
     near = [x for x in c["cells"] if x is not w and w["f1_media"] - x["f1_media"] <= w["f1_desv"]]
     allf = [g["f1_media"] for g in c["grid"]]
-    add(
-        f"Las {len(c['grid'])} combinaciones de la rejilla quedan entre {f(min(allf), 5)} y {f(max(allf), 5)} de Macro-F1 promedio: "
-        "el corpus es tan separable que la estrategia de desbalance y el hiperparámetro cambian el resultado en la cuarta o quinta cifra decimal.\n"
-    )
+    if max(allf) - min(allf) < 0.001:
+        add(
+            f"Las {len(c['grid'])} combinaciones de la rejilla quedan entre {f(min(allf), 5)} y {f(max(allf), 5)} de Macro-F1 promedio: "
+            "el corpus es tan separable que la estrategia de desbalance y el hiperparámetro cambian el resultado en la cuarta o quinta cifra decimal.\n"
+        )
+    else:
+        add(f"Las {len(c['grid'])} combinaciones de la rejilla quedan entre {f(min(allf), 5)} y {f(max(allf), 5)} de Macro-F1 promedio.\n")
     if near:
         add(
             f"**Empate o diferencia menor a una desviación estándar** entre el ganador y {len(near)} celda(s) más: la elección entre ellas "
@@ -139,20 +145,22 @@ def build_report(c: dict) -> str:
     add(f"El mejor de la otra familia ({FAM[alt['familia']]}, {STRAT[alt['estrategia']]}, {hp(alt['hiperparametros'])}; CV {f(alt['f1_media'], 5)} ± {f(alt['f1_desv'], 5)}) se exporta como `data/modelo_alternativo.json`.\n")
 
     add("## 5. Evaluación final en test (una sola vez, sin ajustar nada)\n")
-    add("| Criterio | Umbral | Test completo | Test sin duplicados de train |")
-    add("|---|---|---|---|")
-    add(f"| CPM01 Macro-F1 | ≥ {THRESH_F1} | {f(ev['macro_f1'])} ({verdict(ev['macro_f1'], THRESH_F1)}) | {f(evn['macro_f1'])} ({verdict(evn['macro_f1'], THRESH_F1)}) |")
-    add(f"| CPM02 recall de Reconocimientos | ≥ {THRESH_RECALL} | {f(ev['recall_reconocimientos'])} ({verdict(ev['recall_reconocimientos'], THRESH_RECALL)}) | {f(evn['recall_reconocimientos'])} ({verdict(evn['recall_reconocimientos'], THRESH_RECALL)}) |")
-    add(f"| n | | {ev['n']:,} | {evn['n']:,} |")
+    eva = fin["eval_na"]
+    add("| Criterio | Umbral | Test completo | Test sin duplicados de train | Test sin subconjunto ambiguo |")
+    add("|---|---|---|---|---|")
+    add(f"| CPM01 Macro-F1 | ≥ {THRESH_F1} | {f(ev['macro_f1'])} ({verdict(ev['macro_f1'], THRESH_F1)}) | {f(evn['macro_f1'])} ({verdict(evn['macro_f1'], THRESH_F1)}) | {f(eva['macro_f1'])} ({verdict(eva['macro_f1'], THRESH_F1)}) |")
+    add(f"| CPM02 recall de Reconocimientos | ≥ {THRESH_RECALL} | {f(ev['recall_reconocimientos'])} ({verdict(ev['recall_reconocimientos'], THRESH_RECALL)}) | {f(evn['recall_reconocimientos'])} ({verdict(evn['recall_reconocimientos'], THRESH_RECALL)}) | {f(eva['recall_reconocimientos'])} ({verdict(eva['recall_reconocimientos'], THRESH_RECALL)}) |")
+    add(f"| n | | {ev['n']:,} | {evn['n']:,} | {eva['n']:,} |")
     add("")
     add(metrics_block(f"Modelo ganador, test completo ({FAM[w['familia']]})", ev))
     add(metrics_block("Modelo ganador, test sin duplicados exactos de train", evn))
+    add(metrics_block("Modelo ganador, test sin el subconjunto ambiguo", eva))
     add("### Modelo alternativo (mejor de la otra familia)\n")
-    add("| Modelo | Test: Macro-F1 | Test: recall Reconocimientos | Sin duplicados: Macro-F1 | Sin duplicados: recall Reconocimientos |")
-    add("|---|---|---|---|---|")
+    add("| Modelo | Test: Macro-F1 | Test: recall Reconocimientos | Sin duplicados: Macro-F1 | Sin duplicados: recall Reconocimientos | Sin ambiguos: Macro-F1 | Sin ambiguos: recall Reconocimientos |")
+    add("|---|---|---|---|---|---|---|")
     for tag, cell, fx in (("modelo.json", w, fin), ("modelo_alternativo.json", alt, fa)):
-        e1, e2 = fx["eval"], fx["eval_nd"]
-        add(f"| `{tag}` ({cell['familia']}, {cell['estrategia']}) | {f(e1['macro_f1'])} | {f(e1['recall_reconocimientos'])} | {f(e2['macro_f1'])} | {f(e2['recall_reconocimientos'])} |")
+        e1, e2, e3 = fx["eval"], fx["eval_nd"], fx["eval_na"]
+        add(f"| `{tag}` ({cell['familia']}, {cell['estrategia']}) | {f(e1['macro_f1'])} | {f(e1['recall_reconocimientos'])} | {f(e2['macro_f1'])} | {f(e2['recall_reconocimientos'])} | {f(e3['macro_f1'])} | {f(e3['recall_reconocimientos'])} |")
     add("")
 
     nb = [(k, x) for k, x in (("principal", fin), ("alternativo", fa)) if x["model"]["familia"] == "nbm"]
@@ -167,6 +175,9 @@ def build_report(c: dict) -> str:
     else:
         add("No hay modelo Naive Bayes entre los exportados.\n")
     add(f"Además, el {100 * c['n_dup'] / c['n_test']:.1f} % del test repite textos de train; por eso las métricas se reportan también sin ellos (sección 5).\n")
+    add("**F1 con plantillas no vistas (solo reporte, no es compuerta ni umbral).** El corte temporal no excluye plantillas: todas aparecen en train y en test. "
+        "Para medir cuánto depende el modelo de haber visto cada plantilla, `docs/reports/plantillas_no_vistas.md` reentrena con el 80 % de las plantillas "
+        "de cada categoría y evalúa con el 20 % restante, en 5 pliegues. Es un análisis aparte, que no participa en la selección ni en la evaluación de esta sección.\n")
 
     add("## 6. Equivalencia del escalador lineal con scikit-learn\n")
     add("| Modelo | Máx. \\|p_lineal − predict_proba\\| sobre todo test | Acuerdo de clase |")
@@ -179,7 +190,7 @@ def build_report(c: dict) -> str:
     add(PARITY_MARKER + "\n")
 
     add("## 8. Comentarios de la demostración\n")
-    add("`data/gold5.json`: un comentario de test por categoría, sin duplicado en train, longitud legible, clasificado correctamente con confianza ≥ 0.80 (elegido al azar con la semilla 10433 entre los elegibles).\n")
+    add("`data/gold5.json`: un comentario de test por categoría, sin duplicado en train, fuera del subconjunto ambiguo (nunca de una plantilla compartida), longitud legible, clasificado correctamente con confianza ≥ 0.80 (elegido al azar con la semilla 10433 entre los elegibles).\n")
     add("| Categoría | id | Confianza | Texto |")
     add("|---|---|---|---|")
     for g in c["gold"]:
@@ -190,7 +201,7 @@ def build_report(c: dict) -> str:
         d = c["demo"][key]
         add(f"- **{label}** (id {d['id']}): «{d['texto']}». Real: {d['categoria_real']}; predicción: {d['prediccion']} con {f(d['confianza'], 3)}; segunda: {d['segunda']} con {f(d['confianza_segunda'], 3)}. Lexemas: {', '.join(d['lexemas'])}.")
     add("")
-    add("El caso frontera es el Reconocimientos acertado de menor confianza del test sin duplicados; en un corpus fácil puede seguir teniendo una confianza alta.\n")
+    add("El caso frontera es un Reconocimiento del subconjunto ambiguo (una plantilla compartida con Quejas, el «reconocimiento con tono ambiguo» del guion del TE §6.4.3): entre los del test, el de menor margen entre las dos clases más probables, acertado si alguno lo está. El caso claro sale del test sin duplicados ni ambiguos.\n")
 
     add("## 9. Reproducción\n")
     add("```bash\nmake train        # compila cmd/tokenizar, entrena, escribe modelo.json, modelo_alternativo.json, gold5.json, testdata/paridad_1000.json y este reporte\nmake train-sha    # dos entrenamientos independientes producen el mismo SHA-256\n```\n")

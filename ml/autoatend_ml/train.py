@@ -42,6 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--corpus", default="data/corpus.db")
     ap.add_argument("--catalogo", default="data/resultados.db")
     ap.add_argument("--df", default="data/df_train.json")
+    ap.add_argument("--ambiguos", default="data/corpus_ambiguos.json", help="ids of the ambiguous (K2 collision) subset")
     ap.add_argument("--tokenizar", default="dist/tokenizar", help="binary built from ./cmd/tokenizar")
     ap.add_argument("--out", default="data", help="directory for modelo.json, modelo_alternativo.json, gold5.json")
     ap.add_argument("--testdata", default="testdata", help="directory for paridad_1000.json")
@@ -51,6 +52,8 @@ def main(argv: list[str] | None = None) -> int:
 
     # ---- data, vocabulary, features ---------------------------------------------------------
     corpus = data.load_corpus(args.corpus)
+    corpus_sha = data.sha256_file(args.corpus)
+    ambiguous = data.load_ambiguous(args.ambiguos, args.corpus)
     vocab = features.load_vocabulary(args.df)
     if corpus.cutoff != vocab.cutoff or sum(corpus.is_train) != vocab.n_train:
         raise SystemExit(
@@ -79,6 +82,7 @@ def main(argv: list[str] | None = None) -> int:
     te_ids = [corpus.ids[p] for p in te_pos]
     train_texts = {corpus.texts[p] for p in np.flatnonzero(tr)}
     nodup = np.asarray([t not in train_texts for t in te_texts])
+    noamb = np.asarray([i not in ambiguous for i in te_ids])
     n_empty = int(sum(1 for idxs, _ in te_docs if not idxs))
     log(f"test duplicates of train: {int((~nodup).sum())} of {len(nodup)}; test with empty vector: {n_empty}")
 
@@ -115,12 +119,15 @@ def main(argv: list[str] | None = None) -> int:
         pred = fitted.estimator.predict(X_te)
         ev = evaluate(y_te, pred)
         ev_nd = evaluate(y_te[nodup], pred[nodup])
+        ev_na = evaluate(y_te[noamb], pred[noamb])
         metricas = {
             "cv_elegido": cv_summary(cell),
             "cv": cv_table,
             "test": ev,
             "test_sin_duplicados": ev_nd,
+            "test_sin_ambiguos": ev_na,
             "duplicados_test": {"n_test": int(len(nodup)), "n_duplicados": int((~nodup).sum()), "n_sin_duplicados": int(nodup.sum())},
+            "ambiguos_test": {"n_ambiguos": int((~noamb).sum()), "n_sin_ambiguos": int(noamb.sum())},
         }
         mdl = export.model_dict(fitted, vocab, metricas, df_cero)
         scorer = export.Scorer(mdl)
@@ -134,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
             f"linear scorer vs predict_proba max diff {max_diff:.2e}, class agreement {agree:.6f}")
         finals[tag] = {
             "fitted": fitted, "model": mdl, "scorer": scorer, "probs": probs, "sk_probs": sk_probs,
-            "pred_sklearn": pred, "pred_mirror": mirror_cls, "eval": ev, "eval_nd": ev_nd,
+            "pred_sklearn": pred, "pred_mirror": mirror_cls, "eval": ev, "eval_nd": ev_nd, "eval_na": ev_na,
             "linealidad": {"max_dif_prob": max_diff, "acuerdo_clase": agree},
         }
 
@@ -165,12 +172,13 @@ def main(argv: list[str] | None = None) -> int:
         + "\n]}\n",
     )
 
-    gold, demo = pick_gold_and_demo(finals["principal"], te_ids, te_texts, y_te, nodup, vocab, te_docs)
+    gold, demo = pick_gold_and_demo(finals["principal"], te_ids, te_texts, y_te, nodup, noamb, vocab, te_docs)
     export.write_text(out / "gold5.json", json.dumps(gold, ensure_ascii=False, indent=1, allow_nan=False) + "\n")
 
     ctx = {
         "corpus": corpus, "vocab": vocab, "n_catalogue": n_catalogue, "df_cero": df_cero,
         "n_test": int(len(te_ids)), "n_dup": int((~nodup).sum()), "n_nodup": int(nodup.sum()), "n_empty_test": n_empty,
+        "corpus_sha": corpus_sha, "n_amb_total": len(ambiguous), "n_amb_test": int((~noamb).sum()), "n_noamb": int(noamb.sum()),
         "grid": grid, "cells": cells, "winner": winner_cell, "alt": alt_cell, "finals": finals,
         "gold": gold, "demo": demo, "parity_n": PARITY_N, "df_check": (mism, extra),
     }
@@ -179,10 +187,12 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def pick_gold_and_demo(final: dict, ids, texts, y_te, nodup, vocab, te_docs):
+def pick_gold_and_demo(final: dict, ids, texts, y_te, nodup, noamb, vocab, te_docs):
     """gold5: one test comment per category, correct, confidence >= 0.80, not a train duplicate,
-    readable length; the choice among eligible ones is random with the fixed seed.
-    Demo candidates (NOT in gold5): a clear Falta de Servicio and the borderline Reconocimiento."""
+    not in the ambiguous subset (so never from a shared template), readable length; the choice
+    among eligible ones is random with the fixed seed.
+    Demo candidates (NOT in gold5): a clear Falta de Servicio and a borderline Reconocimiento
+    taken from the ambiguous subset (a shared Quejas/Reconocimientos text, TE §6.4.3)."""
     probs = final["probs"]
     pred = final["pred_mirror"]
     conf = np.asarray([p[int(c) - 1] for p, c in zip(probs, pred)])
@@ -191,7 +201,7 @@ def pick_gold_and_demo(final: dict, ids, texts, y_te, nodup, vocab, te_docs):
     gold = []
     chosen = set()
     for cid, name in data.CATEGORIES:
-        ok = np.flatnonzero((y_te == cid) & (pred == cid) & (conf >= GOLD_MIN_CONF) & nodup & readable)
+        ok = np.flatnonzero((y_te == cid) & (pred == cid) & (conf >= GOLD_MIN_CONF) & nodup & noamb & readable)
         if len(ok) == 0:
             raise SystemExit(f"no eligible gold comment for category {cid}")
         j = int(rng.choice(ok))
@@ -208,12 +218,24 @@ def pick_gold_and_demo(final: dict, ids, texts, y_te, nodup, vocab, te_docs):
             "lexemas": [vocab.lexemes[i] for i in te_docs[j][0]],
         }
 
-    clear = np.flatnonzero((y_te == 1) & (pred == 1) & (conf >= 0.97) & nodup & readable)
+    clear = np.flatnonzero((y_te == 1) & (pred == 1) & (conf >= 0.97) & nodup & noamb & readable)
     clear = [j for j in clear if j not in chosen]
+    if not clear:  # no Falta de Servicio reaches 0.97: take the most confident correct one
+        cand = [j for j in np.flatnonzero((y_te == 1) & (pred == 1) & nodup & noamb & readable) if j not in chosen]
+        clear = [max(cand, key=lambda j: (conf[j], -j))]
     j_clear = int(rng.choice(clear))
-    rec = np.flatnonzero((y_te == data.RECONOCIMIENTOS) & (pred == data.RECONOCIMIENTOS) & nodup & readable)
-    rec = [j for j in rec if j not in chosen]
-    j_border = int(min(rec, key=lambda j: (conf[j], j)))
+    # Borderline: a Reconocimiento of the ambiguous subset; among them, the one whose top two
+    # classes are closest (correctly classified if any is).
+    rec = [j for j in np.flatnonzero((y_te == data.RECONOCIMIENTOS) & ~noamb & nodup & readable) if j not in chosen]
+    if not rec:
+        rec = [j for j in np.flatnonzero((y_te == data.RECONOCIMIENTOS) & ~noamb) if j not in chosen]
+    right = [j for j in rec if pred[j] == data.RECONOCIMIENTOS] or rec
+
+    def margin(j: int) -> float:
+        p = sorted(probs[j], reverse=True)
+        return p[0] - p[1]
+
+    j_border = int(min(right, key=lambda j: (margin(j), j)))
     return gold, {"claro_falta_de_servicio": describe(j_clear), "frontera_reconocimiento": describe(j_border)}
 
 
