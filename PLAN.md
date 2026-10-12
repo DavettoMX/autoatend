@@ -1,63 +1,266 @@
-# AutoAtend (CENEVAL Case 10433) — Architectural Baseline & Execution Plan
+# AutoAtend (CENEVAL caso 10433): plan de ejecución hacia la demo
 
-**Role:** Principal Software Architect / Technical PM
-**Inputs:** `2907_10433.pdf` (problem statement), `TrabajoEscrito_Consolidado.pdf` (architecture baseline)
-**Targets:** Windows x86-64 (i5, 8 GB, primary) · macOS 27 ARM64 (Apple Silicon M2, 8 GB, backup)
+**Demo:** 13 de octubre de 2026. **Reescrito:** 11 de octubre de 2026.
+**Objetivo:** llegar a la evaluación oral con un sistema funcionando que siga el guion del TE §6.4.3 y el orden del documento, con resultados medidos para la sección "Resultados" de la presentación.
+**Plataformas:** Windows x86-64 (equipo del CENEVAL: Core i5, 8 GB) y macOS ARM64 (Mac propia, que el CENEVAL autorizó).
 
----
+## 0. Fuentes de verdad
 
-**Document Alignment (Step 1):** The problem statement (CENEVAL case 10433, TelArg/AutoAtend) issues five consignas that map 1:1 to the architecture baseline: **(a)** corpus DB → two SQLite 3NF files (`corpus.db`, `resultados.db`); **(b)** text analyzer → hand-built lexical pipeline (own regex parser → Thompson NFA-ε → state-set simulation → symbol table → per-lexeme regex generation, e.g. `factur(a|as|ación|ado|ando)`); **(c)/(d)** test plan + justification → 6-level verification driven by 4 algebraic invariants (I-1..I-4); **(e)** classifier web service → Go stdlib HTTP server on loopback 8471 (fallback 8472–8480) with native sparse-JSON inference. The prompt adds one new constraint not in the baseline: a **backup target macOS ARM64 (M2)**, absorbed into the cross-compilation strategy below. **Deviation policy:** the problem statement is the source of truth; the baseline (already delivered to the synod) is followed as closely as possible. A deviation from the baseline — including an apparent improvement — is never implemented unilaterally: if no baseline-faithful alternative satisfies the problem statement, or a different option looks better, it is first validated with the user (affected baseline section, reason, alternatives evaluated, evidence, recommendation) and only then implemented and recorded in the corresponding ADR. ADRs are written only for the decisions the baseline promises to document (§5.2.1, §6.2.3, §6.4): ADR-001 SQLite, ADR-002 direct NFA-ε simulation, ADR-003 stoplist, ADR-004 model, ADR-005 deployment.
+En orden de precedencia:
+1. `../documentos/2907_10433.pdf`: enunciado del caso.
+2. `../documentos/TrabajoEscrito_Consolidado.pdf` (TE): diseño entregado a los sinodales, congelado.
+3. Este plan.
 
-### 1. Architectural Baseline & Deployment Strategy
+La guía del Acuerdo 286 ("Exposición y réplica oral") fija lo que se evalúa:
+- La presentación dura 20 minutos y lleva portada, diagnóstico, resolución de las consignas y resultados.
+- Lo que se diseñó se presenta funcionando.
+- Los sinodales evalúan el fundamento teórico-metodológico, la pertinencia y la consistencia entre el trabajo escrito, la exposición y la réplica.
 
-*   **System Components:**
-    1.  **Lexer / Software Base** (`internal/regex`, `internal/lexer`, `cmd/simulador`): hand-written Go chain — recursive-descent regex parser (operators `| * + ? ( ) [ ]`, AST) → Thompson construction (≤ 2·|r| states) → NFA-ε simulation via ε-closure/move in O(n·m) → Unicode NFC normalizer → 4-state DFA tokenizer → curated stoplist (homographs retained) → symbol table (hash, O(1)) → LCP-based regex generator with round-trip validation → 3-char prefix index. **No `regexp` import, no external parser generators.** Solves consigna **b**.
-    2.  **Database** (`internal/db`, `cmd/gencorpus`): two SQLite 3NF files via `modernc.org/sqlite` (pure Go, zero CGo). `corpus.db` (`categorias` with CHECK of the 5 case labels, `comentarios` with FK + ISO-date GLOB, 3 indexes — exactly the Anexo I DDL; the 80/20 split is not stored but defined as a single query, a global temporal cut-off per baseline §5.2.2) seeded deterministically (seed **10433**, ~73,000 comments, distribution 30/20/20/20/10). `resultados.db` (`corridas`, `lexemas`, `frecuencias` with `categoria_id NULL` = global, `variantes`), with cross-file `categoria_id` integrity verified via `ATTACH DATABASE` + `JOIN` as Anexo I states (generation pipeline and, since the runtime opens real files, also available at runtime). Journal modes as Anexo I: `corpus.db` WAL, `resultados.db` DELETE. Solves consigna **a**.
-    3.  **Web Service** (`cmd/autoatend`, `internal/web`, `internal/ml`): Go stdlib `net/http` on `127.0.0.1:8471` with automatic fallback 8472–8480; endpoints `GET /` (embedded HTML, system fonts, no CDN), `POST /api/clasificar`, `GET /api/lexemas` (paginated), `GET /api/categorias`, `GET /api/health`; native Go inference over sparse `modelo.json` (TF-IDF + NBM or Softmax LR, selected by 5-fold stratified CV Macro-F1); `--selftest` headless mode (<3 s, exit 0/1). Solves consigna **e**; consignas **c/d** are the verification protocol in §2 plus `docs/PLAN_PRUEBAS.md` (Phase 2).
-
-*   **Cross-Compilation Plan:** Single Go module, one `./cmd/autoatend` entrypoint, only pure-Go dependencies (`modernc.org/sqlite`), all assets (`corpus.db`, `resultados.db`, `modelo.json`, UI) embedded via `go:embed`. Both binaries are produced from the same commit on any host with no C toolchain:
-
-    ```bash
-    # Primary target — Windows x86-64 (Intel i5, 8 GB)
-    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
-      go build -trimpath -ldflags="-s -w -X main.version=1.0.0" \
-      -o dist/autoatend.exe ./cmd/autoatend
-
-    # Backup target — macOS 27 Golden Gate, Apple Silicon M2 (ARM64)
-    CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 \
-      go build -trimpath -ldflags="-s -w -X main.version=1.0.0" \
-      -o dist/autoatend-macos-arm64 ./cmd/autoatend
-    ```
-
-    Constraints enforced: `CGO_ENABLED=0` (eliminates DLL/ABI risk; `modernc.org/sqlite` needs no C); `-trimpath -ldflags="-s -w"` (reproducible, compact static binaries); CI grep-gate forbidding `import "regexp"` and any non-stdlib platform binding; the only `runtime.GOOS` branch permitted is the optional browser auto-launch (`rundll32 url.dll` vs `open`), guarded and non-critical; the embedded databases (`go:embed`, baseline §7) are written at startup to a per-process directory under the user temp directory (`os.MkdirTemp`; user-writable, no admin rights) and opened exactly as baseline §5.1.4 states, with `mode=ro&immutable=1` — verified with modernc: a VACUUMed, checkpointed WAL file opens read-only even from a read-only directory, rejects writes and creates no `-wal`/`-shm` sidecar, whereas `mode=ro` alone fails there; file URIs are built as `file:///C:/...` on Windows (`db.FileURI`); a failure to write or open the files is fatal at startup (fail fast with diagnostic) and the directory is removed on exit; loopback-only listener requires no admin rights or firewall rules on Windows or macOS; on macOS the unsigned binary may need `xattr -d com.apple.quarantine` (user-level, no admin) if transferred from another machine. Memory footprint (SQLite page cache + symbol table + sparse model in RAM) is orders of magnitude below the 8 GB limit on both targets.
-
-### 2. Execution Plan (WBS)
-
-**Phase 1 — Database & Data Generation** *(consigna a)*
-*   **Tasks:** Init Go module + pin deps; implement the DDL for `corpus.db` and `resultados.db` exactly as baseline Anexo I (`CREATE … IF NOT EXISTS`, CHECK constraints, FK `ON DELETE RESTRICT`, composite PK in `frecuencias`, the Anexo I indexes and no others), with the Anexo I journal modes — `corpus.db` WAL, `resultados.db` DELETE — and a `Finalize` step (`VACUUM`, plus `wal_checkpoint(TRUNCATE)` for WAL) that leaves each file as one self-contained image ready for `go:embed`; read-only opener with `mode=ro&immutable=1` (baseline §5.1.4) and Windows-safe file URIs (`file:///C:/...`). The PRIMARY KEY of `frecuencias` admits a second global row (SQLite treats NULLs as distinct); no extra index is added — the baseline I-2 query detects it (verified by test), so the DDL stays verbatim. Build `cmd/gencorpus`: `rand.New(rand.NewSource(10433))`, 30–60 slot-typed templates per category, domain vocabularies (plans, amounts, folios, colloquialisms), calibrated noise injector (missing tildes, case jitter, abbreviations `q/x/tel/fact`, typos), pre-persist validation battery (per-category counts vs target, no empty texts, bounded inter-category lexical overlap, 50-comment/category sample review); transactional bulk insert of 73,000 rows; `ATTACH DATABASE` cross-file integrity helper (Anexo I); deterministic-write discipline (sorted iteration order, fixed PRAGMAs, no timestamps in `corridas`, post-build `VACUUM`) as the enabling mechanism for invariant I-3; deterministic 80/20 split exactly as baseline §5.2.2 — stratified by category **and** with every training comment earlier than every test comment across all categories — defined once as the query `db.SplitCutoff` (cut-off = `fecha` of the comment at chronological position ⌊80%·N⌋; train `fecha < cut-off`, test `fecha >= cut-off`; on this corpus 2026-04-06, 58,400 / 14,600, per-category train share 79.5–80.3%) and reused unchanged by the Phase 2 gold5 candidates and Phase 3 training/evaluation (no re-splitting downstream; Python runs the same SQL text).
-*   **Deliverables:** `internal/db/` (schema, read-only opener, split query), `cmd/gencorpus/`, populated `corpus.db`, generator validation report (including generator parameters and the test-in-train duplicate rate), ADR-001 (SQLite/modernc).
-*   **Testing Focus:** TDD unit tests for generator determinism (same seed → identical row set) and DDL enforcement (exact Anexo I object set; 6th category rejected, FK restrict, date GLOB; a duplicate global row in `frecuencias` detected by the baseline I-2 query); journal-mode test (corpus WAL header, resultados rollback header, no sidecars); read-only open of a WAL file from a read-only directory; split tests (independent oracle for the cut-off, determinism, `max(train.fecha) < min(test.fecha)` globally); **Integration test (Level 4a):** gencorpus → `corpus.db` — exact target counts, distribution within ±1%, zero empty texts, cut-off equal to the date oracle, test = 14,600, per-category train share and class mix of both sets within ±1%; groundwork for I-3.
-
-**Phase 2 — Custom Lexical Analyzer (NFA-ε)** *(consigna b; invariants for c/d)*
-*   **Tasks:** Implement in strict TDD order: regex parser (grammar `expresion→alternancia→concatenacion→factor→primario`, operators `| * + ? ( ) [ ]` plus the `\` metacharacter escape per the baseline §6.2.3 grammar — `caracter → LETRA | DIGITO | '\' metacaracter` — typed AST, descriptive errors); Thompson construction (fragment composition rules); ε-closure + move simulator; Unicode NFC lowercase normalizer with defined alphabet (`[a-záéíóúüñ]`, digits, separators); 4-state DFA tokenizer; curated stoplist hash map (documented homograph retention); symbol table with global + per-category counters and variant sets; LCP-root regex generator with alternation of suffixes; round-trip validator (re-parse generated ER → Thompson → simulate acceptance of every observed variant, fallback to canonical form on failure — target: never triggered); 3-char prefix index for candidate pruning; `cmd/simulador` sweep `corpus.db` → persist `corridas/lexemas/frecuencias/variantes` into `resultados.db`; export two separate statistic sets for Phase 3: the full-corpus sweep stats persisted in `resultados.db` (consigna b) and the train-partition document frequencies used for the model — the catalog in `resultados.db` stays built on the full corpus, but the model's vocabulary and IDF vector are computed from the training partition only; catalog terms with df=0 in training (lexemes observed only in the test partition) are excluded from the model vocabulary — consistent with fit-on-train semantics and zero parity risk — while remaining in the catalog, and their count is reported (as baseline §6.4.2 states: IDF weights "precalculados durante el entrenamiento"). Additionally: **(1)** author the stoplist as a versioned data file (`internal/lexer/stoplist/v1.json`, form → closed class) under one policy that follows the problem statement, which requires ignoring exactly four classes — articles, prepositions, conjunctions and interjections — and resolves the baseline's internal contradictions in its favour (recorded in **ADR-003**, the ADR the baseline promises in §6.2.3): **filtered:** articles: el, la, los, las, un, una, unos, unas, lo; contractions: al, del; prepositions: de, en, con, por, a, ante, tras, durante, mediante, según, sin, hasta, desde, contra, hacia; conjunctions: y, e, o, u, ni, que, pero, sino, aunque, porque, pues; interjections: ah, eh, ay, uf, olé — **retained homographs (not filtered), exactly the baseline list (§6.2.3):** bajo, para, sobre, entre, como, más, solo, aun. Contradictions resolved: (i) prepositions are filtered (problem statement, baseline abstract and §5.1.2) although §6.2.3 lists only articles, conjunctions and interjections; (ii) `para` is retained as a homograph (§6.2.3 and §5.1.2's own homograph example) although §5.1.2 also lists it as filtered; (iii) `se`, `no`, `este`, `eso` are **not** filtered: §5.1.2 lists them, but the same section defines the closed classes as the four of the problem statement and these forms belong to none of them, so filtering them would drop lexemes the case requires in the catalog; (iv) `la`/`lo` are filtered as articles; their clitic-pronoun uses are an over-filtering limitation measured in L-1. **Surface variants of filtered forms (gap identified during development):** the tokenizer keeps tildes (baseline Etapa 1) and there is no accent folding, so a filtered form written without its tilde or abbreviated would survive as a false lexeme. Two sources: free text received by the web service (consigna e) — `segun` and `ole` are added as tilde-less variants of the only two accented filtered forms (según, olé; neither occurs in the generated corpus, so this protects live input) — and the corpus noise injector of baseline §6.1.4, which writes `q` for que and `x` for por (5,570 and 3,609 comments) — `q` → conjunction and `x` → preposition are added. Global accent folding is rejected: it would also fold él, qué, sí, té into filtered forms. The noise injector's tilde-dropping still turns qué into que and él into el; that is a corpus-level effect, measured in L-1 together with la/lo. The stoplist version is recorded in `corridas.parametros`. **(2)** Author `docs/PLAN_PRUEBAS.md`: standalone test-plan and justification document (consignas c/d) mapping each of the 6 verification levels and each quantitative threshold to its ISO/IEC 25010 subcharacteristic and its justification rationale, per TrabajoEscrito §6.3.3, §6.3.8 and Anexo II; the document is authored in Phase 2 as a complete, forward-looking document covering all 6 levels, with thresholds pinned from baseline §6.3.8. **(3)** Author the candidate gold demo comments with expected labels, drawn exclusively from the held-out test partition fixed in Phase 1 (never from training); the final 5 are frozen after Phase 3 model selection under the criterion "correctly classified by the winning model with confidence ≥ 0.80 (winning-class posterior)" — the threshold 0.80 is fixed here, in Phase 2, before freezing, so the selection is reproducible — because `--selftest` exits 1 if any gold comment is misclassified; stored as `gold5.json`, input to Phase 3's parity check and Phase 4's `--selftest` embedding. Because gold5 selection requires "correctly classified by the winning model", the `--selftest` gold check is a **regression guard** (detects model/pipeline drift between builds), not an independent accuracy test; accuracy evidence comes only from CPM01/CPM02 measured on the full test partition. **(4)** Author the L-1 measurement: 200 manually labeled tokens covering retained-homograph occurrences plus la/lo/él/qué occurrences, drawn from the test partition; report the under-filtering rate (retained forms acting as closed class) and the over-filtering rate (la/lo/él/qué acting as pronoun/interrogative) in `docs/PLAN_PRUEBAS.md`; the labeled sample is stored as `docs/l1_muestra_200.csv`.
-*   **Deliverables:** `internal/regex/` (parser, AST, Thompson, simulator), `internal/lexer/` (normalize, tokenizer, stoplist, symtab, ER generator, prefix index), `cmd/simulador/`, populated `resultados.db`, vocabulary/DF export file, `internal/lexer/stoplist/v1.json` (versioned stoplist), `docs/PLAN_PRUEBAS.md`, `gold5.json` (candidates; frozen after Phase 3), `docs/l1_muestra_200.csv` (labeled L-1 sample), ADR-002 (direct NFA simulation over DFA subset construction), ADR-003 (stoplist policy: the four classes of the problem statement, baseline homographs, surface variants segun/ole/q/x, no global accent folding).
-*   **Testing Focus:** **Level 1 Unit (CPU01–CPU13, plus CPU14):** parser nominal/error/precedence/deep-nesting; Thompson fragment state/transition counts; simulation accept/reject and empirical O(n·m) probes (10/100/1k/10k chars); symbol-table counters; stoplist filter/retain cases — CPU11–CPU13 and CE-7 execute against the versioned stoplist file; sweep persistence test: the sweep never inserts a `frecuencias` row with `valor = 0` (it would violate `CHECK(valor > 0)`), and zero-occurrence (lexema, categoria) pairs are represented by absence of a row, so the I-2 sums remain correct; CPU14 — a project addition **not present in Anexo II** (which ends at CPU13) and listed as an extension in `docs/PLAN_PRUEBAS.md` — asserts the ADR-003 decisions against `v1.json`: "segun" and "ole" resolve to the same class as "según" and "olé" (preposition and interjection), "q" → conjunction, "x" → preposition, "hacia" → preposition; negative assertions that "él", "qué", "sí", "té", "se", "no", "este" and "eso" are not filtered. **Level 2 Property-Based (CPP01–CPP04):** I-1 round-trip **0 failures** over the full catalog; I-2 frequency conservation via the baseline §6.3.3 query verbatim (`GROUP BY l.id … HAVING global != suma_categorias`) returning **0 rows** — correct because each `resultados.db` holds exactly one corrida (implied by `forma_canonica UNIQUE` and by I-3 comparing one file per run), asserted by a test that `corridas` has one row; I-3 idempotence — two runs, identical **SHA-256** of `resultados.db`; I-4 linearity — sweep 1k/10k/30k/50k/73k, **R² ≥ 0.99**, T(73k) **< 60 s**. **Level 3 Equivalence/Boundary (CPE01–CPE04):** CE-1…CE-7 (stopword-only → null vector; single token; empty text; emojis/URLs/HTML as separators; >1,000-char text; homographs retained) plus boundary lengths 0/1/2/999/1000/1001/10000 and counter-overflow probes. **Level 4b/4c Integration:** no orphan lexemes, every lexeme has ≥1 variant, every stored ER parses; 100-comment gold corpus oracle. Coverage gate **≥ 80%** (`go test -cover`). Document validation (A1): every threshold in the Phase 5 final acceptance checklist appears in `docs/PLAN_PRUEBAS.md`. Limitation measurements: L-2 — fraction of catalog lexemes with a single observed variant (baseline §6.3.10/§7.3) — is computed and reported; L-1 (under-/over-filtering rates from the labeled 200-token sample) and L-2 are required sections of `docs/PLAN_PRUEBAS.md`. Anexo II row→phase mapping (each row in exactly one phase): CPU01–CPU13, CPP01–CPP04, CPE01–CPE04 → Phase 2; CPA06, CPM01, CPM02 → Phase 3; CPA01–CPA05 → Phase 4; CPU14 is a project extension outside Anexo II, listed in `docs/PLAN_PRUEBAS.md` and executed in Phase 2.
-
-**Phase 3 — ML Training (Python) & JSON Porting (Go)**
-*   **Tasks:** Create isolated Python venv (scikit-learn); export corpus using the deterministic 80/20 temporal-stratified split fixed and persisted in Phase 1 (no re-splitting; no temporal leakage); build the parity harness — Python vectorizer invokes the **Go tokenizer as subprocess** so both sides share one lexical definition; compute TF-IDF with vocabulary and IDF derived from the training partition only (Phase 2 train-partition DF export; df=0-in-training terms excluded from the model vocabulary and counted in the evaluation report), L2 normalization; train **NBM** and **Softmax LR** under the three imbalance strategies (class weights / oversampling / baseline) with **5-fold stratified CV**; select winner by mean Macro-F1; final evaluation on the held-out test set (Macro-F1, per-class recall, row-normalized confusion matrix); freeze the final gold5 after model selection under the stated criterion (winning-model-correct, confidence ≥ 0.80 — threshold fixed in Phase 2); export `modelo.json` — sparse index–value weights, bias vector, IDF vector, vocabulary map, embedded CV metrics — plus `modelo_alternativo.json` for the oral-defense comparison; implement `internal/ml`: JSON loader and inference (tokenize → vocab map → sparse TF-IDF → per-class `z_k = b_k + Σ w_{k,i}·x_i` over the support only → softmax with max-subtraction → top-5 lexemes by `|w_{k,i}·x_i|` for explainability).
-*   **Deliverables:** `ml/` Python package (train/evaluate/export), `modelo.json`, `modelo_alternativo.json`, frozen `gold5.json`, `internal/ml/` (loader + inference), evaluation report (CV table, confusion matrix), ADR-004 (model choice, JSON-over-pickle rationale).
-*   **Testing Focus:** **Level 5 Python↔Go Parity (CPA06):** 1,000 random test comments vectorized on both sides — sparse vectors identical (**L1 = 0**); the 5 gold demo comments (frozen `gold5.json`, drawn from the Phase 1 test partition and finalized after model selection) yield identical predicted categories in both runtimes; Go inference unit tests against Python-precomputed fixture scores (tolerance-defined float comparison). Acceptance gates: **Macro-F1 ≥ 0.85 (CPM01)**, **minority-class recall (Reconocimientos) ≥ 0.70 (CPM02)**.
-
-**Phase 4 — Web Service & Integration** *(consigna e)*
-*   **Tasks:** Implement `cmd/autoatend`: stdlib `net/http` bound to `127.0.0.1`, port 8471 with fallback scan 8472–8480 and console banner showing the effective URL; handlers for the five endpoints with strict input validation (empty `texto` → 400 with descriptive message; oversize body → 413; SQL-injection-safe by construction — read-only DB, parameterized-only queries); `/api/health` returns exactly `{"ok": true, "version": "...", "lexemas": N, "puerto": P}`; pagination on `/api/lexemas`; `go:embed` of DBs, model, frozen `gold5.json`, and single-file HTML UI; startup DB loader: write each embedded database to a per-process directory under the user temp directory and open it with `db.OpenReadOnly` (`mode=ro&immutable=1`, baseline §5.1.4), with any write/open error fatal at startup and the directory removed on exit; cross-file `categoria_id` integrity checked at startup with `ATTACH` (baseline §6.1.3); response schema `{"categoria", "confianzas"{5}, "lexemas_clave"[5]}` with confidences summing to 1.0; implement `--selftest` (<3 s: integrity/count check of `corpus.db`, ER-syntax validity of the `resultados.db` catalog, classification of the 5 embedded gold comments against expected labels, port availability/fallback check → exit 0/1 with per-check diagnostics); the gold-comment check is a **regression guard** (gold5 was selected as correctly classified by the winning model), not independent accuracy evidence — accuracy is attested only by CPM01/CPM02 on the full test partition; pre-gate review task: confirm the implemented parity and API tests match `docs/PLAN_PRUEBAS.md` before the Phase 5 gate.
-*   **Deliverables:** `internal/web/` (handlers, middleware, banner), `cmd/autoatend/` main, embedded UI, `--selftest` mode, ADR-005 (loopback-only, no TLS/auth/CORS).
-*   **Testing Focus:** **Level 6 API Contract (CPA01–CPA05):** valid classify → 200 with 5 confidences summing to 1.0; empty text → 400, no panic; 1 MB body → 413 or <50 ms; SQLi payload → 200/400 with `resultados.db` unmodified; `/api/lexemas` field shape; `/api/categorias` exactly 5; `/api/health` asserts all four contract fields (`ok=true`, `version`, `lexemas`=N, `puerto`=P); occupied-8471 → binds 8472 with correct banner. **Latency test:** 100 consecutive `/api/clasificar` calls, **P99 < 50 ms**. Handler tests via `net/http/httptest`; `--selftest` exit-code tests. **Startup spike (pass/fail):** pass iff (a) the extracted images open with `mode=ro&immutable=1` on Windows and macOS (WAL `corpus.db`, DELETE `resultados.db`); (b) `--selftest` completes < 3 s with the real-size DBs; (c) peak RSS is measured and reported (far under the 8 GB budget); (d) the I-3 SHA-256 is computed on the generated `resultados.db` file before embedding. **Level 4 end-to-end re-run** of the full chain `gencorpus → corpus.db → simulador → resultados.db → modelo.json → inference` on a clean checkout.
-
-**Phase 5 — CI/CD & Cross-Platform Verification**
-*   **Tasks:** GitHub Actions matrix pipeline: (1) `ubuntu-latest` — vet, lint, full test suite, coverage gate ≥ 80%, I-1…I-4 invariant suite, Wine smoke-run of `autoatend.exe --selftest`; (2) `windows-latest` — native build with the §1 command and `.\autoatend.exe --selftest`; (3) `macos-latest` (ARM64) — native build and `./autoatend-macos-arm64 --selftest`; publish both binaries as versioned artifacts; CI grep-gate asserting zero `regexp` imports and zero CGo; exam-day runbook: selftest script, two live-comment demo script (one clear case, one borderline), `/api/lexemas` walkthrough linking consigna e back to consigna b, frozen-seed reproducibility statement (hash of `resultados.db` printed for the synod).
-*   **Deliverables:** `.github/workflows/ci.yml`, `dist/autoatend.exe` (windows/amd64), `dist/autoatend-macos-arm64` (darwin/arm64), cross-platform verification report, exam-day runbook, complete ADR set (001–005).
-*   **Testing Focus:** Full 6-level suite (Unit → Property/Invariants → Equivalence/Boundary → Integration → Python-Go Parity → API Contract) executed green on both OS runners; `--selftest` passing on Windows x86-64 and macOS ARM64 in CI as the proxy for exam-day hardware; final acceptance checklist verified: I-1 = 0 failures, I-2 = 0 discrepancies (baseline §6.3.3 query), I-3 equal SHA-256 (computed on the generated `resultados.db` file before embedding), I-4 R² ≥ 0.99 & T(73k) < 60 s, coverage ≥ 80%, parity 0/1000, Macro-F1 ≥ 0.85 (CPM01), recall(Reconocimientos) ≥ 0.70 (CPM02), P99 < 50 ms; `docs/PLAN_PRUEBAS.md` consistency gate — the acceptance checklist must match `docs/PLAN_PRUEBAS.md` bidirectionally (every threshold in the checklist appears in the document and vice versa), limited to quantitative acceptance thresholds; L-1, L-2 and CPU14 are excluded from the comparison (A1 validation); all ADRs 001–005 present.
+Por eso **cada diferencia con el TE es una pregunta potencial**: se evita, y cuando no se puede evitar se declara en §1.3 con su respuesta preparada.
 
 ---
 
-**Sequencing rationale:** the phases form the critical path dictated by data flow — no lexeme catalog → no TF-IDF matrix → no model → no inference — so they must run strictly in order, with each phase's invariant gates acting as the entry criteria for the next (e.g., Phase 3 cannot start until I-1/I-2 pass on `resultados.db`). Phase 3's actual dependencies on Phase 2 are the train-partition document-frequency export and the I-1/I-2 gates on `resultados.db`. In addition, the gold5 candidates authored in Phase 2 are drawn from the Phase 1 test partition and are frozen only after Phase 3 model selection, and Phase 4's `--selftest` depends on the frozen set.
+## 1. Alineación caso ↔ TE
+
+### 1.1 Consignas
+
+| Consigna | TE | Artefacto | Estado |
+|---|---|---|---|
+| a) Base de datos del corpus | §6.1, Anexo I | `data/corpus.db` (`cmd/gencorpus`) | ✅ Fase 1 |
+| b) Programa analizador | §6.2 | `internal/lexer`, `internal/regex`, `cmd/simulador` → `data/resultados.db` | Bloques A y B |
+| c) Plan de pruebas | §6.3, Anexo II | El TE mismo, más las pruebas en el repo y `docs/CASOS_PRUEBA.md` (matriz ID → prueba, porque el Anexo II dice "la tabla completa… se encuentra en el repositorio") | Bloques A–E |
+| d) Justificación del plan | §6.3.1, §6.3.8 (ISO/IEC 25010) | El TE mismo; las cifras medidas van en §5.2 | Bloque E |
+| e) Servicio web | §6.4 | `cmd/autoatend` (`internal/ml`, `internal/web`, `internal/assets`) | Bloques C y D |
+
+Solo la consigna e se exige "presentar el día de su evaluación oral". La b la alimenta, y el paso 4 del guion conecta las dos.
+
+### 1.2 Política de desviaciones
+
+Se implementa lo que dice el TE. Si no se puede cumplir tal cual, o si parece haber una opción mejor, se valida primero con el usuario. La consulta incluye la sección afectada, el motivo, las alternativas fieles al TE que se evaluaron, la evidencia y una recomendación. Solo después se implementa y se registra en el ADR que el TE promete para ese tema (ADR-001 SQLite, ADR-002 simulación del AFN-ε, ADR-003 stoplist, ADR-004 modelo, ADR-005 despliegue).
+
+### 1.3 Desviaciones aprobadas (11-oct)
+
+| Desviación | TE | Respuesta para la réplica | Registro |
+|---|---|---|---|
+| **Sin CI con GitHub Actions** (Capa 1) **ni Wine** (Capa 2) | §6.3.9 | Se sustituyen por ejecución nativa en Windows x86-64 y en macOS ARM64, que es evidencia más fuerte que un emulador o un runner remoto. La Capa 3 (`--selftest` en la máquina del examen) se conserva. Sin CGo no hay dependencias de DLL que detectar. | ADR-005 |
+| **Los umbrales de §6.3.8 se miden y no bloquean** (I-4, P99, paridad, cobertura, CPM01/CPM02) | §6.3.8 | Cada umbral se mide con una prueba o un script reproducible y se reporta el valor observado. Durante el sprint solo bloquean I-1, I-2 y `--selftest`, que son los que protegen la corrección de lo que se muestra. | §5.2 de este plan |
+| **No hay documento `docs/PLAN_PRUEBAS.md` aparte** | — (solo del plan anterior) | El plan de pruebas y su justificación son el TE §6.3. En el repo vive la matriz de casos (`docs/CASOS_PRUEBA.md`) que pide el Anexo II. | — |
+
+Se conserva, ya aprobado: la stoplist de ADR-003, el IDF solo de train, el embed escrito a temporal con `mode=ro&immutable=1` y la I-2 con la consulta literal (ver "Apego al Trabajo Escrito" en `CLAUDE.md`).
+
+---
+
+## 2. Arquitectura y despliegue
+
+- **Software base** (`internal/regex`, `internal/lexer`, `cmd/simulador`), escrito a mano en Go:
+  - parser de ER por descenso recursivo (operadores `| * + ? ( ) [ ]` y escape `\`, gramática del TE §6.2.3) → AST;
+  - construcción de Thompson (≤ 2·|r| estados);
+  - simulación del AFN-ε por ε-cerradura y movida, O(n·m);
+  - normalizador NFC a minúsculas y tokenizador AFD de 4 estados;
+  - stoplist curada (homógrafos retenidos), tabla de símbolos hash O(1);
+  - generador de ER por prefijo común con validación round-trip;
+  - índice de prefijo de 3 caracteres (§6.2.5).
+
+  **Sin `import "regexp"`, sin generadores de parsers.**
+- **Base de datos** (`internal/db`, `cmd/gencorpus`): dos archivos SQLite en 3FN con `modernc.org/sqlite` (Go puro, sin CGo). La DDL es literal del Anexo I. `corpus.db` usa WAL y `resultados.db` usa DELETE. La integridad cruzada de `categoria_id` se verifica con `ATTACH`.
+- **Servicio web** (`cmd/autoatend`, `internal/web`, `internal/ml`, `internal/assets`):
+  - `net/http` en `127.0.0.1:8471`, con fallback 8472–8480 y banner con la URL efectiva;
+  - endpoints `GET /` (HTML embebido, sin CDN), `POST /api/clasificar`, `GET /api/lexemas` (paginado), `GET /api/categorias` y `GET /api/health`;
+  - inferencia nativa sobre `modelo.json` disperso;
+  - `--selftest` sin interfaz (< 3 s, código de salida 0/1).
+- **Compilación cruzada** desde cualquier host, sin toolchain de C:
+
+  ```bash
+  # Principal: Windows x86-64
+  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 \
+    go build -trimpath -ldflags="-s -w -X main.version=1.0.0" \
+    -o dist/autoatend.exe ./cmd/autoatend
+
+  # Respaldo: macOS ARM64 (Apple Silicon)
+  CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 \
+    go build -trimpath -ldflags="-s -w -X main.version=1.0.0" \
+    -o dist/autoatend-macos-arm64 ./cmd/autoatend
+  ```
+
+- **Arranque:**
+  - Las BD embebidas (`go:embed`, TE §7) se escriben en un directorio propio del proceso bajo el temporal del usuario (`os.MkdirTemp`, sin permisos de administrador). Se abren con `db.OpenReadOnly` (`mode=ro&immutable=1`, TE §5.1.4) y con URI `file:///C:/…` en Windows (`db.FileURI`).
+  - Si escribir o abrir falla, el programa termina al arrancar con un diagnóstico. El directorio se borra al salir.
+  - El único `runtime.GOOS` permitido es la apertura del navegador.
+  - En macOS, un binario copiado desde otra máquina puede requerir `xattr -d com.apple.quarantine` (nivel usuario).
+
+**Flujo de datos (camino crítico):** `corpus.db` → lexer → `resultados.db` y DF de train → modelo → inferencia → servicio. Por eso los bloques van en orden. El entrenamiento en Python (C) puede correr mientras se programa B.
+
+---
+
+## 3. Fase 1 (consigna a): cerrada
+
+Entregado y verificado con `make verify` en verde:
+- `data/corpus.db`: semilla 10433, 73,000 comentarios, distribución 30/20/20/20/10, del 2024-08-30 al 2026-08-29.
+- SHA-256 `ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219`.
+- Reporte en `docs/reports/generator_validation_report.md`.
+- Split temporal global `db.SplitCutoff`: corte 2026-04-06, 58,400 / 14,600.
+- DDL literal del Anexo I, `mode=ro&immutable=1`, `db.FileURI` para Windows, ADR-001.
+- `gencorpus` acepta los flags `-seed`, `-total` y `-noise-rate` (los usa la medición I-4).
+
+**Hechos que afectan las fases siguientes:**
+- El 19.6 % del test (2,860 de 14,600) tiene un texto idéntico en train, lo que infla CPM01/CPM02. Las métricas también se reportan sin duplicados (Bloque C).
+- El ruido escribe `q` por "que" y `x` por "por" (5,570 y 3,609 comentarios). Ya están cubiertos en ADR-003.
+- El Jaccard del reporte se calcula sin stoplist, así que el rango 0.22–0.34 refleja sobre todo palabras funcionales. Se recalcula con la stoplist v1 (Bloque A, P2).
+
+**Deuda conocida, no bloqueante (después de la demo):**
+- `internal/corpus/pipeline.go`: `defer f.Close()` ignora el error al cerrar el reporte.
+- `internal/corpus/pipeline.go`: si `verifyCorpus` falla, `corpus.db` se queda en disco.
+- `internal/corpus/noise.go`: `typo()` con mayúscula siempre la duplica. **No se corrige antes de la demo**: cambia 38,582 textos y el SHA del corpus.
+- `ValidationError.Error()` sin cobertura (`Run` 78.6 %, `verifyCorpus` 72.2 %).
+- Integración de nivel 4 con `testing.Short()` en lugar de la etiqueta `//go:build integration`.
+
+---
+
+## 4. Plan hasta la demo
+
+**Prioridades:** **P0** se necesita para la demo · **P1** es compromiso del TE y barato · **P2** solo si sobra tiempo. Si un bloque se atrasa, se recorta P2 y luego P1, nunca P0.
+
+**Método:**
+- Cada pieza en su rama (`fase2/…`, `fase3/…`, `fase4/…`) con al menos el par de commits `test: … (red)` → `feat: … (green)` (TE §5.2.1). El `refactor:` solo cuando haga falta.
+- Las pruebas llevan el ID del Anexo II (`TestCPU01_…`).
+- Merge `--no-ff` con aprobación del usuario.
+
+### Bloque A: lexer y barrido (11-oct, Fase 2, consigna b)
+
+| Prioridad | Tarea | TE | Pruebas |
+|---|---|---|---|
+| P0 | Normalizador NFC a minúsculas con el alfabeto `[a-záéíóúüñ]`, dígitos y separadores; tokenizador AFD de 4 estados | §6.2.2 | CPE01–CPE04 (CE-1…CE-7) |
+| P0 | `internal/lexer/stoplist/v1.json` (forma → clase cerrada) con la política de ADR-003 (abajo) | §6.2.3 | CPU11–CPU13, CPU14 (extensión) |
+| P0 | Tabla de símbolos: contadores global y por categoría, conjunto de variantes | §6.2.2 | CPU09, CPU10 |
+| P0 | Generador de ER por prefijo común con alternancia de sufijos (`factur(a\|as\|ación)`) | §6.2.2 | CPP01 (con el round-trip del Bloque B) |
+| P0 | `cmd/simulador`: barre `corpus.db` y persiste `corridas`, `lexemas`, `frecuencias` (sin filas con `valor = 0`) y `variantes` en `data/resultados.db`. Escribe en `corridas.parametros` la semilla, el `NoiseConfig`, el total del corpus y la versión de la stoplist (TE §6.1.4). Escritura determinista | §6.2, §6.1.3, §6.1.4 | Integración 4b |
+| P0 | Export de la frecuencia de documento (DF) de train para Python. El catálogo de `resultados.db` usa el corpus completo; el vocabulario y el IDF del modelo salen solo de train. Los términos con df = 0 en train se excluyen del modelo y se reporta cuántos son | §6.4.2 | — |
+| P1 | Índice de prefijo de 3 caracteres | §6.2.5 | Unitaria |
+| P1 | Borradores para el usuario: muestra L-1 de 200 tokens homógrafos (bajo, para, sobre, entre, como) con la etiqueta propuesta, y los 250 comentarios de la muestra del generador | §6.3.10, §6.1.4 | — |
+| P2 | Jaccard recalculado con la stoplist v1 | §6.1.4 | — |
+
+**Política de la stoplist (ADR-003, ya aprobada):**
+- **Se filtran:**
+  - artículos: el, la, los, las, un, una, unos, unas, lo; contracciones: al, del;
+  - preposiciones: de, en, con, por, a, ante, tras, durante, mediante, según, sin, hasta, desde, contra, hacia;
+  - conjunciones: y, e, o, u, ni, que, pero, sino, aunque, porque, pues;
+  - interjecciones: ah, eh, ay, uf, olé;
+  - variantes de superficie: `segun`, `ole`, `q` (conjunción) y `x` (preposición).
+- **Se retienen los homógrafos del TE:** bajo, para, sobre, entre, como, más, solo, aun.
+- **No se filtran** `se`, `no`, `este` y `eso`: no pertenecen a las 4 clases.
+- **No hay plegado global de acentos.**
+- **CPU14** verifica:
+  - `segun` y `ole` quedan en la misma clase que `según` y `olé`; `q` → conjunción; `x` → preposición; `hacia` → preposición;
+  - no se filtran `él`, `qué`, `sí`, `té`, `se`, `no`, `este` ni `eso`.
+
+**Criterio de salida:** `data/resultados.db` generado, I-2 = 0 filas y `make verify` en verde.
+
+### Bloque B: motor de ER propio e invariantes (12-oct, mañana, Fase 2, consignas b y c)
+
+| Prioridad | Tarea | TE | Pruebas |
+|---|---|---|---|
+| P0 | `internal/regex`: parser (gramática `expresion→alternancia→concatenacion→factor→primario`, AST tipado, errores descriptivos, límite de profundidad) | §6.2.3 | CPU01–CPU03 |
+| P0 | Construcción de Thompson (reglas de composición de fragmentos) | §6.2.4 | CPU04, CPU05 |
+| P0 | Simulación por ε-cerradura y movida; sondas empíricas de O(n·m) con 10, 100, 1k y 10k caracteres | §6.2.4 | CPU06–CPU08 |
+| P0 | **I-1**: round-trip de cada ER del catálogo (re-parsear → Thompson → aceptar todas las variantes observadas); 0 fallos | §6.3.3 | CPP01 |
+| P0 | **I-2**: la consulta literal del TE §6.3.3 devuelve 0 filas; prueba de que `corridas` tiene una sola fila | §6.3.3 | CPP02 |
+| P1 | **I-3**: dos barridos producen el mismo SHA-256 de `resultados.db` | §6.3.3 | CPP03 |
+| P1 | Integración 4b: sin lexemas huérfanos, cada lexema con al menos una variante, cada ER parsea con el parser propio | §6.3.5 | Integración |
+| P1 | Borrador del corpus de oro: 100 comentarios de test con sus lexemas y variantes esperados, para que el usuario lo valide (oráculo de §6.3.5c) | §6.3.5 | Integración 4c |
+| P1 | L-2: proporción de lexemas del catálogo con una sola variante observada | §6.3.10 | Medición |
+
+**Criterio de salida:** I-1 = 0 fallos, I-2 = 0 filas y `make verify` en verde.
+
+### Bloque C: modelo (12-oct, tarde, Fase 3, consigna e)
+
+| Prioridad | Tarea | TE | Pruebas |
+|---|---|---|---|
+| P0 | `ml/` (Python 3.11 y scikit-learn, venv aislado) con el split de `db.SplitCutoff` (misma consulta SQL, sin volver a partir). TF-IDF con vocabulario e IDF de train y normalización L2. El vectorizador invoca el tokenizador Go como subproceso | §6.4.2, §5.2.2 | — |
+| P0 | NBM y RLS, cada uno con las 3 estrategias de desbalance (`class_weight='balanced'`, sobremuestreo, línea base) y CV estratificada de 5 particiones; el ganador se elige por Macro-F1 promedio | §6.4.2, §5.1.3 | — |
+| P0 | Evaluación en test: Macro-F1, recall por clase y matriz de confusión normalizada. **También sobre el test sin duplicados en train.** Si NBM supera Macro-F1 0.99, se registra como señal de que el corpus es demasiado fácil | §5.2.2 | CPM01, CPM02 (medidos) |
+| P0 | Export de `modelo.json` (pesos dispersos, bias, IDF, mapa de vocabulario, métricas de CV) y del perdedor como `modelo_alternativo.json` | §6.4.2 | — |
+| P0 | `internal/ml`: carga del JSON e inferencia (tokenizar → vocabulario → TF-IDF disperso → `z_k = b_k + Σ w_{k,i}·x_i` sobre el soporte → softmax con resta del máximo → `lexemas_clave` top-5 por `\|w·x\|`) | §6.4.2 | Unitarias contra puntajes calculados en Python |
+| P0 | `gold5.json`: 5 comentarios de test bien clasificados (al menos un caso claro y un caso frontera para el guion) | §6.3.9, §6.4.3 | — |
+| P1 | Paridad Python ↔ Go sobre 1,000 comentarios de test (vectores con L1 = 0) | §6.3.6 | CPA06 (medido) |
+| P1 | ADR-004: elección del modelo y JSON en vez de pickle | §6.4 | — |
+
+**Criterio de salida:** `modelo.json` cargado en Go y los 5 comentarios de `gold5` correctos en Go.
+
+### Bloque D: servicio web (12-oct, noche, Fase 4, consigna e)
+
+| Prioridad | Tarea | TE | Pruebas |
+|---|---|---|---|
+| P0 | `internal/assets` con `go:embed` de `corpus.db`, `resultados.db`, `modelo.json`, `gold5.json` y `ui/`; el objetivo `make assets` los copia (nunca se editan a mano) | §7 | — |
+| P0 | `cmd/autoatend` e `internal/web`: los 5 endpoints. Validación: `texto` vacío → 400 con mensaje; cuerpo demasiado grande → 413; solo consultas parametrizadas. Respuesta `{"categoria", "confianzas"{5}, "lexemas_clave"[5]}` con confianzas que suman 1.0. `/api/health` → `{"ok", "version", "lexemas", "puerto"}` | §6.4.1, §6.3.7 | CPA01–CPA04 |
+| P0 | Arranque: BD a temporal + `OpenReadOnly`, `ATTACH` para la integridad de `categoria_id`, puerto 8471 con fallback 8472–8480, banner y apertura del navegador | §6.4.1, §6.1.3 | CPA05 |
+| P0 | Interfaz HTML única: caja de texto, categoría, las 5 confianzas, `lexemas_clave` y enlace a `/api/lexemas` | §6.4.1 | Manual |
+| P0 | `--selftest` (< 3 s): integridad y conteos de `corpus.db`, validez sintáctica de todas las ER del catálogo con el parser propio, `gold5`, puerto o fallback → salida 0/1 con diagnóstico por verificación | §6.3.9, §6.4.3 | Pruebas de código de salida |
+| P0 | `make cross` con las líneas de `autoatend` activadas | §2 | — |
+| P1 | Latencia: 100 llamadas a `/api/clasificar`, P99 | §6.3.7 | Medido |
+| P1 | ADR-002 (simulación directa del AFN-ε) y ADR-005 (solo loopback, sin TLS, autenticación ni CORS; desviación de §6.3.9) | §6.2.3, §6.4 | — |
+| P2 | Chequeo `go list -deps`: `cmd/autoatend` no depende de `internal/db/build` | — | — |
+
+**Criterio de salida:** `dist/autoatend.exe` y `dist/autoatend-macos-arm64` generados y `--selftest` = 0 en Linux.
+
+### Bloque E: verificación nativa y ensayo (13-oct, mañana, Fase 5)
+
+| Prioridad | Tarea |
+|---|---|
+| P0 | **Windows (partición propia):** `gencorpus.exe` reproduce el SHA `ee3f7d55…`; `autoatend.exe --selftest` = 0; el guion completo de 5 pasos |
+| P0 | **Mac:** lo mismo con `gencorpus-macos-arm64` y `autoatend-macos-arm64` |
+| P1 | I-4: barrido con `gencorpus -total` de 1k, 10k, 30k, 50k y 73k → R² y T(73k) (CPP04, medido) |
+| P1 | Cobertura por paquete (`make cover`, se informa) |
+| P1 | `docs/CASOS_PRUEBA.md`: matriz ID del Anexo II → prueba (archivo y función) → resultado |
+| P0 | Llenar §5.2 con las cifras y pasarlas a las diapositivas de "Resultados"; ensayar el guion |
+
+### Tareas del usuario (en paralelo, entre 1 y 2 h)
+- Validar y corregir el borrador L-1 de 200 tokens y calcular la tasa de sub-filtrado (TE §6.3.10).
+- Validar el corpus de oro de 100 comentarios (TE §6.3.5c).
+- Revisar la muestra de 250 comentarios y dejar constancia (fecha, revisor, observaciones) en `docs/reports/` (TE §6.1.4).
+
+---
+
+## 5. Criterios de aceptación de la demo
+
+Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
+
+### 5.1 Guion del TE §6.4.3, en las dos plataformas
+
+| Paso | Windows | Mac |
+|---|---|---|
+| 1. Doble clic → banner con URL → se abre el navegador | [ ] | [ ] |
+| 2. Clasificar en vivo un comentario claro y uno frontera | [ ] | [ ] |
+| 3. `lexemas_clave` explica la decisión con lexemas del catálogo | [ ] | [ ] |
+| 4. `/api/lexemas` muestra 3 ER del catálogo (conecta la consigna e con la b) | [ ] | [ ] |
+| 5. `--selftest` → salida 0 en < 3 s | [ ] | [ ] |
+| `gencorpus` reproduce el SHA del corpus | [ ] | [ ] |
+
+### 5.2 Mediciones (TE §6.3.8 y §6.3.10)
+
+| Criterio | Umbral (TE) | Medido | Fecha |
+|---|---|---|---|
+| I-1 round-trip | 0 fallos sobre el catálogo completo | | |
+| I-2 conservación de frecuencias | 0 lexemas con discrepancia | | |
+| I-3 idempotencia | SHA-256 idéntico en 2 corridas | | |
+| I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |
+| Cobertura | ≥ 80 % (líneas) | | |
+| Paridad Python ↔ Go | 0 discrepancias en 1,000 | | |
+| Macro-F1 (CPM01) | ≥ 0.85 en test | | |
+| Recall de Reconocimientos (CPM02) | ≥ 0.70 | | |
+| Macro-F1 y recall sin duplicados en train | se reporta | | |
+| Latencia P99 de `/api/clasificar` | < 50 ms | | |
+| `--selftest` | < 3 s, salida 0 | | |
+| L-1 sub-filtrado de homógrafos | se reporta | | |
+| L-2 lexemas con una sola variante | se reporta | | |
+
+---
+
+## 6. Riesgos y plan B
+
+| Riesgo | Mitigación |
+|---|---|
+| El Bloque A (lexer) se atrasa y arrastra todo | Se recorta P2 y luego P1. El índice de prefijo y los borradores manuales son lo primero en caer |
+| La interfaz web no se ve en la pantalla del sínodo | `--selftest` en la terminal (plan B del TE §6.4.3) |
+| El equipo Windows del CENEVAL falla | La Mac propia con `autoatend-macos-arm64` |
+| CPM01 queda por debajo de 0.85 | Se reporta el valor observado y se muestra `modelo_alternativo.json`; nunca se ajusta el umbral ni el test |
+| Pregunta por Wine o el CI (§6.3.9) | Respuesta de §1.3 |

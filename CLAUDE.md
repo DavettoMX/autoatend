@@ -3,7 +3,7 @@
 Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 1. `../documentos/2907_10433.pdf`: enunciado del caso (consignas a–e).
 2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales, por lo que se encuentra congelado y no se modifica. La implementación lo respeta tanto como sea posible; cualquier diferencia requiere la aprobación previa del usuario (ver "Apego al Trabajo Escrito").
-3. `PLAN.md`: plan por fases. `OPTIMIZATIONS.md` es la checklist viva: marca `[x]` solo lo que verificaste ejecutándolo.
+3. `PLAN.md`: plan hacia la demo del 13-oct-2026. Su §5 es la checklist viva: marca `[x]` solo lo que verificaste ejecutándolo.
 
 ## Reglas duras (no negociables)
 
@@ -29,14 +29,14 @@ Cosas que cambian el SHA sin que se note:
 - **El texto de la DDL en `internal/db/schema/*.sql`.** SQLite guarda literalmente cada sentencia `CREATE` en `sqlite_master`, así que un espacio, una sangría o un comentario de más lo alteran. Los `.sql` no llevan comentarios; la explicación va en `schema.go`.
 - **El orden o la longitud de cualquier slice de `templates`** y el orden de las llamadas al rng en `internal/corpus`.
 
-Si un cambio *debe* alterar el corpus, es una decisión de diseño: regenera `data/corpus.db` y el reporte, actualiza el SHA aquí, en el `Makefile`, en `README.md` y en `OPTIMIZATIONS.md`. Si el cambio se aparta del Trabajo Escrito, primero se valida con el usuario (ver "Apego al Trabajo Escrito").
+Si un cambio *debe* alterar el corpus, es una decisión de diseño: regenera `data/corpus.db` y el reporte, actualiza el SHA aquí, en el `Makefile`, en `README.md` y en `PLAN.md`. Si el cambio se aparta del Trabajo Escrito, primero se valida con el usuario (ver "Apego al Trabajo Escrito").
 
 ## Metodología: TDD estricto
 
 El Trabajo Escrito (§5.2.1) compromete el ciclo rojo-verde-refactor y los sinodales pueden pedir evidencia, que es el historial de git:
 - Commits separados: `test: … (red)` → `feat: … (green)` → `refactor: …`.
 - Nombra las pruebas con el ID del plan cuando exista, por ejemplo `TestCPU01_ParserPrecedencia` o `TestCPP02_ConservacionFrecuencias`.
-- La cobertura debe ser **≥ 80 % por paquete** (`make cover-gate`; se excluyen `cmd/...` e `internal/testutil`).
+- La cobertura objetivo es **≥ 80 % por paquete** (se excluyen `cmd/...` e `internal/testutil`). Hasta la demo se mide con `make cover` y no bloquea (`PLAN.md` §1.3); `make cover-gate` sigue disponible como gate estricto.
 - Las pruebas de integración pesadas se saltan con `testing.Short()`; `make test` usa `-short`.
 - Las aserciones se hacen contra oráculos independientes o consultando la BD directamente, no con las estadísticas que reporta el propio código bajo prueba.
 
@@ -60,12 +60,12 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 ## Criterios de éxito
 
 ### Por tarea (Definition of Done)
-- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover-gate` (≥ 80 % por paquete), `corpus-sha` y `cross`.
+- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover` (informa la cobertura; no bloquea hasta la demo), `corpus-sha` y `cross`.
 - [ ] Commits rojo → verde → refactor visibles en la rama.
 - [ ] Pruebas nombradas con su ID del plan cuando exista.
 - [ ] Sin código duplicado respecto a lo que reportó `mapeo-reuso`.
 - [ ] Ninguna desviación del Trabajo Escrito sin aprobación explícita del usuario; las aprobadas están registradas en el ADR que el TE promete para ese tema.
-- [ ] `OPTIMIZATIONS.md` y el "Mapa del código" de este archivo actualizados si cambiaron.
+- [ ] `PLAN.md` §5 y el "Mapa del código" de este archivo actualizados si cambiaron.
 - [ ] Ningún `[x]` marcado sin haberlo ejecutado.
 
 **Estado actual:** `make verify` en verde desde `fase1/apego-te` (cobertura: corpus 91.5 %, db 87.5 %, db/build 90.8 %, db/schema 100 %).
@@ -75,16 +75,16 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 | Fase | Criterios de aceptación |
 |---|---|
 | 1 — Corpus | SHA de `data/corpus.db` = `CORPUS_SHA`; conteos exactos 21,900/14,600/14,600/14,600/7,300; distribución ±1 %; 0 textos vacíos; sin fuga temporal en el split |
-| 2 — Analizador | I-1 round-trip = 0 fallos; I-2 = 0 filas (consulta literal del TE §6.3.3; una sola corrida por archivo); I-3 mismo SHA-256 de `resultados.db` en dos corridas; I-4 R² ≥ 0.99 y T(73k) < 60 s; CPU01–CPU14, CPP01–CPP04 y CPE01–CPE04 en verde; `docs/PLAN_PRUEBAS.md` con L-1 y L-2 |
+| 2 — Analizador | I-1 round-trip = 0 fallos; I-2 = 0 filas (consulta literal del TE §6.3.3; una sola corrida por archivo); I-3 mismo SHA-256 de `resultados.db` en dos corridas; I-4 R² ≥ 0.99 y T(73k) < 60 s; CPU01–CPU14, CPP01–CPP04 y CPE01–CPE04 en verde; L-1 y L-2 medidos (`PLAN.md` §5.2) |
 | 3 — Modelo | CPM01 Macro-F1 ≥ 0.85; CPM02 recall de Reconocimientos ≥ 0.70; CPA06 paridad Python↔Go L1 = 0 en 1,000 comentarios; métricas también sobre test sin duplicados en train |
 | 4 — Servicio | CPA01–CPA05 en verde; P99 < 50 ms en 100 llamadas a `/api/clasificar`; `--selftest` < 3 s con exit 0/1; fallback 8471 → 8472 |
-| 5 — CI/CD | CI verde en ubuntu, windows y macos; `--selftest` en Windows x86-64 y macOS ARM64; ADR-001 a ADR-005 presentes; checklist final ↔ `docs/PLAN_PRUEBAS.md` consistentes en ambos sentidos |
+| 5 — Verificación | Ejecución nativa en Windows x86-64 y macOS ARM64 (sin CI ni Wine, desviación de `PLAN.md` §1.3): `--selftest` con salida 0 y guion de 5 pasos; ADR-001 a ADR-005 presentes; `docs/CASOS_PRUEBA.md` (matriz Anexo II → prueba) |
 
 ## Comandos
 
 ```bash
 make verify       # criterio de terminado: todos los gates en orden
-make test | test-integration | cover-gate | lint-regexp | corpus-sha | cross
+make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | cross
 make gen          # se niega a sobrescribir data/corpus.db; usa make clean-data antes
 go test -count=1 -run NombrePrueba ./internal/...
 ```
@@ -140,9 +140,9 @@ Decisiones para las fases siguientes, ya aprobadas por el usuario (no se vuelven
 
 ## Pendientes conocidos que afectan el diseño
 
-Consulta `OPTIMIZATIONS.md` §2 antes de empezar la Fase 2:
+Consulta `PLAN.md` §3 antes de empezar la Fase 2:
 - El 19.6 % de los comentarios de test (2,860 de 14,600) tiene un duplicado exacto en train, lo que infla CPM01.
 
 ## Idioma
 
-Código, identificadores y comentarios de Go en inglés; los nombres de dominio y de esquema van en español (`comentarios`, `categoria_id`, `corridas`). Los documentos para los sinodales (`docs/PLAN_PRUEBAS.md`, reportes) van en español.
+Código, identificadores y comentarios de Go en inglés; los nombres de dominio y de esquema van en español (`comentarios`, `categoria_id`, `corridas`). Los documentos para los sinodales (`docs/CASOS_PRUEBA.md`, reportes) van en español.

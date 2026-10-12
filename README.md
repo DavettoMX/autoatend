@@ -8,11 +8,11 @@ Atiende las cinco consignas del caso:
 |---|---|---|
 | a) Base de datos del corpus | `data/corpus.db` (SQLite 3FN) generado por `cmd/gencorpus` | ✅ Fase 1 |
 | b) Programa analizador | Analizador léxico propio (parser de ER → Thompson → AFN-ε) y `cmd/simulador` → `resultados.db` | ⏳ Fase 2 |
-| c) Plan de pruebas | `docs/PLAN_PRUEBAS.md` | ⏳ Fase 2 |
-| d) Justificación del plan | `docs/PLAN_PRUEBAS.md` (ISO/IEC 25010, invariantes I-1…I-4) | ⏳ Fase 2 |
+| c) Plan de pruebas | TE §6.3 y Anexo II; pruebas en el repo y matriz `docs/CASOS_PRUEBA.md` | ⏳ Fases 2–5 |
+| d) Justificación del plan | TE §6.3 (ISO/IEC 25010, invariantes I-1…I-4); cifras medidas en `PLAN.md` §5.2 | ⏳ Fase 5 |
 | e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | ⏳ Fases 3–4 |
 
-El plan de ejecución completo está en [`PLAN.md`](PLAN.md) y la checklist de pendientes derivada de la auditoría está en [`OPTIMIZATIONS.md`](OPTIMIZATIONS.md).
+El plan de ejecución hacia la demo, con su checklist de aceptación, está en [`PLAN.md`](PLAN.md).
 
 ## Requisitos
 
@@ -25,6 +25,7 @@ El plan de ejecución completo está en [`PLAN.md`](PLAN.md) y la checklist de p
 ```bash
 make test               # pruebas unitarias (omite la integración de 73,000 filas)
 make test-integration   # suite completa, incluida la integración Level 4a
+make cover              # informa la cobertura por paquete (no falla)
 make cover-gate         # falla si algún paquete queda por debajo del 80 % de cobertura
 make lint-regexp        # falla si aparece import "regexp" o cgo
 make cross              # binarios estáticos en dist/ para windows/amd64 y darwin/arm64
