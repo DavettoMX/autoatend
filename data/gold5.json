@@ -1,0 +1,37 @@
+[
+ {
+  "id": 72630,
+  "texto": "Tengo un problema con mi servicio. Ayer hubo una caída general de la red en Puebla y hoy todavía sigue fallando todo.",
+  "categoria_id": 1,
+  "categoria": "Falta de Servicio",
+  "confianza_python": 0.9996490590931714
+ },
+ {
+  "id": 71479,
+  "texto": "Cobro indebido: me descontaron $149.00 dos veces el mismo día por lo mismo. Es dinero que me hace falta.",
+  "categoria_id": 2,
+  "categoria": "Cobros Indebidos",
+  "confianza_python": 0.9998761785974779
+ },
+ {
+  "id": 60892,
+  "texto": "La fecha de vencimiento de mi recibo no es la q me dieron, por eso se me juntan los periodos",
+  "categoria_id": 3,
+  "categoria": "Problemas de Facturación",
+  "confianza_python": 0.9994242102126655
+ },
+ {
+  "id": 69682,
+  "texto": "Esperé cuarenta minutos en soporte técnico y nadie me contestó. No es justo que uno tenga que insistir tanto.",
+  "categoria_id": 4,
+  "categoria": "Quejas",
+  "confianza_python": 0.9991308508982588
+ },
+ {
+  "id": 70347,
+  "texto": "Mira nomás, qué buen servicio, en menos de media hora me solucionaron todo.",
+  "categoria_id": 5,
+  "categoria": "Reconocimientos",
+  "confianza_python": 0.9941135398426165
+ }
+]
