@@ -134,6 +134,9 @@ func TestRun_FixtureCounts(t *testing.T) {
 	if res.ZeroDF != fixtureZeroDF {
 		t.Errorf("ZeroDF = %d, want %d", res.ZeroDF, fixtureZeroDF)
 	}
+	if res.ERFallbacks != 0 {
+		t.Errorf("ERFallbacks = %d, want 0", res.ERFallbacks)
+	}
 }
 
 func TestRun_FixtureLexemeFactura(t *testing.T) {

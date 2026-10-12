@@ -71,6 +71,9 @@ func openFull(t *testing.T) (sweep.Result, *sql.DB) {
 func TestCPP02_FullCorpusFrequencyConservation(t *testing.T) {
 	res, h := openFull(t)
 	t.Logf("sweep of %d comments: %d lexemes, %d tokens, %v", res.Comentarios, res.Lexemas, res.Tokens, res.Elapsed)
+	if res.ERFallbacks != 0 {
+		t.Errorf("ERFallbacks = %d, want 0: some generated ER failed its round-trip", res.ERFallbacks)
+	}
 	testutil.Scalar(t, h, 0, `SELECT COUNT(*) FROM (`+teI2Query+`)`)
 	testutil.Scalar(t, h, 1, `SELECT COUNT(*) FROM corridas`)
 	testutil.Scalar(t, h, 0, `SELECT COUNT(*) FROM lexemas l
