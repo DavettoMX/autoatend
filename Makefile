@@ -5,8 +5,11 @@ DF     := data/df_train.json
 CORPUS_SHA ?= b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
+VERSION ?= 1.0.0
+ASSETS_DIR := internal/assets/data
+ASSET_FILES := corpus.db resultados.db modelo.json modelo_alternativo.json gold5.json
 
-.PHONY: gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets fmt-check vet corpus-sha verify
+.PHONY: gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets build fmt-check vet corpus-sha verify
 
 # Generates data/corpus.db and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
@@ -19,16 +22,16 @@ clean-data:
 clean-results:
 	rm -f $(RESULTS) $(DF)
 
-test:
+test: assets
 	$(GO) test -short -count=1 ./...
 
-test-integration:
+test-integration: assets
 	$(GO) test -count=1 ./...
 
 # Fails if any package with statements is below 80.0% coverage (COVER_STRICT=0 only reports).
 # cmd/... (main packages) and internal/testutil are excluded.
 COVER_STRICT ?= 1
-cover-gate:
+cover-gate: assets
 	@out=$$($(GO) test -count=1 -cover ./...) || { echo "$$out"; echo "cover-gate: tests failed"; exit 1; }; \
 	echo "$$out"; \
 	echo "$$out" | awk -v strict=$(COVER_STRICT) ' \
@@ -56,7 +59,7 @@ lint-regexp:
 	echo "lint-regexp: ok"
 
 # Static, CGO-free cross-builds of the offline generator.
-cross:
+cross: assets
 	mkdir -p $(DIST)
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus.exe ./cmd/gencorpus
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus-macos-arm64 ./cmd/gencorpus
@@ -64,8 +67,8 @@ cross:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador-macos-arm64 ./cmd/simulador
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar.exe ./cmd/tokenizar
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar-macos-arm64 ./cmd/tokenizar
-#	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/autoatend.exe ./cmd/autoatend
-#	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
+#	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend.exe ./cmd/autoatend
+#	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
 
 # Sweeps data/corpus.db into data/resultados.db and data/df_train.json.
 # Fails if either exists (the catalogue is built once); use make clean-results first.
@@ -100,13 +103,23 @@ train-sha:
 	cmp -s "$$d/a/modelo.json" data/modelo.json || { echo "train-sha: FAIL data/modelo.json differs from a fresh training"; exit 1; }; \
 	echo "train-sha: ok $$(sha256sum data/modelo.json | cut -d' ' -f1)"
 
-assets:
-	@echo "pendiente: Fase 4"; exit 1
+# Copies the artifacts of data/ that the binary embeds into internal/assets/data/ (go:embed cannot
+# use "..", TE §7). The copies are never edited by hand and are not versioned (.gitignore); they
+# refresh whenever the source in data/ is newer. internal/assets/ui/index.html is the versioned UI source.
+$(ASSETS_DIR)/%: data/%
+	@mkdir -p $(ASSETS_DIR)
+	cp $< $@
+
+assets: $(addprefix $(ASSETS_DIR)/,$(ASSET_FILES))
+
+# The single binary for the host (Linux/macOS/Windows) with the artifacts embedded.
+build: assets
+	CGO_ENABLED=0 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend ./cmd/autoatend
 
 fmt-check:
 	@out=$$(gofmt -l .); if [ -n "$$out" ]; then echo "fmt-check: unformatted files:"; echo "$$out"; exit 1; fi; echo "fmt-check: ok"
 
-vet:
+vet: assets
 	$(GO) vet ./...
 
 # Regenerates the corpus in a temp dir and requires the baseline SHA-256 and an identical report (invariant I-3 groundwork).
