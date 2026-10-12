@@ -20,9 +20,10 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 `data/corpus.db` está versionado. Cualquier refactor de `internal/corpus`, `internal/corpus/templates`, `internal/db/build` o `internal/db/schema` debe dejar intacto su SHA-256:
 
 ```bash
-d=$(mktemp -d); go run ./cmd/gencorpus -out $d/c.db -report $d/r.md
-sha256sum $d/c.db   # debe ser b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
+d=$(mktemp -d); go run ./cmd/gencorpus -out $d/c.db -report $d/r.md -ambiguos $d/a.json
+sha256sum $d/c.db   # debe ser 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 diff $d/r.md docs/reports/generator_validation_report.md   # debe salir vacío
+cmp $d/a.json data/corpus_ambiguos.json                    # debe salir vacío
 ```
 
 Cosas que cambian el SHA sin que se note:
@@ -94,7 +95,7 @@ go test -count=1 -run NombrePrueba ./internal/...
 ## Mapa del código
 
 - `cmd/<herramienta>/main.go`: solo flags; la lógica vive en `internal/`.
-- `internal/corpus`: generador del corpus sintético (semilla 10433, 73,000 filas, 30/20/20/20/10).
+- `internal/corpus`: generador del corpus sintético (semilla 10433, 73,000 filas, 30/20/20/20/10). La batería incluye el criterio de separabilidad registrado antes de cambiar las plantillas (K1 Jaccard después de la stoplist, K2 colisión de la oración base, K3 sonda Naive Bayes; `PLAN.md` §3). `templates.BaseCount`/`CrossCount` separan plantillas base, de contexto cruzado y compartidas; `gencorpus` escribe también `data/corpus_ambiguos.json` (ids del subconjunto de colisión, fuera de la BD).
 - `internal/db`: acceso en tiempo de ejecución, solo lectura (`Categories`, `OpenReadOnly`, `FileURI`, `ReadOnlyParams`, `SplitCutoff`).
 - `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`, `CheckCategoriaIntegrity`).
 - `internal/db/schema`: DDL embebida, literal del Anexo I.
@@ -150,7 +151,7 @@ Decisiones para las fases siguientes, ya aprobadas por el usuario (no se vuelven
 ## Pendientes conocidos que afectan el diseño
 
 Consulta `PLAN.md` §3 antes de empezar la Fase 2:
-- El 25.5 % de los comentarios de test (3,716 de 14,600) tiene un duplicado exacto en train, lo que infla CPM01.
+- El 24.4 % de los comentarios de test (3,560 de 14,600) tiene un duplicado exacto en train, lo que infla CPM01.
 
 ## Idioma
 

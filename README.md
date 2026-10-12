@@ -58,10 +58,10 @@ El simulador no sobrescribe archivos existentes. Si falla algún chequeo posteri
 ```bash
 make clean-data && make gen
 sha256sum data/corpus.db
-# b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
+# 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 ```
 
-`gencorpus` no sobrescribe un archivo existente. Antes de escribir, ejecuta una batería de validación (conteos por categoría, textos vacíos, fechas, tasa de ruido, solapamiento léxico y una muestra de 50 comentarios por categoría); si algo falla, no persiste nada. El resultado queda en [`docs/reports/generator_validation_report.md`](docs/reports/generator_validation_report.md).
+`gencorpus` no sobrescribe un archivo existente. Antes de escribir, ejecuta una batería de validación (conteos por categoría, textos vacíos, fechas, tasa de ruido, solapamiento léxico después de la stoplist, colisión de la oración base entre categorías, sonda Naive Bayes y una muestra de 50 comentarios por categoría); si algo falla, no persiste nada. Los tres criterios de separabilidad (K1–K3) se registraron en `PLAN.md` §3 antes de cambiar las plantillas. `make gen` escribe también `data/corpus_ambiguos.json`, con los ids del subconjunto ambiguo. El resultado queda en [`docs/reports/generator_validation_report.md`](docs/reports/generator_validation_report.md).
 
 Para generar en otra ruta: `go run ./cmd/gencorpus -out /tmp/c.db -report /tmp/r.md`.
 
