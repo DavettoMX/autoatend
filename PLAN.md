@@ -229,9 +229,9 @@ Otras reglas:
 |---|---|
 | P0 | **Windows (partición propia):** `gencorpus.exe` reproduce el SHA `37f285ff…`; `autoatend.exe --selftest` = 0; el guion completo de 5 pasos |
 | P0 | **Mac:** lo mismo con `gencorpus-macos-arm64` y `autoatend-macos-arm64` |
-| P1 | I-4: barrido con `gencorpus -total` de 1k, 10k, 30k, 50k y 73k → R² y T(73k) (CPP04, medido) |
+| P1 | I-4: barrido de subcorpus de 1k, 10k, 30k, 50k y 73k (primeros N comentarios de `data/corpus.db`, `make i4`) → R² y T(73k) (CPP04, medido en Linux el 12-oct; opcional repetir en la Mac) |
 | P1 | Cobertura por paquete (`make cover`, se informa) |
-| P1 | `docs/CASOS_PRUEBA.md`: matriz ID del Anexo II → prueba (archivo y función) → resultado |
+| P1 | `docs/CASOS_PRUEBA.md` y página `/casos-prueba`: matriz ID del Anexo II → prueba (archivo y función) → resultado, generada con `make casos` desde `internal/assets/ui/casos_prueba.json` (hecho en `fase5/casos-prueba`; `TestCasosPrueba_Trazabilidad` comprueba la trazabilidad en ambos sentidos) |
 | P0 | Llenar §5.2 con las cifras y pasarlas a las diapositivas de "Resultados"; ensayar el guion |
 
 ### Tareas del usuario (en paralelo, entre 1 y 2 h)
@@ -267,7 +267,7 @@ Mac verificada por el usuario el 12-oct con la versión 1.0.0 (MacBook Air, Appl
 | I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,196 lexemas, 6,891 variantes; `TestCPP01_I1_RoundTripCatalogue`; corpus 37f285ff…) | 2026-10-12 |
 | I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`; corpus 37f285ff…) | 2026-10-12 |
 | I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `9620196f…79f3` (`make sweep-sha`; corpus 37f285ff…) | 2026-10-12 |
-| I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |
+| I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | R² = 0.9938 (`make i4`; tres corridas posteriores de `TestCPP04_I4_Linealidad` dieron 0.9956, 0.9961 y 0.9988); pendiente 4.9e-06 s por comentario; T(73k) = 0.37 s medido (`docs/reports/i4_linealidad.md`: N = 1k, 10k, 30k, 50k y 73k, mediana de 3 corridas; subcorpus = primeros N comentarios de `data/corpus.db`; AMD Ryzen 9 9900X, Linux). Pendiente en la Mac (opcional) | 2026-10-12 |
 | Cobertura | ≥ 80 % (líneas) | Fases 1–2: corpus 91.8 %, db 87.5 %, db/build 90.8 %, db/schema 100 %, lexer 99.4 %, regex 98.7 %, sweep 82.3 % (`make cover`) | 2026-10-12 |
 | Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.1e-16 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`; corpus 37f285ff…) | 2026-10-12 |
 | Macro-F1 (CPM01) | ≥ 0.85 en test | 0.9795 en test (14,600) con `modelo.json` (RLS, línea base, C = 1); NBM 0.9708. Un solo entrenamiento, después de que la batería K1–K3 pasó (corpus 37f285ff…). El corpus anterior b810bad2… daba 1.0000 (trivialmente separable) | 2026-10-12 |

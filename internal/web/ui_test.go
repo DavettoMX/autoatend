@@ -1,11 +1,14 @@
 package web_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 	"testing"
 
 	"autoatend/internal/assets"
+	"autoatend/internal/casos"
+	"autoatend/internal/web"
 )
 
 // GET /: the single embedded HTML page, system fonts, no CDN (TE §6.4.1).
@@ -114,7 +117,7 @@ func TestUI_EnlaceAlCatalogoYAtajos(t *testing.T) {
 // page reachable from the UI offers a visible way back to the classifier.
 func TestUI_SinPestanasNuevas(t *testing.T) {
 	h := bootApp(t).Handler()
-	for _, path := range []string{"/", "/catalogo", "/api"} {
+	for _, path := range []string{"/", "/catalogo", "/api", "/casos-prueba"} {
 		body := do(t, h, http.MethodGet, path, nil).Body.String()
 		if strings.Contains(body, `target="_blank"`) {
 			t.Errorf("%s contains target=\"_blank\"", path)
@@ -132,6 +135,7 @@ func TestUI_PieDeLaPaginaPrincipal(t *testing.T) {
 	for _, s := range []string{
 		`<a href="/catalogo">Catálogo de expresiones regulares</a>`,
 		`<a href="/api">Documentación de la API</a>`,
+		`<a href="/casos-prueba">Casos de prueba</a>`,
 	} {
 		if !strings.Contains(body, s) {
 			t.Errorf("index.html lacks %q", s)
@@ -251,5 +255,166 @@ func TestUI_RutaAPIExacta(t *testing.T) {
 	}
 	if rec := do(t, h, http.MethodPost, "/api", nil); rec.Code != http.StatusMethodNotAllowed {
 		t.Errorf("POST /api status %d, want 405", rec.Code)
+	}
+}
+
+// dataBlock extracts the JSON that the server injects into /casos-prueba.
+func dataBlock(t *testing.T, body string) string {
+	t.Helper()
+	const open = `<script type="application/json" id="casos-datos">`
+	i := strings.Index(body, open)
+	if i < 0 {
+		t.Fatal("casos-prueba page lacks the injected JSON block")
+	}
+	rest := body[i+len(open):]
+	j := strings.Index(rest, "</script>")
+	if j < 0 {
+		t.Fatal("the injected JSON block is not closed")
+	}
+	return rest[:j]
+}
+
+// GET /casos-prueba: the Anexo II matrix, served like the other pages (exact path, CSP, no external
+// resources, textContent only) with the JSON of the matrix injected by the server. There is no
+// extra /api route: the five endpoints of TE §6.4.1 are unchanged.
+func TestUI_CasosPruebaPagina(t *testing.T) {
+	h := bootApp(t).Handler()
+	rec := do(t, h, http.MethodGet, "/casos-prueba", nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/html") {
+		t.Errorf("Content-Type = %q", ct)
+	}
+	csp := rec.Header().Get("Content-Security-Policy")
+	for _, d := range []string{"default-src 'none'", "connect-src 'self'"} {
+		if !strings.Contains(csp, d) {
+			t.Errorf("Content-Security-Policy %q lacks %q", csp, d)
+		}
+	}
+	// The injected data may quote URLs as text (CPE03, CPA05); only the page itself is checked.
+	body := strings.Replace(rec.Body.String(), dataBlock(t, rec.Body.String()), "", 1)
+	for _, bad := range []string{"http://", "https://", "//cdn", "<link", "@import", "@font-face", "<script src", "url(", "innerHTML", `target="_blank"`, "{{CASOS_JSON}}", "consigna"} {
+		if strings.Contains(body, bad) {
+			t.Errorf("casos.html contains %q", bad)
+		}
+	}
+	for _, s := range []string{
+		`<html lang="es"`, `<meta name="viewport"`, `<main`, `href="/"`, "Volver al clasificador",
+		"<h1>Casos de prueba</h1>", `<label for="nivel"`, `<select id="nivel"`, "<table", "prefers-color-scheme",
+		"aria-expanded", "textContent", "Anexo II",
+	} {
+		if !strings.Contains(body, s) {
+			t.Errorf("casos.html lacks %q", s)
+		}
+	}
+	if strings.Count(body, `href="/`) > 2 {
+		t.Error("casos.html links to more than the way back (and the API docs)")
+	}
+}
+
+// The injected JSON is exactly the embedded matrix, safe inside a script element, and carries every
+// ID of the Anexo II with the tests that cover it.
+func TestUI_CasosPruebaDatosInyectados(t *testing.T) {
+	h := bootApp(t).Handler()
+	body := do(t, h, http.MethodGet, "/casos-prueba", nil).Body.String()
+	data := dataBlock(t, body)
+	if strings.ContainsAny(data, "<>&") {
+		t.Error("the injected JSON contains an unescaped <, > or & (it could close the script element)")
+	}
+	m, err := casos.Parse([]byte(data))
+	if err != nil {
+		t.Fatalf("the injected JSON is not a valid matrix: %v", err)
+	}
+	raw, _ := assets.FS.ReadFile(assets.CasosDataPath)
+	want, err := casos.Parse(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(m.Casos) != len(want.Casos) || len(m.Casos) < 30 {
+		t.Fatalf("injected %d cases, embedded file has %d (want at least 30)", len(m.Casos), len(want.Casos))
+	}
+	var compact, original any
+	if err := json.Unmarshal([]byte(data), &compact); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &original); err != nil {
+		t.Fatal(err)
+	}
+	a, _ := json.Marshal(compact)
+	b, _ := json.Marshal(original)
+	if string(a) != string(b) {
+		t.Error("the injected JSON differs from ui/casos_prueba.json")
+	}
+	for _, c := range want.Casos {
+		if !strings.Contains(data, `"`+c.ID+`"`) {
+			t.Errorf("the page lacks %s", c.ID)
+		}
+	}
+}
+
+// A hostile string in the matrix cannot break out of the script element.
+func TestUI_CasosPruebaEscapaElJSON(t *testing.T) {
+	hostile := "</script><img src=x onerror=alert(1)> & fin"
+	fsys := mutatedFile(t, assets.CasosDataPath, func(b []byte) []byte {
+		return []byte(strings.Replace(string(b), "«servicio» no está en la stoplist y se conserva.", hostile, 1))
+	})
+	a := bootWith(t, web.Options{Version: "test", Assets: fsys})
+	body := do(t, a.Handler(), http.MethodGet, "/casos-prueba", nil).Body.String()
+	if strings.Contains(body, "<img src=x") || strings.Contains(body, "</script><img") {
+		t.Error("the hostile string reached the page unescaped")
+	}
+	if !strings.Contains(dataBlock(t, body), `\u003c/script\u003e`) {
+		t.Error("the hostile string is not escaped as \\u003c inside the data block")
+	}
+}
+
+// The matrix page is an exact path and read-only, and it adds no API route.
+func TestUI_CasosPruebaRutaExactaYSinNuevaRutaAPI(t *testing.T) {
+	h := bootApp(t).Handler()
+	if rec := do(t, h, http.MethodPost, "/casos-prueba", nil); rec.Code != http.StatusMethodNotAllowed {
+		t.Errorf("POST /casos-prueba status %d, want 405", rec.Code)
+	}
+	for _, p := range []string{"/casos-prueba/", "/casos-prueba/x", "/api/casos", "/api/casos-prueba"} {
+		if rec := do(t, h, http.MethodGet, p, nil); rec.Code != http.StatusNotFound {
+			t.Errorf("GET %s status %d, want 404", p, rec.Code)
+		}
+	}
+}
+
+// A missing or corrupt matrix stops the start-up instead of serving an empty page.
+func TestBoot_CasosPruebaAusenteOCorrupto(t *testing.T) {
+	for name, edit := range map[string]func([]byte) []byte{
+		"not JSON": func([]byte) []byte { return []byte("no es json") },
+		"empty":    func([]byte) []byte { return nil },
+	} {
+		if a, err := web.Boot(web.Options{Version: "test", Assets: mutatedFile(t, assets.CasosDataPath, edit)}); err == nil {
+			a.Close()
+			t.Errorf("%s: Boot accepted it", name)
+		}
+	}
+	if a, err := web.Boot(web.Options{Version: "test", Assets: mutatedFile(t, assets.CasosPath, func([]byte) []byte { return nil })}); err == nil {
+		a.Close()
+		t.Error("an empty casos.html was accepted")
+	}
+}
+
+// The summary of the page is short: the technical note stays in docs/CASOS_PRUEBA.md, and the
+// verification line shows the Spanish date without any commit hash.
+func TestUI_CasosPruebaResumenSinNotaNiCommit(t *testing.T) {
+	body := do(t, bootApp(t).Handler(), http.MethodGet, "/casos-prueba", nil).Body.String()
+	page := strings.Replace(body, dataBlock(t, body), "", 1)
+	for _, bad := range []string{`id="nota"`, "matriz.nota", "commit", ".commit"} {
+		if strings.Contains(page, bad) {
+			t.Errorf("casos.html contains %q", bad)
+		}
+	}
+	for _, want := range []string{`"Última verificación: "`, "octubre", "diciembre", " de "} {
+		if !strings.Contains(page, want) {
+			t.Errorf("casos.html lacks %q (Spanish date in the verification line)", want)
+		}
+	}
+	if strings.Contains(dataBlock(t, body), "commit") {
+		t.Error("the injected matrix carries a commit")
 	}
 }

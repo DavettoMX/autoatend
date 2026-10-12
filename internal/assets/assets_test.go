@@ -56,3 +56,22 @@ func TestEmbeddedUIAndJSON(t *testing.T) {
 		}
 	}
 }
+
+// The test-case matrix page and its JSON source are embedded; the page carries the placeholder that
+// the server replaces with the JSON, and the JSON is a valid matrix.
+func TestEmbeddedCasosDePrueba(t *testing.T) {
+	page, err := assets.FS.ReadFile(assets.CasosPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(page, []byte("<!DOCTYPE html>")) || !bytes.Contains(page, []byte(assets.CasosPlaceholder)) {
+		t.Errorf("ui/casos.html is not an HTML document with the %s placeholder", assets.CasosPlaceholder)
+	}
+	raw, err := assets.FS.ReadFile(assets.CasosDataPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !json.Valid(raw) {
+		t.Error("ui/casos_prueba.json is not valid JSON")
+	}
+}

@@ -6,7 +6,7 @@
 
 - **Qué es:** el caso práctico 10433 del CENEVAL (Acuerdo 286, Licenciatura en Ciencias Computacionales). AutoAtend clasifica comentarios de clientes de TelArg en 5 categorías.
 - **Examen oral (EXOAL):** **13 de octubre de 2026, en la CDMX.** La demo se presenta en la **Mac del usuario** (MacBook Air, Apple Silicon), que el CENEVAL autorizó. Windows queda como respaldo opcional.
-- **Estado:** las fases 1–4 están implementadas. La v1.0.2 está publicada y verificada en la Mac (selftest 5/5 y guion de demo).
+- **Estado:** las fases 1–4 están implementadas. La v1.0.3 está publicada y verificada en la Mac (selftest 5/5 y guion de demo).
 - **Guía de la demo paso a paso:** `docs/GUIA_DEMO_MAC.md`.
 
 ## 2. Dónde está cada cosa
@@ -14,7 +14,7 @@
 | Qué | Dónde |
 |---|---|
 | Código (solo `proyect/`) | GitHub privado **DavettoMX/autoatend** (rama `main`) |
-| Binarios listos | Releases de ese repo; el último es **v1.0.2** (`autoatend-macos-arm64`, SHA `9879f940…7cc7`) |
+| Binarios listos | Releases de ese repo; el último es **v1.0.3** (`autoatend-macos-arm64`, SHA `f160200e…15d0`) |
 | Repo local completo (incluye PDFs) | PC de torre del usuario: `~/proyectos/ceneval-projecto-exoal` |
 | Caso, TE y guías del CENEVAL (PDF) | **No están en GitHub** a propósito: el PDF del caso prohíbe su reproducción e intercambio. El usuario debe copiarlos a la Mac por USB si los necesita para la presentación |
 
@@ -48,7 +48,7 @@ Toda desviación del TE se valida con el usuario y se registra (ver `PLAN.md` §
 - **Revisiones manuales del usuario:**
   - L-1 se etiquetó por **16 contextos** (`docs/reports/l1_contextos.csv`). Hoy da 86.0 %.
   - Muestra de 250 y plantillas nuevas: el usuario las estaba revisando el 12-oct (`docs/reports/muestra_250_borrador.md` y `plantillas_nuevas.md`). Hay que registrar su constancia en `PLAN.md` §5.2 cuando la entregue.
-- **UI 1.0.2:**
+- **UI 1.0.3** (la 1.0.3 agrega `/casos-prueba` con la matriz del Anexo II):
   - navegación en la misma pestaña, con "← Volver al clasificador";
   - `/catalogo` con filtros y el panel "Ver datos en JSON";
   - `/api` con la documentación de los 5 endpoints y un bloque por código de error (200, 400, 413, 405, 404 y 500, este con la explicación de que no ocurre en operación normal);
@@ -79,6 +79,7 @@ Toda desviación del TE se valida con el usuario y se registra (ver `PLAN.md` §
 - **Sin CI ni Wine:** la ejecución nativa en la Mac es evidencia más fuerte que un emulador, y la Capa 3 (`--selftest`) se conserva.
 - **500 en `/api`:** las bases van embebidas y son de solo lectura. Si estuvieran dañadas, el servicio no arranca y `--selftest` lo detecta. El 500 solo cubre una falla extrema en ejecución.
 - **"bajo" y "sobre" no aparecen en el corpus.** L-1 se midió sobre lo que el corpus contiene. Es un hallazgo de validez externa (TE §7.3).
+- **El Anexo II del TE se ve mal en el PDF:** la última columna ("Salida esperada") se corta en el margen, y las barras `|` de las expresiones regulares partieron las celdas (CP-U01 era `"factur(a|as|…)"` y CP-U02 era `"factur(a|)"`). Es un problema de formato, no de contenido. No lo menciones tú. Si alguien lo nota: *"El Anexo II es una selección representativa; los criterios completos están en §6.3 y la matriz completa con su resultado está en el repositorio"*, y abres `/casos-prueba`. Dato a favor: es justo el problema que resuelve el escape `\|` de la gramática del TE §6.2.3.
 - **`facturacion` sin tilde es un lexema aparte:** no hay plegado de acentos (ADR-003) y el stemmer no reconoce "-acion". Es una limitación documentada.
 
 ## 7. Preferencias de trabajo del usuario
@@ -92,6 +93,6 @@ Toda desviación del TE se valida con el usuario y se registra (ver `PLAN.md` §
 ## 8. Pendientes al 12-oct
 
 1. Constancia del usuario: `plantillas_nuevas.md` (47 casillas) y `muestra_250_borrador.md`. Registrarla en `PLAN.md` §5.2.
-2. Que el usuario confirme la v1.0.2 en Safari o Chrome de la Mac (solo se probó en Firefox).
-3. Opcional: I-4 (barrido de 1k a 73k con `gencorpus -total`) y `docs/CASOS_PRUEBA.md` (matriz Anexo II → prueba).
+2. ~~Confirmar en Safari~~: hecho; el usuario confirmó que la UI funciona en Safari en la Mac.
+3. I-4 y la matriz de casos de prueba están hechas en la rama `fase5/casos-prueba` (pendiente de aprobación y merge): `make i4` (R² 0.9938, T(73k) 0.37 s en Linux; subcorpus = primeros N comentarios de `data/corpus.db`, sin `gencorpus -total` porque la batería K1–K3 está registrada para el corpus completo), `make casos` y la página `/casos-prueba` (29 casos del Anexo II + CPU14 como extensión).
 4. Presentación (PPT) de 20 min: portada, diagnóstico, resolución de consignas y resultados (guía del Acuerdo 286), siguiendo el orden del TE. Usa las cifras de §5 y las respuestas de §6.

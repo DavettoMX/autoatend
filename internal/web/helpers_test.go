@@ -103,13 +103,21 @@ func loadGold(t *testing.T) []goldEntry {
 // name is replaced by edit(contents).
 func mutatedAssets(t *testing.T, name string, edit func([]byte) []byte) fs.FS {
 	t.Helper()
+	return mutatedFile(t, "data/"+name, edit)
+}
+
+// mutatedFile returns a copy of the embedded artifacts (data and UI) in which the file at
+// path (for example "ui/casos_prueba.json") is replaced by edit(contents).
+func mutatedFile(t *testing.T, path string, edit func([]byte) []byte) fs.FS {
+	t.Helper()
 	m := fstest.MapFS{}
-	for _, n := range append([]string{assets.UIPath, assets.CatalogoPath, assets.ApiDocsPath}, prefixed("data/", assets.DataFiles)...) {
+	ui := []string{assets.UIPath, assets.CatalogoPath, assets.ApiDocsPath, assets.CasosPath, assets.CasosDataPath}
+	for _, n := range append(ui, prefixed("data/", assets.DataFiles)...) {
 		b, err := assets.FS.ReadFile(n)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if n == "data/"+name {
+		if n == path {
 			b = edit(b)
 		}
 		m[n] = &fstest.MapFile{Data: b}

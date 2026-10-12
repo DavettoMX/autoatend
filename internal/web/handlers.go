@@ -30,6 +30,7 @@ func (a *App) Handler() http.Handler {
 	mux.HandleFunc("/{$}", only(http.MethodGet, a.serveUI))
 	mux.HandleFunc("/catalogo", only(http.MethodGet, a.serveCatalogo))
 	mux.HandleFunc("/api", only(http.MethodGet, a.serveAPIDocs))
+	mux.HandleFunc("/casos-prueba", only(http.MethodGet, a.serveCasos))
 	mux.HandleFunc("/api/clasificar", only(http.MethodPost, a.clasificar))
 	mux.HandleFunc("/api/lexemas", only(http.MethodGet, a.lexemasPage))
 	mux.HandleFunc("/api/categorias", only(http.MethodGet, a.categoriasList))
@@ -92,6 +93,10 @@ func (a *App) serveCatalogo(w http.ResponseWriter, r *http.Request) { servePage(
 
 // serveAPIDocs answers GET /api (exact path) with the documentation of the five endpoints.
 func (a *App) serveAPIDocs(w http.ResponseWriter, r *http.Request) { servePage(w, a.apiDocs) }
+
+// serveCasos answers GET /casos-prueba (exact path) with the test-case matrix page. The matrix is
+// injected into the page at start-up, so it needs no API route.
+func (a *App) serveCasos(w http.ResponseWriter, r *http.Request) { servePage(w, a.casos) }
 
 // servePage writes an embedded HTML page with the same-origin-only CSP.
 func servePage(w http.ResponseWriter, page []byte) {

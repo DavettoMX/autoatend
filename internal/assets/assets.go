@@ -11,9 +11,10 @@ package assets
 
 import "embed"
 
-// FS holds data/<DataFiles...>, ui/index.html, ui/catalogo.html and ui/api.html.
+// FS holds data/<DataFiles...>, ui/index.html, ui/catalogo.html, ui/api.html, ui/casos.html and
+// ui/casos_prueba.json (the test-case matrix: source of docs/CASOS_PRUEBA.md and of the /casos-prueba page).
 //
-//go:embed data/corpus.db data/resultados.db data/modelo.json data/modelo_alternativo.json data/gold5.json ui/index.html ui/catalogo.html ui/api.html
+//go:embed data/corpus.db data/resultados.db data/modelo.json data/modelo_alternativo.json data/gold5.json ui/index.html ui/catalogo.html ui/api.html ui/casos.html ui/casos_prueba.json
 var FS embed.FS
 
 // DataFiles are the names of the embedded artifacts under data/, in the order the
@@ -28,3 +29,14 @@ const CatalogoPath = "ui/catalogo.html"
 
 // ApiDocsPath is the embedded API documentation page served at GET /api.
 const ApiDocsPath = "ui/api.html"
+
+// CasosPath is the embedded test-case matrix page served at GET /casos-prueba. It holds
+// CasosPlaceholder, which the server replaces with the JSON of the matrix.
+const CasosPath = "ui/casos.html"
+
+// CasosDataPath is the JSON source of the test-case matrix (versioned; cmd/casos renders
+// docs/CASOS_PRUEBA.md from it).
+const CasosDataPath = "ui/casos_prueba.json"
+
+// CasosPlaceholder marks, inside the script element of ui/casos.html, where the JSON is injected.
+const CasosPlaceholder = "{{CASOS_JSON}}"

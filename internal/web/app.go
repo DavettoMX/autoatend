@@ -90,6 +90,7 @@ type App struct {
 	ui         []byte
 	catalogo   []byte
 	apiDocs    []byte
+	casos      []byte
 	gold       []byte
 	categorias []db.Category
 	lexemas    int
@@ -141,6 +142,9 @@ func Boot(opts Options) (app *App, err error) {
 	}
 	if a.apiDocs, err = fs.ReadFile(opts.Assets, assets.ApiDocsPath); err != nil {
 		return nil, fmt.Errorf("artefacto embebido %s: %w", assets.ApiDocsPath, err)
+	}
+	if a.casos, err = loadCasosPage(opts.Assets); err != nil {
+		return nil, err
 	}
 
 	if a.corpus, err = db.OpenReadOnly(filepath.Join(dir, "corpus.db")); err != nil {

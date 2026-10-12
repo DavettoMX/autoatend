@@ -5,11 +5,11 @@ DF     := data/df_train.json
 CORPUS_SHA ?= 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
-VERSION ?= 1.0.2
+VERSION ?= 1.0.3
 ASSETS_DIR := internal/assets/data
 ASSET_FILES := corpus.db resultados.db modelo.json modelo_alternativo.json gold5.json
 
-.PHONY: gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets build fmt-check vet corpus-sha verify
+.PHONY: i4 casos gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets build fmt-check vet corpus-sha verify
 
 # Generates data/corpus.db, data/corpus_ambiguos.json and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
@@ -74,6 +74,16 @@ cross: assets
 # Fails if either exists (the catalogue is built once); use make clean-results first.
 sweep:
 	$(GO) run ./cmd/simulador
+
+# Invariant I-4 (TE §6.3.3, CPP04): sweep time over subcorpora of 1k..73k comments, regression line, R2 and
+# T(73k). Writes docs/reports/i4_linealidad.md; the corpus is only read.
+i4:
+	$(GO) run ./cmd/linealidad -equipo "$$(uname -sm), $$(nproc 2>/dev/null || sysctl -n hw.ncpu) CPU, $$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2 | sed 's/^ //' || true)"
+
+# Renders docs/CASOS_PRUEBA.md (Anexo II matrix) from internal/assets/ui/casos_prueba.json and fails if a
+# listed test does not exist or a TestCP*NN_* function is missing from the matrix (TE §6.3 traceability).
+casos:
+	$(GO) run ./cmd/casos
 
 # Offline training (Phase 3, consigna e). Python is dev-machine only and never part of the binary.
 # Builds the Go tokenizer, trains (uv run, project venv in ml/.venv), writes data/modelo.json,

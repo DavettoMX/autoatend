@@ -1,0 +1,369 @@
+{
+  "titulo": "Matriz de casos de prueba de AutoAtend (Anexo II del Trabajo Escrito)",
+  "nota": "Los 29 casos del Anexo II se transcriben con su componente, tipo y entrada; la columna de salida esperada aparece recortada en el PDF del Anexo II, por lo que el criterio de cada caso se completó con las secciones 6.3.2 a 6.3.8 del Trabajo Escrito. CPU14 es una extensión del proyecto (política de la stoplist, ADR-003) y no figura en el Anexo II. Los IDs del Trabajo Escrito llevan guion (CP-U01); el código y esta matriz usan CPU01.",
+  "verificado": {
+    "fecha": "2026-10-12",
+    "comando": "make verify"
+  },
+  "niveles": [
+    {"nivel": 1, "nombre": "Unitarias", "seccion": "§6.3.2"},
+    {"nivel": 2, "nombre": "Invariantes (basadas en propiedades)", "seccion": "§6.3.3"},
+    {"nivel": 3, "nombre": "Equivalencia y valores límite", "seccion": "§6.3.4"},
+    {"nivel": 5, "nombre": "Paridad Python ↔ Go", "seccion": "§6.3.6"},
+    {"nivel": 6, "nombre": "Contrato de la API", "seccion": "§6.3.7"},
+    {"nivel": 7, "nombre": "Clasificador (umbrales)", "seccion": "§6.3.8"}
+  ],
+  "casos": [
+    {
+      "id": "CPU01", "id_anexo": "CP-U01", "nivel": 1,
+      "componente": "Parser ER", "tipo": "Unitaria nominal",
+      "entrada": "\"factur(a|as)\"",
+      "criterio": "Cada operador gramatical produce el nodo del AST que le corresponde: concatenación de «factur» con un grupo cuya alternancia es «a» | «as» (§6.3.2, parser (a)).",
+      "pruebas": [
+        {"funcion": "TestCPU01_ParserNominal", "archivo": "internal/regex/parse_test.go"},
+        {"funcion": "TestCPU01_ParserSingleChar", "archivo": "internal/regex/parse_test.go"},
+        {"funcion": "TestCPU01_ParserEscapes", "archivo": "internal/regex/parse_test.go"}
+      ],
+      "resultado": "factur(a|as|ación|ado|ando) produce Cat(f,a,c,t,u,r,Group(Alt de 5 alternativas)) con nodos tipados; un carácter es Char; los 10 metacaracteres escapados se leen como literales.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU02", "id_anexo": "CP-U02", "nivel": 1,
+      "componente": "Parser ER", "tipo": "Unitaria de error",
+      "entrada": "\"factur(a|)\" (alternancia con una rama vacía); además paréntesis sin cerrar, sin abrir y expresión vacía",
+      "criterio": "Error con mensaje descriptivo y posición del carácter culpable (§6.3.2, parser (b)).",
+      "pruebas": [
+        {"funcion": "TestCPU02_ParserErrors", "archivo": "internal/regex/parse_test.go"}
+      ],
+      "resultado": "Todas las expresiones malformadas producen ParseError con la posición exacta y un mensaje que nombra la causa («unbalanced '('», «empty alternative», «empty»).",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU03", "id_anexo": "CP-U03", "nivel": 1,
+      "componente": "Parser ER", "tipo": "Valores límite",
+      "entrada": "Expresión de 500 caracteres con 50 alternativas anidadas",
+      "criterio": "AST válido con la anidación esperada, sin desbordar la pila; la precedencia es cerradura > concatenación > alternancia; el límite de profundidad se rechaza con error (§6.3.2, parser (c) y (d)).",
+      "pruebas": [
+        {"funcion": "TestCPU03_ParserDeepButValid", "archivo": "internal/regex/parse_test.go"},
+        {"funcion": "TestCPU03_ParserDepthLimit", "archivo": "internal/regex/parse_test.go"},
+        {"funcion": "TestCPU03_ParserPrecedence", "archivo": "internal/regex/parse_test.go"}
+      ],
+      "resultado": "500 runas con 50 niveles de anidación dan un AST de profundidad 50; el límite MaxDepth = 200 se acepta y 201 se rechaza con error en la posición del paréntesis; 2,000,000 de paréntesis se rechazan sin agotar la pila.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU04", "id_anexo": "CP-U04", "nivel": 1,
+      "componente": "Thompson", "tipo": "Unitaria nominal",
+      "entrada": "NodoCaracter('a')",
+      "criterio": "AFN-ε de exactamente 2 estados y 1 transición etiquetada (§6.3.2, Thompson (a)).",
+      "pruebas": [
+        {"funcion": "TestCPU04_ThompsonChar", "archivo": "internal/regex/nfa_test.go"}
+      ],
+      "resultado": "2 estados, 1 transición etiquetada, 0 transiciones ε; inicio distinto de aceptación; acepta exactamente «a».",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU05", "id_anexo": "CP-U05", "nivel": 1,
+      "componente": "Thompson", "tipo": "Unitaria nominal",
+      "entrada": "NodoAlternancia('a', 'b')",
+      "criterio": "AFN-ε de 6 estados con las transiciones ε y etiquetadas que dicta la construcción; la concatenación, las cerraduras y sus ε-cerraduras también son correctas (§6.3.2, Thompson (b) y (c)).",
+      "pruebas": [
+        {"funcion": "TestCPU05_ThompsonComposition", "archivo": "internal/regex/nfa_test.go"},
+        {"funcion": "TestCPU05_ThompsonStateBound", "archivo": "internal/regex/nfa_test.go"},
+        {"funcion": "TestCPU05_EpsilonClosures", "archivo": "internal/regex/nfa_test.go"}
+      ],
+      "resultado": "a|b da 6 estados, 4 ε y 2 etiquetadas; ab da 4 estados; a*, a+ y a? dan 4 estados con 4, 3 y 3 ε; ninguna ER supera 2·|r| estados; las ε-cerraduras coinciden con las esperadas.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU06", "id_anexo": "CP-U06", "nivel": 1,
+      "componente": "Simulación", "tipo": "Unitaria nominal",
+      "entrada": "AFN-ε de factur(a|as), entrada \"facturas\"",
+      "criterio": "Aceptada (§6.3.2, simulación (c)).",
+      "pruebas": [
+        {"funcion": "TestCPU06_AcceptsVariant", "archivo": "internal/regex/nfa_test.go"}
+      ],
+      "resultado": "factur(a|as) acepta «facturas» y «factura».",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU07", "id_anexo": "CP-U07", "nivel": 1,
+      "componente": "Simulación", "tipo": "Unitaria de rechazo",
+      "entrada": "AFN-ε de factur(a|as), entrada \"facturó\"",
+      "criterio": "Rechazada; la cadena que difiere en un carácter no pertenece al lenguaje (§6.3.2, simulación (d)).",
+      "pruebas": [
+        {"funcion": "TestCPU07_RejectsNonVariant", "archivo": "internal/regex/nfa_test.go"}
+      ],
+      "resultado": "Rechaza «facturó», «factur», «facturass», «xfacturas», «factura » (con espacio), la cadena vacía y «FACTURAS»; la coincidencia es sobre la cadena completa.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU08", "id_anexo": "CP-U08", "nivel": 1,
+      "componente": "Simulación", "tipo": "Valores límite",
+      "entrada": "AFN-ε de a*, entrada de 10,000 caracteres 'a'",
+      "criterio": "Aceptada en tiempo O(n·m) medido empíricamente con cadenas de 10, 100, 1,000 y 10,000 caracteres, sin retroceso (§6.3.2, simulación (e)).",
+      "pruebas": [
+        {"funcion": "TestCPU08_LongInput", "archivo": "internal/regex/nfa_test.go"},
+        {"funcion": "TestCPU08_NoBacktrackingBlowup", "archivo": "internal/regex/nfa_test.go"},
+        {"funcion": "TestCPU08_LinearCost", "archivo": "internal/regex/nfa_test.go"},
+        {"funcion": "TestCPU08_LinearTime", "archivo": "internal/regex/nfa_test.go"},
+        {"funcion": "TestCPU08_LinearInStates", "archivo": "internal/regex/nfa_test.go"}
+      ],
+      "resultado": "a* acepta 10,000 'a' y rechaza 10,000 'a' seguidas de 'b'; el trabajo para n = 10, 100, 1,000 y 10,000 es 239, 2,249, 22,349 y 223,349 operaciones (factor ≈ 10 por paso); el caso exponencial clásico (a?){60}a{60} termina en menos de 1 s.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU09", "id_anexo": "CP-U09", "nivel": 1,
+      "componente": "Tabla de símbolos", "tipo": "Unitaria nominal",
+      "entrada": "Insertar el token \"factura\" en la categoría 1 dos veces",
+      "criterio": "frecuencia_global = 2, frecuencia[cat 1] = 2 y variantes = {\"factura\"} sin duplicar la entrada (§6.3.2, tabla de símbolos (a) y (b)).",
+      "pruebas": [
+        {"funcion": "TestCPU09_SameFormTwiceInCategory1", "archivo": "internal/lexer/symtab_test.go"}
+      ],
+      "resultado": "Global = 2, frecuencias por categoría [2 0 0 0 0] y variantes {factura: 2}.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU10", "id_anexo": "CP-U10", "nivel": 1,
+      "componente": "Tabla de símbolos", "tipo": "Unitaria nominal",
+      "entrada": "Insertar \"factura\" (cat = 1) y \"facturas\" (cat = 2)",
+      "criterio": "frecuencia_global = 2, frecuencia[cat 1] = 1, frecuencia[cat 2] = 1 y variantes = {\"factura\", \"facturas\"} en un solo lexema (§6.3.2, tabla de símbolos (c) y (d)).",
+      "pruebas": [
+        {"funcion": "TestCPU10_VariantsShareALexeme", "archivo": "internal/lexer/symtab_test.go"}
+      ],
+      "resultado": "Un solo lexema, Global = 2, frecuencias por categoría [1 1 0 0 0], 2 variantes; la búsqueda por la otra variante devuelve la misma entrada.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU11", "id_anexo": "CP-U11", "nivel": 1,
+      "componente": "Stoplist", "tipo": "Unitaria nominal",
+      "entrada": "Token \"de\"",
+      "criterio": "Filtrado: no se inserta en la tabla de símbolos (§6.3.2, stoplist (a)).",
+      "pruebas": [
+        {"funcion": "TestCPU11_StoplistFiltersDe", "archivo": "internal/lexer/stoplist_test.go"}
+      ],
+      "resultado": "«de» está en la stoplist con la clase «preposicion».",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU12", "id_anexo": "CP-U12", "nivel": 1,
+      "componente": "Stoplist", "tipo": "Unitaria de retención",
+      "entrada": "Token \"bajo\" (homógrafo)",
+      "criterio": "Retenido: se inserta en la tabla de símbolos (§6.3.2, stoplist (b); ADR-003).",
+      "pruebas": [
+        {"funcion": "TestCPU12_StoplistKeepsBajo", "archivo": "internal/lexer/stoplist_test.go"}
+      ],
+      "resultado": "«bajo» no está en la stoplist y se conserva como homógrafo.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU13", "id_anexo": "CP-U13", "nivel": 1,
+      "componente": "Stoplist", "tipo": "Unitaria nominal",
+      "entrada": "Token \"servicio\"",
+      "criterio": "Retenido (§6.3.2, stoplist (c)).",
+      "pruebas": [
+        {"funcion": "TestCPU13_StoplistKeepsServicio", "archivo": "internal/lexer/stoplist_test.go"}
+      ],
+      "resultado": "«servicio» no está en la stoplist y se conserva.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPU14", "id_anexo": "", "nivel": 1, "extension": true,
+      "componente": "Stoplist", "tipo": "Unitaria de política (extensión del proyecto)",
+      "entrada": "Las cuatro clases cerradas de la política (artículos, preposiciones, conjunciones e interjecciones) y sus variantes de superficie (segun, ole, q, x)",
+      "criterio": "Toda forma de la política se filtra con su clase; las variantes de superficie quedan en la clase de la forma original (ADR-003). No figura en el Anexo II.",
+      "pruebas": [
+        {"funcion": "TestCPU14_StoplistPolicy", "archivo": "internal/lexer/stoplist_test.go"}
+      ],
+      "resultado": "Las formas de la política, escritas aparte de stoplist/v1.json, se filtran todas con la clase correcta; «segun» y «ole» comparten la clase de «según» y «olé»; «q» es conjunción y «x» es preposición.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPP01", "id_anexo": "CP-P01", "nivel": 2,
+      "componente": "Generador ER", "tipo": "Basada en propiedades (I-1)",
+      "entrada": "Lexema \"cobr-\" con variantes {\"cobro\", \"cobros\", \"cobraron\", \"cobrado\"}",
+      "criterio": "ER generada cobr(o|os|aron|ado) que acepta todas las variantes; 0 fallos de ida y vuelta sobre el catálogo completo (§6.3.3, I-1).",
+      "pruebas": [
+        {"funcion": "TestCPP01_GenerateERCobro", "archivo": "internal/lexer/regexgen_test.go"},
+        {"funcion": "TestCPP01_EscapesRoundTrip", "archivo": "internal/regex/roundtrip_test.go"},
+        {"funcion": "TestCPP01_GeneratorRoundTripRandom", "archivo": "internal/regex/roundtrip_test.go"},
+        {"funcion": "TestCPP01_I1_RoundTripCatalogue", "archivo": "internal/regex/roundtrip_test.go"}
+      ],
+      "resultado": "cobr(ado|aron|o|os) (orden de bytes); 2,000 conjuntos aleatorios con metacaracteres se aceptan y rechazan lo que corresponde; I-1 = 0 fallos en 6,196 lexemas y 6,891 variantes.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPP02", "id_anexo": "CP-P02", "nivel": 2,
+      "componente": "Frecuencias", "tipo": "Basada en propiedades (I-2)",
+      "entrada": "Barrido completo del corpus con semilla 10433",
+      "criterio": "Para todo lexema, la suma de las frecuencias por categoría es igual a la frecuencia global; la consulta SQL del TE devuelve 0 filas (§6.3.3, I-2).",
+      "pruebas": [
+        {"funcion": "TestCPP02_FixtureFrequencyConservation", "archivo": "internal/sweep/sweep_test.go"},
+        {"funcion": "TestCPP02_FullCorpusFrequencyConservation", "archivo": "internal/sweep/integration_test.go"}
+      ],
+      "resultado": "0 filas con la consulta literal del TE sobre 73,000 comentarios, 6,196 lexemas y 1,018,600 ocurrencias; 0 ER con respaldo a la forma canónica.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPP03", "id_anexo": "CP-P03", "nivel": 2,
+      "componente": "Barrido", "tipo": "Basada en propiedades (I-3)",
+      "entrada": "Dos ejecuciones con semilla 10433 y los mismos parámetros",
+      "criterio": "Hash SHA-256 idéntico de resultados.db en ambas ejecuciones (§6.3.3, I-3).",
+      "pruebas": [
+        {"funcion": "TestCPP03_FixtureIdempotence", "archivo": "internal/sweep/sweep_test.go"},
+        {"funcion": "TestCPP03_FullCorpusIdempotence", "archivo": "internal/sweep/integration_test.go"}
+      ],
+      "resultado": "SHA-256 idéntico en dos corridas completas: 9620196f…79f3 (también lo comprueba make sweep-sha).",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPP04", "id_anexo": "CP-P04", "nivel": 2,
+      "componente": "Simulación / barrido", "tipo": "Basada en propiedades (I-4)",
+      "entrada": "Subcorpus de 1k, 10k, 30k, 50k y 73k comentarios",
+      "criterio": "Tiempo de barrido T(k·N) ≈ k·T(N): pendiente positiva y R² ≥ 0.99; T(73k) < 60 s (§6.3.3, I-4).",
+      "pruebas": [
+        {"funcion": "TestCPP04_I4_Linealidad", "archivo": "internal/sweep/linearity_test.go"},
+        {"funcion": "TestCPP04_FitLineExact", "archivo": "internal/sweep/linearity_test.go"},
+        {"funcion": "TestCPP04_MeasureLinearityFixture", "archivo": "internal/sweep/linearity_test.go"},
+        {"funcion": "TestCPP04_SubcorpusIsPrefixByID", "archivo": "internal/sweep/linearity_test.go"},
+        {"funcion": "TestCPP04_RejectsBadSizes", "archivo": "internal/sweep/linearity_test.go"}
+      ],
+      "resultado": "R² = 0.9938 (make i4; tres corridas de la prueba dieron 0.9956, 0.9961 y 0.9988); pendiente 4.9e-06 s por comentario; T(73k) = 0.37 s medido en Linux (docs/reports/i4_linealidad.md).",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPE01", "id_anexo": "CP-E01", "nivel": 3,
+      "componente": "Pipeline léxico", "tipo": "Equivalencia CE-2",
+      "entrada": "Texto \"el de la con por\" (solo stopwords)",
+      "criterio": "Vector de rasgos nulo y sin nuevas entradas en la tabla de símbolos (§6.3.4, CE-2).",
+      "pruebas": [
+        {"funcion": "TestCPE01_OnlyStopwordsGivesEmpty", "archivo": "internal/lexer/analyze_test.go"}
+      ],
+      "resultado": "Analyze devuelve una lista vacía para «de la y el que en» y para «¡Ah, eh! ¿Y el de la?».",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPE02", "id_anexo": "CP-E02", "nivel": 3,
+      "componente": "Pipeline léxico", "tipo": "Equivalencia CE-4",
+      "entrada": "Cadena vacía \"\"",
+      "criterio": "Sin error de ejecución y sin actualización de la tabla de símbolos (§6.3.4, CE-4).",
+      "pruebas": [
+        {"funcion": "TestCPE02_EmptyTextGivesEmptyNoError", "archivo": "internal/lexer/analyze_test.go"}
+      ],
+      "resultado": "Lista vacía y sin error para «», «   », salto de línea y tabulador, «...!!!» y «123 456».",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPE03", "id_anexo": "CP-E03", "nivel": 3,
+      "componente": "Pipeline léxico", "tipo": "Equivalencia CE-5",
+      "entrada": "Texto \"😊 ERROR https://example.com\"",
+      "criterio": "Los caracteres fuera del alfabeto se tratan como separadores; los alfanuméricos se procesan normalmente (§6.3.4, CE-5).",
+      "pruebas": [
+        {"funcion": "TestCPE03_EmojiAndURL", "archivo": "internal/lexer/analyze_test.go"}
+      ],
+      "resultado": "«Pésimo servicio 😡😡 https://telarg.mx/quejas?id=99 llevo días» produce pésimo, servicio, https, telarg, mx, quejas, id, llevo, días; los emojis separan y el 99 se reconoce pero no se cataloga.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPE04", "id_anexo": "CP-E04", "nivel": 3,
+      "componente": "Pipeline léxico", "tipo": "Equivalencia CE-6",
+      "entrada": "Texto de 5,000 caracteres con vocabulario de dominio",
+      "criterio": "Procesamiento correcto, sin desbordamiento, en menos de 500 ms (§6.3.4, CE-6).",
+      "pruebas": [
+        {"funcion": "TestCPE04_LongTextUnder500ms", "archivo": "internal/lexer/analyze_test.go"}
+      ],
+      "resultado": "5,000 caracteres analizados en menos de 500 ms (la prueba falla si lo excede; go test registra 0.00 s) y con tokens producidos.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPA01", "id_anexo": "CP-A01", "nivel": 6,
+      "componente": "API REST", "tipo": "Contrato nominal",
+      "entrada": "POST /api/clasificar con texto = \"No tengo señal desde ayer\"",
+      "criterio": "HTTP 200; categoria dentro de las 5 etiquetas del caso; campo confianzas con 5 entradas que suman 1.0 (§6.3.7).",
+      "pruebas": [
+        {"funcion": "TestCPA01_ClasificarValido", "archivo": "internal/web/api_test.go"},
+        {"funcion": "TestCPA01_TextoSinVocabularioMarcaVacio", "archivo": "internal/web/api_test.go"}
+      ],
+      "resultado": "Los 5 comentarios de oro dan HTTP 200, la categoría esperada, 5 confianzas en [0, 1] que suman 1 (tolerancia 1e-9) y de 1 a 5 lexemas_clave con la ER del catálogo; un texto sin vocabulario marca vacio = true.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPA02", "id_anexo": "CP-A02", "nivel": 6,
+      "componente": "API REST", "tipo": "Contrato de error",
+      "entrada": "POST /api/clasificar con texto = \"\"",
+      "criterio": "HTTP 400, mensaje de error descriptivo y sin pánico del servidor (§6.3.7).",
+      "pruebas": [
+        {"funcion": "TestCPA02_TextoVacio", "archivo": "internal/web/api_test.go"}
+      ],
+      "resultado": "Texto vacío, solo espacios, campo ausente, JSON mal formado, no objeto, texto no cadena y cuerpo vacío dan HTTP 400 con un mensaje descriptivo; el del texto vacío nombra el campo «texto» y dice qué enviar.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPA03", "id_anexo": "CP-A03", "nivel": 6,
+      "componente": "API REST", "tipo": "Seguridad",
+      "entrada": "POST /api/clasificar con texto = \"'; DROP TABLE lexemas;--\"",
+      "criterio": "HTTP 200 o 400, sin error de base de datos y sin modificación de resultados.db (base de solo lectura) (§6.3.7).",
+      "pruebas": [
+        {"funcion": "TestCPA03_InyeccionSQL", "archivo": "internal/web/api_test.go"}
+      ],
+      "resultado": "Cinco cargas de inyección (también por el parámetro q de /api/lexemas) dan 200 o 400; el SHA-256 de resultados.db y de corpus.db no cambia y el catálogo sigue completo.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPA04", "id_anexo": "CP-A04", "nivel": 6,
+      "componente": "API REST", "tipo": "Contrato nominal",
+      "entrada": "GET /api/lexemas",
+      "criterio": "HTTP 200; lista paginada de lexemas con forma_canonica, expresion_regular y frecuencia_global (§6.3.7).",
+      "pruebas": [
+        {"funcion": "TestCPA04_LexemasPaginado", "archivo": "internal/web/api_test.go"}
+      ],
+      "resultado": "Primera página de 100 de 6,196 lexemas; cada uno con ER, al menos una variante y 5 frecuencias por categoría cuya suma es la frecuencia_global (I-2).",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPA05", "id_anexo": "CP-A05", "nivel": 6,
+      "componente": "Servicio", "tipo": "Fallback de puerto",
+      "entrada": "Puerto 8471 ocupado al iniciar",
+      "criterio": "El servidor inicia en 8472 y el banner muestra la URL correcta (http://127.0.0.1:8472) (§6.3.7).",
+      "pruebas": [
+        {"funcion": "TestCPA05_FallbackDePuerto", "archivo": "internal/web/boot_test.go"},
+        {"funcion": "TestCPA05_Puerto8471Ocupado", "archivo": "cmd/autoatend/main_test.go"}
+      ],
+      "resultado": "Con 8471 ocupado el banner anuncia http://127.0.0.1:8472 y /api/health informa ese mismo puerto; el cierre ordenado sale con código 0.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPA06", "id_anexo": "CP-A06", "nivel": 5,
+      "componente": "Paridad", "tipo": "Python ↔ Go",
+      "entrada": "1,000 comentarios aleatorios del corpus de prueba",
+      "criterio": "Vectores dispersos idénticos en Python y en Go (L1 = 0) y misma categoría predicha (§6.3.6).",
+      "pruebas": [
+        {"funcion": "TestCPA06_ParidadPythonGo", "archivo": "internal/ml/parity_test.go"}
+      ],
+      "resultado": "n = 1,000: L1 = 0, soporte idéntico, clase idéntica en 1,000 de 1,000, máximo |Δprob| = 1.1e-16.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPM01", "id_anexo": "CP-M01", "nivel": 7,
+      "componente": "Clasificador", "tipo": "Macro-F1",
+      "entrada": "Conjunto de prueba independiente (20 % del corpus, 14,600 comentarios)",
+      "criterio": "Macro-F1 ≥ 0.85 (§6.3.8).",
+      "pruebas": [
+        {"funcion": "TestCPM01_MacroF1", "archivo": "internal/ml/parity_test.go"}
+      ],
+      "resultado": "0.9795 en el test temporal (14,600); 0.9826 sin duplicados de train (11,040); 0.9997 sin el subconjunto ambiguo (13,348). Un solo entrenamiento, con modelo.json.",
+      "estado": "pasa"
+    },
+    {
+      "id": "CPM02", "id_anexo": "CP-M02", "nivel": 7,
+      "componente": "Clasificador", "tipo": "Recall de la clase minoritaria",
+      "entrada": "Categoría Reconocimientos (1,495 comentarios del conjunto de prueba)",
+      "criterio": "Recall ≥ 0.70 (§6.3.8).",
+      "pruebas": [
+        {"funcion": "TestCPM02_RecallReconocimientos", "archivo": "internal/ml/parity_test.go"}
+      ],
+      "resultado": "0.9819 en el test temporal; 0.9877 sin duplicados; 0.9986 sin el subconjunto ambiguo.",
+      "estado": "pasa"
+    }
+  ]
+}
