@@ -154,11 +154,11 @@ func TestCPU02_ParserErrors(t *testing.T) {
 }
 
 // nested builds an expression of `levels` nested alternatives,
-// (abcdefg|(abcdefg|(...x))), padding the innermost literal to total runes.
+// (abcdef|(abcdef|(...x))), padding the innermost literal to total runes.
 func nested(levels, total int) string {
 	var b strings.Builder
 	for i := 0; i < levels; i++ {
-		b.WriteString("(abcdefg|")
+		b.WriteString("(abcdef|")
 	}
 	b.WriteString(strings.Repeat("x", total-b.Len()-levels))
 	b.WriteString(strings.Repeat(")", levels))
