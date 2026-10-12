@@ -67,8 +67,8 @@ cross: assets
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador-macos-arm64 ./cmd/simulador
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar.exe ./cmd/tokenizar
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar-macos-arm64 ./cmd/tokenizar
-#	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend.exe ./cmd/autoatend
-#	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend.exe ./cmd/autoatend
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w -X main.version=$(VERSION)" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
 
 # Sweeps data/corpus.db into data/resultados.db and data/df_train.json.
 # Fails if either exists (the catalogue is built once); use make clean-results first.
