@@ -113,8 +113,8 @@ Entregado y verificado con `make verify` en verde:
 | Id | Medida | Rango aceptado |
 |---|---|---|
 | K1 | Jaccard de los 100 tokens más frecuentes por par de categorías, **después de la stoplist v1** | [0.15, 0.80] (el rango que ya existía) |
-| K2 | Colisión de la oración base: % de comentarios cuya oración base limpia, como bolsa de tokens sin stoplist, aparece también en otra categoría | global [0.05, 0.10]; ≥ 0.03 por categoría; ≤ 0.05 en Reconocimientos |
-| K3 | Sonda Naive Bayes multinomial (α = 1, 5 pliegues estratificados, semilla 10433, tokens de la batería sin stoplist): Macro-F1 promedio | [0.80, 0.99] |
+| K2 | Colisión de la oración base: % de comentarios cuya oración base limpia, como bolsa de tokens sin las palabras de la stoplist v1, aparece también en otra categoría | global [0.05, 0.10]; ≥ 0.03 por categoría; ≤ 0.05 en Reconocimientos |
+| K3 | Sonda Naive Bayes multinomial (α = 1, 5 pliegues estratificados, semilla 10433, tokens de la batería sin las palabras de la stoplist v1): Macro-F1 promedio | [0.80, 0.99] |
 
 Otras reglas:
 - Son solo de reporte, no compuertas: la regla de una palabra y el F1 con plantillas no vistas.

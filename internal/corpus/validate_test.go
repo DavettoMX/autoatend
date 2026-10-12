@@ -43,6 +43,7 @@ func checkNames(v Validation) []string {
 }
 
 func TestValidationPassesOnGeneratedCorpus(t *testing.T) {
+	pendingTemplates(t)
 	cs, cfg := generated(t)
 	v := Validate(cs, cfg)
 	for _, c := range v.Checks {

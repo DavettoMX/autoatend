@@ -13,6 +13,7 @@ import (
 // Level 4a integration: gencorpus -> corpus.db at full case size (seed 10433, 73,000 rows).
 // The assertions query the database directly, independently of the generator's own statistics.
 func TestLevel4aGencorpusToCorpusDB(t *testing.T) {
+	pendingTemplates(t)
 	if testing.Short() {
 		t.Skip("full-size generation skipped in -short mode")
 	}

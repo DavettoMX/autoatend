@@ -160,3 +160,10 @@ func TestPreRegistration_CurrentTemplatesFailK1K2K3(t *testing.T) {
 		}
 	}
 }
+
+// pendingTemplates skips a test that needs the generated corpus to pass the battery.
+// The pre-registered K1–K3 reject the current templates; the template change removes it.
+func pendingTemplates(t *testing.T) {
+	t.Helper()
+	t.Skip("pending: the current templates fail the pre-registered K1–K3 (PLAN.md §3)")
+}

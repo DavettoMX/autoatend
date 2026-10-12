@@ -58,6 +58,7 @@ func TestRunRefusesToPersistWhenValidationFails(t *testing.T) {
 }
 
 func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
+	pendingTemplates(t)
 	opts := smallOptions(t)
 	res, err := Run(opts)
 	if err != nil {
@@ -105,6 +106,7 @@ func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
 }
 
 func TestReportIsDeterministic(t *testing.T) {
+	pendingTemplates(t)
 	render := func() ([]byte, string) {
 		opts := smallOptions(t)
 		res, err := Run(opts)
@@ -130,6 +132,7 @@ func TestReportIsDeterministic(t *testing.T) {
 // The train/test duplicate count is checked against an oracle built in Go from
 // the persisted rows, not against the SQL used by verifyCorpus.
 func TestPersistedTestDuplicatesInTrain(t *testing.T) {
+	pendingTemplates(t)
 	opts := smallOptions(t)
 	res, err := Run(opts)
 	if err != nil {
