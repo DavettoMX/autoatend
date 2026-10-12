@@ -31,7 +31,7 @@ func TestSelftestExit0(t *testing.T) {
 	if errs != "" {
 		t.Errorf("stderr is not empty on success: %q", errs)
 	}
-	for _, want := range []string{"corpus.db", "integridad", "catálogo", "gold5", "puerto"} {
+	for _, want := range []string{"corpus.db", "integridad", "catalogo", "gold5", "puerto"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("selftest output has no line about %q:\n%s", want, out)
 		}
@@ -70,7 +70,7 @@ func TestSelftestGold5Corrupto(t *testing.T) {
 		t.Errorf("stderr does not name the failed check:\n%s", errs)
 	}
 	// The other checks still ran and passed.
-	if !strings.Contains(out, "corpus.db") || !strings.Contains(out, "catálogo") {
+	if !strings.Contains(out, "corpus.db") || !strings.Contains(out, "catalogo") {
 		t.Errorf("remaining checks did not report:\n%s", out)
 	}
 }
@@ -97,7 +97,7 @@ func TestSelftestERInvalidaDelCatalogo(t *testing.T) {
 		return editSQLite(t, b, `UPDATE lexemas SET expresion_regular = 'ab(c' WHERE id = 1`)
 	})
 	code, _, errs, _ := runSelftest(t, web.Options{Assets: bad})
-	if code != 1 || !strings.Contains(errs, "catálogo") {
+	if code != 1 || !strings.Contains(errs, "catalogo") {
 		t.Errorf("exit %d, stderr %q; want 1 naming the catalogue check", code, errs)
 	}
 }
@@ -108,7 +108,7 @@ func TestSelftestERQueNoAceptaSusVariantes(t *testing.T) {
 		return editSQLite(t, b, `UPDATE lexemas SET expresion_regular = 'zzz' WHERE id = (SELECT lexema_id FROM variantes LIMIT 1)`)
 	})
 	code, _, errs, _ := runSelftest(t, web.Options{Assets: bad})
-	if code != 1 || !strings.Contains(errs, "catálogo") {
+	if code != 1 || !strings.Contains(errs, "catalogo") {
 		t.Errorf("exit %d, stderr %q; want 1 naming the catalogue check", code, errs)
 	}
 }
