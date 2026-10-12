@@ -294,7 +294,7 @@ var Closers = [5][]string{
 var Complements = [5][]string{
 	// 1 — Falta de Servicio
 	{
-		"Ya insistí tres veces y nadie me resuelve.",
+		"Ya insistí varias veces y nadie me resuelve.",
 		"Ya me había pasado antes este mes.",
 		"Ya me está afectando en el trabajo.",
 		"Quiero que alguien se haga cargo.",
@@ -310,7 +310,7 @@ var Complements = [5][]string{
 	},
 	// 2 — Cobros Indebidos
 	{
-		"Ya insistí tres veces y nadie me resuelve.",
+		"Ya insistí varias veces y nadie me resuelve.",
 		"Quiero que me devuelvan mi dinero.",
 		"Nunca me avisaron de este cargo.",
 		"Es dinero que me hace falta.",
@@ -326,7 +326,7 @@ var Complements = [5][]string{
 	},
 	// 3 — Problemas de Facturación
 	{
-		"Ya insistí tres veces y nadie me resuelve.",
+		"Ya insistí varias veces y nadie me resuelve.",
 		"Necesito que lo resuelvan cuanto antes.",
 		"Ya lo reporté y sigue igual.",
 		"Necesito que esto quede aclarado con urgencia.",
@@ -341,7 +341,7 @@ var Complements = [5][]string{
 	},
 	// 4 — Quejas
 	{
-		"Ya insistí tres veces y nadie me resuelve.",
+		"Ya insistí varias veces y nadie me resuelve.",
 		"Es una falta de respeto con los clientes.",
 		"Llevo años con ustedes y no merezco esto.",
 		"Espero que alguien con autoridad me atienda.",
@@ -356,7 +356,7 @@ var Complements = [5][]string{
 	},
 	// 5 — Reconocimientos
 	{
-		"Se nota que se preocupan por sus clientes.",
+		"Se nota la diferencia.",
 		"Sigan así, de verdad se agradece.",
 		"Ojalá todas las empresas fueran así.",
 		"Por esto sigo con TelArg.",
