@@ -91,7 +91,7 @@ var SlotVocab = map[string][]string{
 	},
 	"ENTREGA_ELEC": {"por correo electrónico", "en la app", "por WhatsApp"},
 	"HORARIO": {
-		"por las mañanas", "en las noches", "toda la tarde", "en horario de oficina",
+		"por las mañanas", "en las noches", "toda la tarde", "en horario laboral",
 		"de madrugada", "en fines de semana",
 	},
 	"DURACION_DIAS": {

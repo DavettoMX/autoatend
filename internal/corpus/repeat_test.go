@@ -12,14 +12,15 @@ import (
 
 // repeatIgnore are words that may legitimately repeat inside one sentence.
 var repeatIgnore = map[string]bool{
-	"mensajes": true, "llamadas": true, "internet": true, "señal": true, "servicio": true,
+	"mensajes": true, "llamadas": true, "internet": true, "senal": true, "servicio": true,
 	"pesos": true, "total": true, // the unit of two amounts, and "Total 399" next to "monto total"
 }
 
 // contentWords are the lowercased words of s with at least 5 letters, minus the ignored ones.
 func contentWords(s string) []string {
 	var out []string
-	for _, w := range strings.FieldsFunc(strings.ToLower(s), func(r rune) bool { return !unicode.IsLetter(r) }) {
+	s = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u").Replace(strings.ToLower(s))
+	for _, w := range strings.FieldsFunc(s, func(r rune) bool { return !unicode.IsLetter(r) }) {
 		if len([]rune(w)) >= 5 && !repeatIgnore[w] {
 			out = append(out, w)
 		}
