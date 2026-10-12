@@ -1,3 +1,196 @@
 <!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8"><title>AutoAtend</title></head>
-<body><h1>AutoAtend</h1></body></html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoAtend - Clasificador de comentarios</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #565f6b;
+  --line: #d0d5dc; --accent: #0b5cad; --accent-text: #ffffff; --bar: #b9c4d2; --bar-top: #0b5cad;
+  --err-bg: #fdecec; --err-text: #8a1c1c; --note-bg: #fff6dd; --note-text: #5c4300;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181d; --panel: #1d232a; --text: #e8ebef; --muted: #a3adba;
+    --line: #38414b; --accent: #5aa2ee; --accent-text: #0a0f14; --bar: #46515f; --bar-top: #5aa2ee;
+    --err-bg: #3a1c1c; --err-text: #ffb4b4; --note-bg: #3a3118; --note-text: #f1d58a;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+main { max-width: 52rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.1rem; margin: 0 0 .5rem; }
+.lead { margin: 0 0 1.25rem; color: var(--muted); }
+section, form { background: var(--panel); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; }
+label { display: block; font-weight: 600; margin-bottom: .4rem; }
+textarea {
+  width: 100%; min-height: 8rem; resize: vertical; padding: .6rem; font: inherit;
+  color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: .35rem;
+}
+button {
+  margin-top: .75rem; padding: .55rem 1.2rem; font: inherit; font-weight: 600; cursor: pointer;
+  color: var(--accent-text); background: var(--accent); border: 0; border-radius: .35rem;
+}
+button:disabled { opacity: .6; cursor: progress; }
+textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.hint { color: var(--muted); font-size: .9rem; margin: .4rem 0 0; }
+#categoria { font-size: 1.5rem; font-weight: 700; margin: 0 0 .75rem; }
+ul.conf { list-style: none; margin: 0; padding: 0; }
+ul.conf li { display: grid; grid-template-columns: 12rem 1fr 4.5rem; gap: .6rem; align-items: center; padding: .15rem 0; }
+ul.conf .nombre { overflow-wrap: anywhere; }
+ul.conf .track { background: var(--bg); border: 1px solid var(--line); border-radius: .25rem; height: .9rem; overflow: hidden; }
+ul.conf .fill { display: block; height: 100%; background: var(--bar); }
+ul.conf li.top .fill { background: var(--bar-top); }
+ul.conf li.top .nombre, ul.conf li.top .pct { font-weight: 700; }
+ul.conf .pct { text-align: right; font-variant-numeric: tabular-nums; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+caption { text-align: left; font-weight: 600; padding-bottom: .4rem; }
+th, td { text-align: left; padding: .35rem .5rem; border-top: 1px solid var(--line); vertical-align: top; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+code { font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; overflow-wrap: anywhere; }
+.msg { border-radius: .35rem; padding: .6rem .8rem; margin: 0 0 .75rem; }
+.error { background: var(--err-bg); color: var(--err-text); }
+.note { background: var(--note-bg); color: var(--note-text); }
+a { color: var(--accent); }
+footer { color: var(--muted); font-size: .9rem; }
+[hidden] { display: none !important; }
+@media (max-width: 36rem) { ul.conf li { grid-template-columns: 1fr 4.5rem; } ul.conf .track { grid-column: 1 / -1; grid-row: 2; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>AutoAtend</h1>
+  <p class="lead">Clasificador de comentarios de clientes de TelArg en cinco categorías. Escriba un comentario y presione Clasificar.</p>
+
+  <form id="form" autocomplete="off">
+    <label for="texto">Comentario del cliente</label>
+    <textarea id="texto" name="texto" maxlength="5000" required aria-describedby="ayuda"></textarea>
+    <p id="ayuda" class="hint">Atajo: Ctrl+Enter.</p>
+    <button type="submit" id="enviar">Clasificar</button>
+  </form>
+
+  <div id="error" class="msg error" role="alert" hidden></div>
+
+  <div aria-live="polite">
+  <section id="resultado" aria-labelledby="titulo-resultado" hidden>
+    <h2 id="titulo-resultado">Resultado</h2>
+    <p id="categoria"></p>
+    <p id="vacio" class="msg note" hidden>Ninguna palabra del comentario pertenece al vocabulario del modelo (puede contener solo palabras vacías, números o términos desconocidos). La categoría mostrada es la más probable a priori y no refleja el contenido del comentario.</p>
+
+    <h2>Confianza por categoría</h2>
+    <ul id="confianzas" class="conf"></ul>
+
+    <h2 style="margin-top:1rem">Lexemas clave</h2>
+    <p class="hint">Palabras del catálogo que más pesaron en la decisión, con la expresión regular que las reconoce y su contribución a la puntuación de la categoría elegida.</p>
+    <table id="tabla-lexemas">
+      <caption class="hint">Lexemas clave de la decisión</caption>
+      <thead><tr><th scope="col">Lexema</th><th scope="col">Expresión regular</th><th scope="col">Contribución</th></tr></thead>
+      <tbody id="lexemas"></tbody>
+    </table>
+  </section>
+  </div>
+
+  <footer>
+    <p><a href="/api/lexemas?orden=variantes" target="_blank" rel="noopener">Ver el catálogo de expresiones regulares</a> (ordenado por número de variantes).</p>
+    <p id="estado">Servicio local en 127.0.0.1; los comentarios no salen de este equipo.</p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+var el = function (id) { return document.getElementById(id); };
+var pct = new Intl.NumberFormat("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+function cell(tag, text, cls) {
+  var c = document.createElement(tag);
+  c.textContent = text;
+  if (cls) { c.className = cls; }
+  return c;
+}
+
+function showError(msg) {
+  var box = el("error");
+  box.textContent = msg;
+  box.hidden = false;
+  el("resultado").hidden = true;
+}
+
+function render(r) {
+  el("error").hidden = true;
+  el("categoria").textContent = r.categoria;
+  el("vacio").hidden = !r.vacio;
+
+  var nombres = Object.keys(r.confianzas).sort(function (a, b) { return r.confianzas[b] - r.confianzas[a]; });
+  var ul = el("confianzas");
+  ul.textContent = "";
+  nombres.forEach(function (n) {
+    var li = document.createElement("li");
+    if (n === r.categoria) { li.className = "top"; }
+    var track = document.createElement("span");
+    track.className = "track";
+    track.setAttribute("aria-hidden", "true");
+    var fill = document.createElement("span");
+    fill.className = "fill";
+    fill.style.width = (r.confianzas[n] * 100).toFixed(2) + "%";
+    track.appendChild(fill);
+    li.appendChild(cell("span", n, "nombre"));
+    li.appendChild(track);
+    li.appendChild(cell("span", pct.format(r.confianzas[n] * 100) + " %", "pct"));
+    ul.appendChild(li);
+  });
+
+  var tb = el("lexemas");
+  tb.textContent = "";
+  r.lexemas_clave.forEach(function (l) {
+    var tr = document.createElement("tr");
+    tr.appendChild(cell("td", l.lexema));
+    var td = document.createElement("td");
+    td.appendChild(cell("code", l.expresion_regular));
+    tr.appendChild(td);
+    tr.appendChild(cell("td", (l.contribucion >= 0 ? "+" : "") + l.contribucion.toFixed(4), "num"));
+    tb.appendChild(tr);
+  });
+  el("tabla-lexemas").hidden = r.lexemas_clave.length === 0;
+  el("resultado").hidden = false;
+}
+
+function clasificar() {
+  var texto = el("texto").value;
+  if (texto.trim() === "") {
+    showError("Escriba un comentario antes de clasificar.");
+    el("texto").focus();
+    return;
+  }
+  var btn = el("enviar");
+  btn.disabled = true;
+  fetch("/api/clasificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ texto: texto })
+  }).then(function (resp) {
+    return resp.json().then(function (data) { return { ok: resp.ok, data: data }; });
+  }).then(function (res) {
+    if (res.ok) { render(res.data); } else { showError(res.data.error || "No se pudo clasificar el comentario."); }
+  }).catch(function () {
+    showError("No se pudo contactar al servicio local. Verifique que AutoAtend siga en ejecución.");
+  }).then(function () { btn.disabled = false; });
+}
+
+el("form").addEventListener("submit", function (e) { e.preventDefault(); clasificar(); });
+el("texto").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); clasificar(); }
+});
+
+fetch("/api/health").then(function (r) { return r.json(); }).then(function (h) {
+  el("estado").textContent = "AutoAtend " + h.version + " - catálogo de " + h.lexemas + " lexemas - servicio local en 127.0.0.1:" + h.puerto + "; los comentarios no salen de este equipo.";
+}).catch(function () {});
+</script>
+</body>
+</html>
