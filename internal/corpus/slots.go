@@ -11,11 +11,13 @@ import (
 
 // slotFiller expands {SLOT} placeholders using one rng stream. It remembers the
 // last two amounts drawn so that {MONTO_B} is guaranteed to differ from the
-// amount before it (e.g. "me cobraron {MONTO} y debía ser {MONTO_B}").
+// amount before it (e.g. "me cobraron {MONTO} y debía ser {MONTO_B}"), and the
+// price of the last {PLAN} drawn so that {PRECIO}, {COBRO} and {EXTRA} agree with it.
 type slotFiller struct {
 	rng        *rand.Rand
 	amount     int
 	prevAmount int
+	planPrice  int // price of the last {PLAN}; 0 until one is drawn
 }
 
 func newSlotFiller(rng *rand.Rand) *slotFiller { return &slotFiller{rng: rng} }
@@ -52,12 +54,56 @@ func (f *slotFiller) value(name string) (string, bool) {
 		return f.drawAmount(true), true
 	case "FOLIO":
 		return f.folio(), true
+	case "PLAN":
+		p := templates.Plans[f.rng.Intn(len(templates.Plans))]
+		f.planPrice = p.Price
+		return p.Name, true
+	case "MONTO_CHICO":
+		return f.smallAmount(), true
+	case "PRECIO":
+		return f.planAmount(func(n int) bool { return n == f.planPrice }, planPriceStyles)
+	case "COBRO":
+		return f.planAmount(func(n int) bool { return n > f.planPrice && n <= 2*f.planPrice }, amountStyles)
+	case "EXTRA":
+		return f.planAmount(func(n int) bool { return n < f.planPrice }, amountStyles)
 	}
 	vals, ok := templates.SlotVocab[name]
 	if !ok {
 		return "", false
 	}
 	return vals[f.rng.Intn(len(vals))], true
+}
+
+// planAmount draws an amount of AmountPool that satisfies keep, relative to the price of the
+// last {PLAN}. {PRECIO} (the price itself), {COBRO} (a charge above the price, at most double)
+// and {EXTRA} (an extra charge below the price) fail when the template names no plan before.
+func (f *slotFiller) planAmount(keep func(int) bool, styles int) (string, bool) {
+	if f.planPrice == 0 {
+		return "", false
+	}
+	var cands []int
+	for _, n := range templates.AmountPool {
+		if keep(n) {
+			cands = append(cands, n)
+		}
+	}
+	if len(cands) == 0 {
+		return "", false
+	}
+	n := cands[f.rng.Intn(len(cands))]
+	return formatAmount(n, f.rng.Intn(styles)), true
+}
+
+// smallAmount draws an amount of at most smallAmountMax pesos, for recharges and recurring
+// add-on charges. It does not touch the {MONTO}/{MONTO_B} memory.
+func (f *slotFiller) smallAmount() string {
+	var cands []int
+	for _, n := range templates.AmountPool {
+		if n <= smallAmountMax {
+			cands = append(cands, n)
+		}
+	}
+	return formatAmount(cands[f.rng.Intn(len(cands))], f.rng.Intn(amountStyles))
 }
 
 func (f *slotFiller) drawAmount(differ bool) string {
@@ -71,9 +117,13 @@ func (f *slotFiller) drawAmount(differ bool) string {
 
 // Surface variety of the amount and folio slots.
 const (
-	amountStyles   = 6 // surface formats of formatAmount
-	folioMinDigits = 5
-	folioMaxDigits = 7
+	amountStyles = 6 // surface formats of formatAmount
+	// planPriceStyles leaves out the ".50" format: a plan price is exact, and "$199.50" would
+	// not match "Libre 199".
+	planPriceStyles = 5
+	smallAmountMax  = 499 // largest {MONTO_CHICO}
+	folioMinDigits  = 5
+	folioMaxDigits  = 7
 )
 
 // formatAmount renders n pesos in one of amountStyles surface formats ("variable format").

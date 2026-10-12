@@ -37,10 +37,10 @@ var categoryPercents = [5]int{30, 20, 20, 20, 10}
 
 // Probabilities of the optional composition parts.
 const (
-	pOpener    = 0.25
-	pSecond    = 0.40
-	pCloser    = 0.30
-	dateLayout = "2006-01-02"
+	pOpener     = 0.25
+	pComplement = 0.40
+	pCloser     = 0.30
+	dateLayout  = "2006-01-02"
 )
 
 // targetCounts splits total by categoryPercents; any remainder goes to category 1.
@@ -93,8 +93,10 @@ func Generate(cfg Config) ([]Comment, error) {
 	return out, nil
 }
 
-// compose builds one clean comment: optional opener, one or two category
-// templates, optional closer.
+// compose builds one clean comment: optional opener, exactly one category base
+// template, optional complement of the same category and optional closer.
+// Opener, complement and closer never add a second incident: the comment talks
+// about one problem.
 func compose(cat int, rng *rand.Rand) (string, error) {
 	ts := templates.Templates[cat-1]
 	f := newSlotFiller(rng)
@@ -109,7 +111,7 @@ func compose(cat int, rng *rand.Rand) (string, error) {
 	}
 
 	if rng.Float64() < pOpener {
-		if err := add(templates.Openers[rng.Intn(len(templates.Openers))]); err != nil {
+		if err := add(pick(rng, templates.SharedOpeners, templates.Openers[cat-1])); err != nil {
 			return "", err
 		}
 	}
@@ -117,21 +119,27 @@ func compose(cat int, rng *rand.Rand) (string, error) {
 	if err := add(ts[first]); err != nil {
 		return "", err
 	}
-	if rng.Float64() < pSecond {
-		second := rng.Intn(len(ts) - 1)
-		if second >= first {
-			second++
-		}
-		if err := add(ts[second]); err != nil {
+	if rng.Float64() < pComplement {
+		cs := templates.Complements[cat-1]
+		if err := add(cs[rng.Intn(len(cs))]); err != nil {
 			return "", err
 		}
 	}
 	if rng.Float64() < pCloser {
-		if err := add(templates.Closers[rng.Intn(len(templates.Closers))]); err != nil {
+		if err := add(pick(rng, templates.SharedClosers, templates.Closers[cat-1])); err != nil {
 			return "", err
 		}
 	}
 	return strings.Join(parts, " "), nil
+}
+
+// pick draws uniformly from the concatenation of shared and own.
+func pick(rng *rand.Rand, shared, own []string) string {
+	i := rng.Intn(len(shared) + len(own))
+	if i < len(shared) {
+		return shared[i]
+	}
+	return own[i-len(shared)]
 }
 
 // capitalizeFirst uppercases the first letter, skipping leading punctuation such as "¿".

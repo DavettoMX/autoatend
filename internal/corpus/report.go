@@ -53,8 +53,11 @@ func writeReport(w io.Writer, cfg Config, res Result) error {
 	pf("\n## Generator parameters\n\n| Parameter | Value |\n|---|---:|\n")
 	ts := templates.Templates
 	pf("| Templates per category | %d / %d / %d / %d / %d |\n", len(ts[0]), len(ts[1]), len(ts[2]), len(ts[3]), len(ts[4]))
-	pf("| Shared openers / closers | %d / %d |\n", len(templates.Openers), len(templates.Closers))
-	pf("| Opener / second template / closer probability | %.2f / %.2f / %.2f |\n", pOpener, pSecond, pCloser)
+	pf("| Complements per category | %d / %d / %d / %d / %d |\n", len(templates.Complements[0]), len(templates.Complements[1]), len(templates.Complements[2]), len(templates.Complements[3]), len(templates.Complements[4]))
+	pf("| Shared openers / closers | %d / %d |\n", len(templates.SharedOpeners), len(templates.SharedClosers))
+	pf("| Own openers per category | %d / %d / %d / %d / %d |\n", len(templates.Openers[0]), len(templates.Openers[1]), len(templates.Openers[2]), len(templates.Openers[3]), len(templates.Openers[4]))
+	pf("| Own closers per category | %d / %d / %d / %d / %d |\n", len(templates.Closers[0]), len(templates.Closers[1]), len(templates.Closers[2]), len(templates.Closers[3]), len(templates.Closers[4]))
+	pf("| Opener / complement / closer probability | %.2f / %.2f / %.2f |\n", pOpener, pComplement, pCloser)
 	pf("| Amount pool / surface formats | %d / %d |\n", len(templates.AmountPool), amountStyles)
 	pf("| Folio prefixes / digits | %d / %d–%d |\n", len(templates.FolioPrefixes), folioMinDigits, folioMaxDigits)
 

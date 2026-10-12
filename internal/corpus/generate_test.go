@@ -169,6 +169,56 @@ func TestGenerateShape(t *testing.T) {
 	}
 }
 
+func TestPlanDerivedSlotsNeedAPlanFirst(t *testing.T) {
+	for _, tpl := range []string{"cuesta {PRECIO}", "cobran {COBRO}", "de más {EXTRA}"} {
+		if _, err := newSlotFiller(rand.New(rand.NewSource(1))).fill(tpl); err == nil {
+			t.Errorf("%q: expected an error when no {PLAN} was drawn before", tpl)
+		}
+	}
+}
+
+func TestPlanDerivedSlotsAgreeWithThePlanDrawn(t *testing.T) {
+	rng := rand.New(rand.NewSource(3))
+	for k := 0; k < 2000; k++ {
+		f := newSlotFiller(rng)
+		out, err := f.fill("{PLAN}|{PRECIO}|{COBRO}|{EXTRA}")
+		if err != nil {
+			t.Fatal(err)
+		}
+		parts := strings.Split(out, "|")
+		price, _ := firstAmount(parts[1])
+		charge, _ := firstAmount(parts[2])
+		extra, _ := firstAmount(parts[3])
+		if want := planPrice[parts[0]]; price != want {
+			t.Fatalf("%q: price %v, want %v", out, price, want)
+		}
+		if charge <= price || charge > 2*price || extra >= price || extra <= 0 {
+			t.Fatalf("%q: charge %v and extra %v do not bracket the price %v", out, charge, extra, price)
+		}
+	}
+}
+
+func TestSmallAmountSlotStaysSmall(t *testing.T) {
+	rng := rand.New(rand.NewSource(4))
+	for k := 0; k < 1000; k++ {
+		out, err := newSlotFiller(rng).fill("{MONTO_CHICO}")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if v, ok := firstAmount(out); !ok || v >= 500 {
+			t.Fatalf("small amount %q reaches 500", out)
+		}
+	}
+	// Recharges and recurring add-on charges never reach the big amounts of the pool.
+	for _, cat := range []int{1, 2} {
+		for _, text := range cleanTexts(t, cat, 10000, int64(700+cat)) {
+			if v, ok := amountAfter(text, "recarga de "); ok && v >= 500 {
+				t.Fatalf("a recharge of %v is not plausible: %q", v, text)
+			}
+		}
+	}
+}
+
 func TestGenerateRejectsInvalidConfig(t *testing.T) {
 	c := DefaultConfig()
 	c.Total = 0
