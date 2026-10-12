@@ -29,6 +29,7 @@ func (a *App) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/{$}", only(http.MethodGet, a.serveUI))
 	mux.HandleFunc("/catalogo", only(http.MethodGet, a.serveCatalogo))
+	mux.HandleFunc("/api", only(http.MethodGet, a.serveAPIDocs))
 	mux.HandleFunc("/api/clasificar", only(http.MethodPost, a.clasificar))
 	mux.HandleFunc("/api/lexemas", only(http.MethodGet, a.lexemasPage))
 	mux.HandleFunc("/api/categorias", only(http.MethodGet, a.categoriasList))
@@ -88,6 +89,9 @@ func (a *App) serveUI(w http.ResponseWriter, r *http.Request) { servePage(w, a.u
 
 // serveCatalogo answers GET /catalogo with the readable catalogue page, which reads /api/lexemas.
 func (a *App) serveCatalogo(w http.ResponseWriter, r *http.Request) { servePage(w, a.catalogo) }
+
+// serveAPIDocs answers GET /api (exact path) with the documentation of the five endpoints.
+func (a *App) serveAPIDocs(w http.ResponseWriter, r *http.Request) { servePage(w, a.apiDocs) }
 
 // servePage writes an embedded HTML page with the same-origin-only CSP.
 func servePage(w http.ResponseWriter, page []byte) {

@@ -89,6 +89,7 @@ type App struct {
 	erStmt     *sql.Stmt
 	ui         []byte
 	catalogo   []byte
+	apiDocs    []byte
 	gold       []byte
 	categorias []db.Category
 	lexemas    int
@@ -137,6 +138,9 @@ func Boot(opts Options) (app *App, err error) {
 	}
 	if a.catalogo, err = fs.ReadFile(opts.Assets, assets.CatalogoPath); err != nil {
 		return nil, fmt.Errorf("artefacto embebido %s: %w", assets.CatalogoPath, err)
+	}
+	if a.apiDocs, err = fs.ReadFile(opts.Assets, assets.ApiDocsPath); err != nil {
+		return nil, fmt.Errorf("artefacto embebido %s: %w", assets.ApiDocsPath, err)
 	}
 
 	if a.corpus, err = db.OpenReadOnly(filepath.Join(dir, "corpus.db")); err != nil {

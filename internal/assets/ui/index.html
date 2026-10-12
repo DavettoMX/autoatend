@@ -98,8 +98,8 @@ footer { color: var(--muted); font-size: .9rem; }
   </div>
 
   <footer>
-    <p><a href="/catalogo" target="_blank" rel="noopener">Ver el catálogo de expresiones regulares</a> (consigna b) · <a href="/api/lexemas?orden=variantes" target="_blank" rel="noopener">JSON de /api/lexemas</a></p>
-    <p id="estado">Servicio local en 127.0.0.1; los comentarios no salen de este equipo.</p>
+    <p><a href="/catalogo">Catálogo de expresiones regulares</a> · <a href="/api">Documentación de la API</a></p>
+    <p id="estado">Servicio local; los comentarios no salen de este equipo.</p>
   </footer>
 </main>
 
@@ -189,7 +189,7 @@ el("texto").addEventListener("keydown", function (e) {
 });
 
 fetch("/api/health").then(function (r) { return r.json(); }).then(function (h) {
-  el("estado").textContent = "AutoAtend " + h.version + " - catálogo de " + h.lexemas + " lexemas - servicio local en 127.0.0.1:" + h.puerto + "; los comentarios no salen de este equipo.";
+  el("estado").textContent = "AutoAtend " + h.version + " · catálogo de " + h.lexemas.toLocaleString("es-MX") + " lexemas · servicio local; los comentarios no salen de este equipo.";
 }).catch(function () {});
 </script>
 </body>

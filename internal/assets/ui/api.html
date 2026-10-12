@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoAtend - Documentación de la API</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #565f6b;
+  --line: #d0d5dc; --accent: #0b5cad; --accent-text: #ffffff;
+  --get: #1e7a3c; --post: #8a5a00;
+  --bad: #b3261e; --ctl: 2.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181d; --panel: #1d232a; --text: #e8ebef; --muted: #a3adba;
+    --line: #38414b; --accent: #5aa2ee; --accent-text: #0a0f14;
+    --get: #6fcf8f; --post: #e8b04a;
+    --bad: #f28b82;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+main { max-width: 56rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.15rem; margin: 0 0 .5rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+h3 { font-size: .95rem; margin: 1rem 0 .35rem; color: var(--muted); display: flex; align-items: center; gap: .5rem; }
+.lead { margin: 0 0 1.25rem; color: var(--muted); }
+article { background: var(--panel); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; }
+.metodo {
+  display: inline-block; padding: 0 .5rem; border: 1px solid currentColor; border-radius: .3rem;
+  font-size: .85rem; font-weight: 700; letter-spacing: .03em;
+}
+.metodo.get { color: var(--get); } .metodo.post { color: var(--post); }
+.cod {
+  display: inline-block; min-width: 2.75rem; padding: 0 .5rem; text-align: center; border: 1px solid currentColor;
+  border-radius: .3rem; font-size: .85rem; font-weight: 700; letter-spacing: .03em; font-variant-numeric: tabular-nums;
+}
+.cod.ok { color: var(--get); } .cod.err { color: var(--bad); }
+code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; }
+code { font-size: .95rem; overflow-wrap: anywhere; }
+pre {
+  margin: 0; padding: .75rem; max-height: 22rem; overflow: auto; font-size: .85rem; line-height: 1.4;
+  background: var(--bg); border: 1px solid var(--line); border-radius: .35rem;
+  white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: var(--muted) var(--bg);
+}
+pre:focus-visible, a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+th, td { text-align: left; padding: .35rem .5rem; border-top: 1px solid var(--line); vertical-align: top; }
+thead th { border-top: 0; color: var(--muted); font-size: .85rem; font-weight: 600; }
+p { margin: 0 0 .5rem; }
+button {
+  height: var(--ctl); margin: 0 .75rem 0 0; padding: 0 1.1rem; font: inherit; font-weight: 600; cursor: pointer;
+  color: var(--accent-text); background: var(--accent); border: 1px solid var(--accent); border-radius: .35rem;
+}
+button:disabled { opacity: .6; cursor: progress; }
+.probar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 0; margin: 1rem 0 .5rem; }
+.ruta { color: var(--muted); font-size: .9rem; }
+a { color: var(--accent); }
+footer { color: var(--muted); font-size: .9rem; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="/">← Volver al clasificador</a></p>
+  <h1>Documentación de la API</h1>
+  <p class="lead">Servicio web HTTP REST local de AutoAtend. Las respuestas son JSON en UTF-8.</p>
+
+  <article aria-labelledby="e-clasificar">
+    <h2 id="e-clasificar"><span class="metodo post">POST</span> <code>POST /api/clasificar</code></h2>
+    <p>Clasifica un comentario en una de las cinco categorías y devuelve la confianza de cada una y los lexemas que más pesaron en la decisión.</p>
+    <h3>Cuerpo de la solicitud (JSON, máximo 1 MB)</h3>
+    <table>
+      <thead><tr><th scope="col">Campo</th><th scope="col">Tipo</th><th scope="col">Descripción</th></tr></thead>
+      <tbody><tr><td><code>texto</code></td><td>cadena</td><td>Obligatorio. Comentario del cliente; no puede estar vacío.</td></tr></tbody>
+    </table>
+    <h3>Ejemplo de solicitud</h3>
+    <pre tabindex="0" aria-label="Ejemplo de solicitud a POST /api/clasificar">POST /api/clasificar
+Content-Type: application/json
+
+{"texto": "Me atendieron por correo y quedó resuelto, aunque tuve que insistir 5 veces. Gracias."}</pre>
+    <h3><span class="cod ok">200</span> Ejemplo de respuesta</h3>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta de POST /api/clasificar">{
+  "categoria": "Reconocimientos",
+  "confianzas": {
+    "Cobros Indebidos": 0.0060,
+    "Falta de Servicio": 0.0045,
+    "Problemas de Facturación": 0.0042,
+    "Quejas": 0.4653,
+    "Reconocimientos": 0.5200
+  },
+  "lexemas_clave": [
+    { "lexema": "atendieron", "expresion_regular": "atendieron", "contribucion": 0.9985 },
+    { "lexema": "gracias", "expresion_regular": "graci(as|s)", "contribucion": 0.6831 }
+  ],
+  "vacio": false
+}</pre>
+    <h3>Respuestas de error</h3>
+    <h3><span class="cod err">400</span> Solicitud no válida</h3>
+    <p>El cuerpo está vacío, no es JSON válido o falta el campo <code>texto</code> (o está en blanco). Los tres mensajes posibles:</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 400">{"error": "El cuerpo esta vacio; envie un JSON con el campo \"texto\"."}
+{"error": "JSON no valido; se espera {\"texto\": \"...\"} con el texto como cadena."}
+{"error": "El campo \"texto\" es obligatorio y no puede estar vacio."}</pre>
+    <h3><span class="cod err">413</span> Cuerpo demasiado grande</h3>
+    <p>El cuerpo de la solicitud supera 1 MB.</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 413">{"error": "El cuerpo de la solicitud supera el maximo de 1048576 bytes (1 MB)."}</pre>
+    <h3><span class="cod err">405</span> Método no permitido</h3>
+    <p>Se usa un método distinto de POST. La respuesta incluye el encabezado <code>Allow: POST</code>.</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 405">{"error": "Metodo GET no permitido; use POST."}</pre>
+    <div class="probar">
+      <button type="button" id="b-clasificar">Probar con el comentario de ejemplo</button>
+      <span class="ruta">Envía el comentario de la solicitud de ejemplo.</span>
+    </div>
+    <p id="r-clasificar" class="ruta" hidden></p>
+    <pre id="s-clasificar" tabindex="0" aria-label="Respuesta de POST /api/clasificar" aria-live="polite" hidden></pre>
+  </article>
+
+  <article aria-labelledby="e-lexemas">
+    <h2 id="e-lexemas"><span class="metodo get">GET</span> <code>GET /api/lexemas</code></h2>
+    <p>Catálogo de expresiones regulares: una entrada por lexema, con su forma canónica, la expresión regular que reconoce sus variantes y su frecuencia global y por categoría. Está paginado.</p>
+    <h3>Parámetros de consulta (todos opcionales)</h3>
+    <table>
+      <thead><tr><th scope="col">Parámetro</th><th scope="col">Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>pagina</code></td><td>Entero ≥ 1. Predeterminado: 1.</td></tr>
+        <tr><td><code>tamanio</code></td><td>Entero ≥ 1 (máximo 500). Predeterminado: 100.</td></tr>
+        <tr><td><code>q</code></td><td>Prefijo de la forma canónica (máximo 100 caracteres).</td></tr>
+        <tr><td><code>orden</code></td><td><code>frecuencia</code> o <code>variantes</code>. Sin valor: orden alfabético.</td></tr>
+        <tr><td><code>min_frecuencia</code></td><td>Entero ≥ 0. Oculta los lexemas con menos apariciones.</td></tr>
+      </tbody>
+    </table>
+    <h3><span class="cod ok">200</span> Ejemplo de respuesta</h3>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta de GET /api/lexemas">{
+  "total": 773,
+  "pagina": 1,
+  "tamanio": 1,
+  "lexemas": [
+    {
+      "forma_canonica": "cobro",
+      "expresion_regular": "cobr(ado|ando|ar|aron|o|os)",
+      "frecuencia_global": 9009,
+      "frecuencias": { "Cobros Indebidos": 7253, "Falta de Servicio": 507, "Problemas de Facturación": 314, "Quejas": 637, "Reconocimientos": 298 },
+      "variantes": 6
+    }
+  ]
+}</pre>
+    <h3>Respuestas de error</h3>
+    <h3><span class="cod err">400</span> Parámetro no válido</h3>
+    <p><code>pagina</code>, <code>tamanio</code>, <code>orden</code> o <code>min_frecuencia</code> no son válidos, o <code>q</code> supera 100 caracteres. Ejemplos:</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 400">{"error": "El parametro \"pagina\" debe ser un entero &gt;= 1."}
+{"error": "El parametro \"orden\" debe ser \"frecuencia\" o \"variantes\"."}</pre>
+    <h3><span class="cod err">405</span> Método no permitido</h3>
+    <p>Se usa un método distinto de GET. La respuesta incluye el encabezado <code>Allow: GET</code>.</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 405">{"error": "Metodo POST no permitido; use GET."}</pre>
+    <div class="probar">
+      <button type="button" id="b-lexemas">Probar</button>
+      <span class="ruta">Consulta fija: <code>/api/lexemas?pagina=1&amp;tamanio=3&amp;orden=variantes&amp;min_frecuencia=100</code></span>
+    </div>
+    <p id="r-lexemas" class="ruta" hidden></p>
+    <pre id="s-lexemas" tabindex="0" aria-label="Respuesta de GET /api/lexemas" aria-live="polite" hidden></pre>
+  </article>
+
+  <article aria-labelledby="e-categorias">
+    <h2 id="e-categorias"><span class="metodo get">GET</span> <code>GET /api/categorias</code></h2>
+    <p>Las cinco categorías del caso con su identificador. No recibe parámetros.</p>
+    <h3><span class="cod ok">200</span> Ejemplo de respuesta</h3>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta de GET /api/categorias">[
+  { "id": 1, "nombre": "Falta de Servicio" },
+  { "id": 2, "nombre": "Cobros Indebidos" },
+  { "id": 3, "nombre": "Problemas de Facturación" },
+  { "id": 4, "nombre": "Quejas" },
+  { "id": 5, "nombre": "Reconocimientos" }
+]</pre>
+    <h3>Respuestas de error</h3>
+    <h3><span class="cod err">405</span> Método no permitido</h3>
+    <p>Se usa un método distinto de GET. La respuesta incluye el encabezado <code>Allow: GET</code>.</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 405">{"error": "Metodo POST no permitido; use GET."}</pre>
+    <div class="probar">
+      <button type="button" id="b-categorias">Probar</button>
+      <span class="ruta">Consulta: <code>/api/categorias</code></span>
+    </div>
+    <p id="r-categorias" class="ruta" hidden></p>
+    <pre id="s-categorias" tabindex="0" aria-label="Respuesta de GET /api/categorias" aria-live="polite" hidden></pre>
+  </article>
+
+  <article aria-labelledby="e-health">
+    <h2 id="e-health"><span class="metodo get">GET</span> <code>GET /api/health</code></h2>
+    <p>Estado del servicio: versión, número de lexemas del catálogo y puerto en el que escucha. No recibe parámetros.</p>
+    <h3><span class="cod ok">200</span> Ejemplo de respuesta</h3>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta de GET /api/health">{ "ok": true, "version": "1.0.1", "lexemas": 6196, "puerto": 8471 }</pre>
+    <h3>Respuestas de error</h3>
+    <h3><span class="cod err">405</span> Método no permitido</h3>
+    <p>Se usa un método distinto de GET. La respuesta incluye el encabezado <code>Allow: GET</code>.</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 405">{"error": "Metodo POST no permitido; use GET."}</pre>
+    <div class="probar">
+      <button type="button" id="b-health">Probar</button>
+      <span class="ruta">Consulta: <code>/api/health</code></span>
+    </div>
+    <p id="r-health" class="ruta" hidden></p>
+    <pre id="s-health" tabindex="0" aria-label="Respuesta de GET /api/health" aria-live="polite" hidden></pre>
+  </article>
+
+  <article aria-labelledby="e-raiz">
+    <h2 id="e-raiz"><span class="metodo get">GET</span> <code>GET /</code></h2>
+    <p>La página del clasificador (HTML). No devuelve datos, por eso no tiene botón de prueba: <a href="/">ábrala aquí</a>. Las páginas <a href="/catalogo">/catalogo</a> y <a href="/api">/api</a> (esta) solo presentan los datos de las rutas anteriores.</p>
+  </article>
+
+  <article aria-labelledby="e-comunes">
+    <h2 id="e-comunes">Otras respuestas de error</h2>
+    <h3><span class="cod err">404</span> Ruta no encontrada</h3>
+    <p>La ruta no existe; es el caso de cualquier ruta distinta de las cinco anteriores.</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 404">{"error": "Ruta no encontrada: /api/otra"}</pre>
+    <h3><span class="cod err">500</span> Error interno</h3>
+    <p>Falla interna al leer el catálogo. No ocurre en operación normal: las bases de datos se extraen y verifican al arrancar (y con --selftest).</p>
+    <pre tabindex="0" aria-label="Ejemplo de respuesta 500">{"error": "No se pudo leer el catalogo de lexemas."}</pre>
+  </article>
+
+  <footer>
+    <p><a href="/">← Volver al clasificador</a></p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+var EJEMPLO = "Me atendieron por correo y quedó resuelto, aunque tuve que insistir 5 veces. Gracias.";
+
+function el(id) { return document.getElementById(id); }
+
+// Calls the endpoint and shows the request and the pretty-printed response in the same page.
+function probar(clave, metodo, ruta, cuerpo) {
+  var btn = el("b-" + clave), info = el("r-" + clave), out = el("s-" + clave);
+  btn.addEventListener("click", function () {
+    var opts = { method: metodo };
+    if (cuerpo !== undefined) {
+      opts.headers = { "Content-Type": "application/json" };
+      opts.body = JSON.stringify(cuerpo);
+    }
+    info.textContent = metodo + " " + ruta;
+    info.hidden = false;
+    out.textContent = "Cargando…";
+    out.hidden = false;
+    btn.disabled = true;
+    fetch(ruta, opts).then(function (r) {
+      return r.json().then(function (d) { return { estado: r.status, d: d }; });
+    }).then(function (res) {
+      info.textContent = metodo + " " + ruta + " → " + res.estado;
+      out.textContent = JSON.stringify(res.d, null, 2);
+    }).catch(function () {
+      out.textContent = "No se pudo contactar al servicio local. Verifique que AutoAtend siga en ejecución.";
+    }).then(function () { btn.disabled = false; });
+  });
+}
+
+probar("clasificar", "POST", "/api/clasificar", { texto: EJEMPLO });
+probar("lexemas", "GET", "/api/lexemas?pagina=1&tamanio=3&orden=variantes&min_frecuencia=100");
+probar("categorias", "GET", "/api/categorias");
+probar("health", "GET", "/api/health");
+</script>
+</body>
+</html>

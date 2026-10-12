@@ -104,7 +104,7 @@ func loadGold(t *testing.T) []goldEntry {
 func mutatedAssets(t *testing.T, name string, edit func([]byte) []byte) fs.FS {
 	t.Helper()
 	m := fstest.MapFS{}
-	for _, n := range append([]string{assets.UIPath, assets.CatalogoPath}, prefixed("data/", assets.DataFiles)...) {
+	for _, n := range append([]string{assets.UIPath, assets.CatalogoPath, assets.ApiDocsPath}, prefixed("data/", assets.DataFiles)...) {
 		b, err := assets.FS.ReadFile(n)
 		if err != nil {
 			t.Fatal(err)

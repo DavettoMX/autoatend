@@ -10,7 +10,7 @@
   --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #565f6b;
   --line: #d0d5dc; --accent: #0b5cad; --accent-text: #ffffff;
   --c1: #0b5cad; --c2: #b3261e; --c3: #8a5a00; --c4: #6b3fa0; --c5: #1e7a3c;
-  --err-bg: #fdecec; --err-text: #8a1c1c; --alt: #0b5cad;
+  --err-bg: #fdecec; --err-text: #8a1c1c; --alt: #0b5cad; --ctl: 2.5rem;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -30,20 +30,32 @@ main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
 .lead { margin: 0 0 1.25rem; color: var(--muted); }
 section, form { background: var(--panel); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; }
-form { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: end; }
-form div { display: flex; flex-direction: column; }
-label { font-weight: 600; font-size: .9rem; margin-bottom: .25rem; }
+form { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: flex-end; }
+form .campo { display: flex; flex-direction: column; }
+label { font-weight: 600; font-size: .9rem; line-height: 1.25rem; margin-bottom: .25rem; }
+input, select, button {
+  height: var(--ctl); margin: 0; padding: 0 .75rem; font: inherit; line-height: 1.25;
+  border-radius: .35rem;
+}
 input, select {
-  font: inherit; padding: .4rem .5rem; color: var(--text); background: var(--bg);
-  border: 1px solid var(--line); border-radius: .35rem; min-width: 10rem;
+  min-width: 11rem; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+  -webkit-appearance: none; appearance: none;
+}
+.sel { position: relative; display: block; }
+.sel select { width: 100%; padding-right: 2.25rem; cursor: pointer; }
+.sel::after {
+  content: ""; position: absolute; right: 1rem; top: 50%; width: .5rem; height: .5rem;
+  margin-top: -.4rem; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg); pointer-events: none;
 }
 button {
-  padding: .45rem 1rem; font: inherit; font-weight: 600; cursor: pointer;
-  color: var(--accent-text); background: var(--accent); border: 0; border-radius: .35rem;
+  padding: 0 1.1rem; font-weight: 600; cursor: pointer;
+  color: var(--accent-text); background: var(--accent); border: 1px solid var(--accent);
 }
 button:disabled { opacity: .45; cursor: default; }
 input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .hint { color: var(--muted); font-size: .9rem; margin: 0; }
+form .hint { flex: 1 1 100%; }
 .resumen { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; align-items: center; margin-bottom: .5rem; }
 .leyenda { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .85rem; color: var(--muted); margin: 0 0 .75rem; padding: 0; list-style: none; }
 .leyenda span.sw { display: inline-block; width: .8rem; height: .8rem; border-radius: .15rem; margin-right: .35rem; vertical-align: -.1rem; }
@@ -57,6 +69,18 @@ code .op { color: var(--alt); font-weight: 700; }
 .dist { display: flex; height: .8rem; min-width: 9rem; border-radius: .2rem; overflow: hidden; background: var(--bg); border: 1px solid var(--line); }
 .dist span { display: block; height: 100%; }
 .c1 { background: var(--c1); } .c2 { background: var(--c2); } .c3 { background: var(--c3); } .c4 { background: var(--c4); } .c5 { background: var(--c5); }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: .5rem; padding: .75rem 1rem; margin-bottom: 1rem; }
+summary { cursor: pointer; font-weight: 600; }
+summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+details[open] summary { margin-bottom: .5rem; }
+details p { margin: 0 0 .5rem; }
+pre {
+  margin: 0; padding: .75rem; max-height: 26rem; overflow: auto; font-size: .85rem; line-height: 1.4;
+  background: var(--bg); border: 1px solid var(--line); border-radius: .35rem;
+  white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: var(--muted) var(--bg);
+  font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
+}
+pre:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .pager { display: flex; gap: .75rem; align-items: center; justify-content: flex-end; margin-top: .75rem; }
 .msg { border-radius: .35rem; padding: .6rem .8rem; margin: 0 0 .75rem; }
 .error { background: var(--err-bg); color: var(--err-text); }
@@ -70,32 +94,32 @@ footer { color: var(--muted); font-size: .9rem; }
 <main>
   <p><a href="/">← Volver al clasificador</a></p>
   <h1>Catálogo de expresiones regulares</h1>
-  <p class="lead">Lexemas generados por el analizador léxico propio (consigna b) a partir del corpus de TelArg: forma canónica, expresión regular que reconoce sus variantes y frecuencia por categoría. Es el mismo catálogo que consume el servicio web (consigna e) a través de <code>/api/lexemas</code>.</p>
+  <p class="lead">Lexemas generados por el analizador léxico propio a partir del corpus de TelArg: forma canónica, expresión regular que reconoce sus variantes y frecuencia por categoría. Es el mismo catálogo que consume el servicio web a través de <code>/api/lexemas</code>.</p>
 
   <form id="filtros" autocomplete="off">
-    <div>
+    <div class="campo">
       <label for="q">Buscar por inicio</label>
       <input id="q" type="search" maxlength="100" placeholder="p. ej. factur, cobr, pag">
     </div>
-    <div>
+    <div class="campo">
       <label for="orden">Ordenar por</label>
-      <select id="orden">
+      <div class="sel"><select id="orden">
         <option value="variantes">Número de variantes</option>
         <option value="frecuencia">Frecuencia global</option>
         <option value="">Orden alfabético</option>
-      </select>
+      </select></div>
     </div>
-    <div>
+    <div class="campo">
       <label for="min">Frecuencia mínima</label>
-      <select id="min" aria-describedby="min-ayuda">
+      <div class="sel"><select id="min" aria-describedby="min-ayuda">
         <option value="0">Todas (0)</option>
         <option value="5">5</option>
         <option value="20">20</option>
         <option value="100" selected>100</option>
         <option value="1000">1,000</option>
-      </select>
+      </select></div>
     </div>
-    <div>
+    <div class="campo">
       <button type="submit">Aplicar</button>
     </div>
     <p id="min-ayuda" class="hint">Los lexemas con muy pocas apariciones suelen ser erratas del ruido del corpus; la frecuencia mínima los oculta sin borrarlos del catálogo.</p>
@@ -127,8 +151,15 @@ footer { color: var(--muted); font-size: .9rem; }
     </div>
   </section>
 
+  <details id="panel-json">
+    <summary>Ver datos en JSON</summary>
+    <p class="hint">Petición de la tabla actual y respuesta del servicio, sin salir de esta página. Se actualiza cada vez que cambia la tabla.</p>
+    <p><code id="json-ruta"></code></p>
+    <pre id="json-datos" tabindex="0" aria-label="Respuesta JSON de la tabla actual"></pre>
+  </details>
+
   <footer>
-    <p>Evidencia en bruto: <a id="json" href="/api/lexemas?orden=variantes" target="_blank" rel="noopener">JSON de /api/lexemas con estos filtros</a>.</p>
+    <p><a href="/api">Documentación de la API</a></p>
   </footer>
 </main>
 
@@ -204,11 +235,14 @@ function distribucion(l) {
 
 function cargar() {
   var p = params();
-  el("json").href = "/api/lexemas?" + p.toString();
+  var ruta = "/api/lexemas?" + p.toString();
+  el("json-ruta").textContent = "GET " + ruta;
+  el("json-datos").textContent = "Cargando…";
   el("error").hidden = true;
-  fetch("/api/lexemas?" + p.toString()).then(function (r) {
+  fetch(ruta).then(function (r) {
     return r.json().then(function (d) { return { ok: r.ok, d: d }; });
   }).then(function (res) {
+    el("json-datos").textContent = JSON.stringify(res.d, null, 2);
     if (!res.ok) { throw new Error(res.d.error || "Error al leer el catálogo."); }
     var d = res.d;
     estado.total = d.total;
@@ -231,6 +265,7 @@ function cargar() {
     el("ant").disabled = estado.pagina <= 1;
     el("sig").disabled = estado.pagina >= paginas;
   }).catch(function (e) {
+    el("json-datos").textContent = "Sin respuesta del servicio local.";
     el("error").textContent = e.message || "No se pudo contactar al servicio local.";
     el("error").hidden = false;
   });

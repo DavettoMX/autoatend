@@ -8,7 +8,7 @@ No necesitas instalar nada. AutoAtend es **un solo archivo** que ya trae dentro 
 
 ---
 
-> **Si ya tenías la versión 1.0.0:** descarga la 1.0.1 y repite los pasos 1.4 a 1.7. El comando `mv` reemplaza el archivo anterior.
+> **Si ya tenías una versión anterior:** descarga la 1.0.2 y repite los pasos 1.4 a 1.7. El comando `mv` reemplaza el archivo anterior.
 
 ## Parte 1. Preparación en casa (una sola vez, ~15 minutos, con internet)
 
@@ -22,7 +22,7 @@ No necesitas instalar nada. AutoAtend es **un solo archivo** que ya trae dentro 
 ### 1.2 Descarga el programa desde GitHub
 
 1. Abre Safari o Chrome e inicia sesión en **github.com** con tu cuenta **DavettoMX**. El repositorio es privado, así que sin sesión no vas a ver nada.
-2. Entra a: **https://github.com/DavettoMX/autoatend/releases/tag/v1.0.1**
+2. Entra a: **https://github.com/DavettoMX/autoatend/releases/tag/v1.0.2**
 3. En la sección **Assets**, haz clic en el archivo que te tocó en el paso 1.1 (`autoatend-macos-arm64` o `autoatend-macos-intel`) y también en **`SHA256SUMS.txt`**.
 4. Los dos archivos quedan en tu carpeta **Descargas**.
 
@@ -64,8 +64,8 @@ Debe imprimir exactamente uno de estos códigos (también vienen en `SHA256SUMS.
 
 | Archivo | SHA-256 |
 |---|---|
-| `autoatend-macos-arm64` | `bbbb1770d8b202fb104eddebcdb99c697d4a3d3ecb229bc816664ade6c3e3406` |
-| `autoatend-macos-intel` | `a149da83ef0fa8e41ab48e47438bd960db1fd6f485d27c9a4bf8e31f2492672e` |
+| `autoatend-macos-arm64` | `9879f940b59ff87fc5f4a246a0c232a4fcce5c162961f05401b58c8a585a7cc7` |
+| `autoatend-macos-intel` | `5327e152a731748133d5876ac7fef94bd6ed821ef465da22fe4e0a376c8caabf` |
 
 Si el código no coincide, el archivo se descargó mal: bórralo y descárgalo otra vez.
 
@@ -83,7 +83,7 @@ ok     integridad: quick_check ok en corpus.db y resultados.db; ...
 ok     catalogo: 6196 lexemas, 6196 expresiones regulares compiladas y 6891 variantes aceptadas (I-1); ...
 ok     gold5: 5 de 5 comentarios de oro clasificados con su categoria esperada (modelo rls/linea_base)
 ok     puerto: 127.0.0.1:8471 libre
-selftest: todas las verificaciones pasaron (version 1.0.1)
+selftest: todas las verificaciones pasaron (version 1.0.2)
 ```
 
 Para confirmar el código de salida, escribe:
@@ -108,7 +108,7 @@ Solo pasa la primera vez.
 
 1. La Terminal muestra:
    ```text
-   AutoAtend 1.0.1 - clasificador de comentarios de TelArg
+   AutoAtend 1.0.2 - clasificador de comentarios de TelArg
    Servicio listo en http://127.0.0.1:8471
    Abra esa direccion en el navegador. Para terminar presione Ctrl+C o cierre esta ventana.
    ```
@@ -175,8 +175,9 @@ Escríbelos a mano frente al sínodo. Estos son los resultados que se midieron c
 - Qué decir: *"La decisión se explica en términos de los lexemas que generó el analizador de la consigna b. Por ejemplo, `sig(e|o)` es la expresión regular que agrupa las variantes 'sigue' y 'sigo'."*
 
 **Paso 4. Mostrar el catálogo (conecta la consigna e con la b).**
-- Haz clic en **"Ver el catálogo de expresiones regulares"** al pie de la página, o abre:
+- Haz clic en **"Catálogo de expresiones regulares"** al pie de la página (se abre en la misma pestaña), o abre:
   `http://127.0.0.1:8471/catalogo`
+- En cualquier momento, **"← Volver al clasificador"** (arriba) regresa a la página principal.
 - Verás una tabla con el lexema, su **expresión regular** (los operadores `( | )` resaltados), el número de variantes, la frecuencia y una barra con la **distribución por categoría**.
 - Muestra 3 expresiones regulares con alternancia, por ejemplo:
   - `cobr(ado|ando|ar|aron|o|os)`
@@ -185,7 +186,8 @@ Escríbelos a mano frente al sínodo. Estos son los resultados que se midieron c
 - Escribe `factur` en **"Buscar por inicio"** y pulsa **Aplicar** para ver `factur(a|ación|as)`.
 - La **frecuencia mínima** arranca en 100, para ocultar las erratas que mete el ruido del corpus. Si eliges "Todas (0)", aparecen las 6,196 entradas; las erratas siguen en el catálogo, solo se ocultan.
 - Qué decir: *"El servicio consume en tiempo real el catálogo que generó el software base: forma canónica, expresión regular y frecuencias por categoría."*
-- Si quieren ver la evidencia en bruto, el enlace **"JSON de /api/lexemas con estos filtros"** al pie de la página abre el endpoint del TE con los mismos filtros.
+- Si quieren ver la evidencia en bruto, despliega **"Ver datos en JSON"** bajo la tabla: muestra la petición exacta (por ejemplo `GET /api/lexemas?pagina=1&tamanio=50&orden=variantes&min_frecuencia=100`) y la respuesta del servicio, sin salir de la página. Se actualiza cada vez que cambias un filtro o de página.
+- Si preguntan por la API: el enlace **"Documentación de la API"** (al pie de la página principal y del catálogo) abre `/api` en la misma pestaña. Lista las cinco rutas del TE §6.4.1, aclara que son toda la API y que las bases de datos son de solo lectura, y cada ruta GET tiene un botón **"Probar"** que muestra la respuesta ahí mismo. Regresa con **"← Volver al clasificador"**.
 - Dato para la réplica: `facturacion` (sin tilde) aparece como lexema aparte de `factur(a|ación|as)`. No hay plegado de acentos (ADR-003), y el stemmer reconoce el sufijo "-ación", pero no "-acion". Es una limitación documentada del agrupador.
 
 **Paso 5. Ejecutar `--selftest`.**
@@ -260,7 +262,7 @@ curl -s -X POST http://127.0.0.1:8471/api/clasificar -H 'Content-Type: applicati
 
 ## Parte 4. Datos útiles para responder preguntas
 
-- **Versión:** 1.0.1. `GET /api/health` responde `{"ok":true,"version":"1.0.1","lexemas":6196,"puerto":8471}`.
+- **Versión:** 1.0.2. `GET /api/health` responde `{"ok":true,"version":"1.0.2","lexemas":6196,"puerto":8471}`.
 - **Corpus:** 73,000 comentarios, semilla 10433, SHA-256 `37f285ff…`.
 - **Catálogo:** 6,196 lexemas. I-1: 0 fallos; I-2: 0 filas; I-3: SHA idéntico en dos corridas.
 - **Modelo:** Regresión Logística Softmax. Macro-F1 0.9795 en test temporal; 0.835 con plantillas no vistas (cifra realista). Detalles en `docs/reports/evaluacion_modelo.md` y en ADR-004.
