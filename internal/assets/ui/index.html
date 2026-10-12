@@ -72,7 +72,7 @@ footer { color: var(--muted); font-size: .9rem; }
   <form id="form" autocomplete="off">
     <label for="texto">Comentario del cliente</label>
     <textarea id="texto" name="texto" maxlength="5000" required aria-describedby="ayuda"></textarea>
-    <p id="ayuda" class="hint">Atajo: Ctrl+Enter.</p>
+    <p id="ayuda" class="hint">Atajo: Ctrl+Enter (⌘+Enter en Mac).</p>
     <button type="submit" id="enviar">Clasificar</button>
   </form>
 
@@ -98,7 +98,7 @@ footer { color: var(--muted); font-size: .9rem; }
   </div>
 
   <footer>
-    <p><a href="/api/lexemas?orden=variantes" target="_blank" rel="noopener">Ver el catálogo de expresiones regulares</a> (ordenado por número de variantes).</p>
+    <p><a href="/catalogo" target="_blank" rel="noopener">Ver el catálogo de expresiones regulares</a> (consigna b) · <a href="/api/lexemas?orden=variantes" target="_blank" rel="noopener">JSON de /api/lexemas</a></p>
     <p id="estado">Servicio local en 127.0.0.1; los comentarios no salen de este equipo.</p>
   </footer>
 </main>

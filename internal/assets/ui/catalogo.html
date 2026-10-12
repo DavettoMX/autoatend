@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoAtend - Catálogo de expresiones regulares</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #565f6b;
+  --line: #d0d5dc; --accent: #0b5cad; --accent-text: #ffffff;
+  --c1: #0b5cad; --c2: #b3261e; --c3: #8a5a00; --c4: #6b3fa0; --c5: #1e7a3c;
+  --err-bg: #fdecec; --err-text: #8a1c1c; --alt: #0b5cad;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14181d; --panel: #1d232a; --text: #e8ebef; --muted: #a3adba;
+    --line: #38414b; --accent: #5aa2ee; --accent-text: #0a0f14;
+    --c1: #5aa2ee; --c2: #f28b82; --c3: #e8b04a; --c4: #b694f0; --c5: #6fcf8f;
+    --err-bg: #3a1c1c; --err-text: #ffb4b4; --alt: #8cc3ff;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+main { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+.lead { margin: 0 0 1.25rem; color: var(--muted); }
+section, form { background: var(--panel); border: 1px solid var(--line); border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; }
+form { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: end; }
+form div { display: flex; flex-direction: column; }
+label { font-weight: 600; font-size: .9rem; margin-bottom: .25rem; }
+input, select {
+  font: inherit; padding: .4rem .5rem; color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: .35rem; min-width: 10rem;
+}
+button {
+  padding: .45rem 1rem; font: inherit; font-weight: 600; cursor: pointer;
+  color: var(--accent-text); background: var(--accent); border: 0; border-radius: .35rem;
+}
+button:disabled { opacity: .45; cursor: default; }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.hint { color: var(--muted); font-size: .9rem; margin: 0; }
+.resumen { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+.leyenda { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .85rem; color: var(--muted); margin: 0 0 .75rem; padding: 0; list-style: none; }
+.leyenda span.sw { display: inline-block; width: .8rem; height: .8rem; border-radius: .15rem; margin-right: .35rem; vertical-align: -.1rem; }
+table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+th, td { text-align: left; padding: .45rem .5rem; border-top: 1px solid var(--line); vertical-align: middle; }
+thead th { border-top: 0; color: var(--muted); font-size: .85rem; font-weight: 600; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.lex { font-weight: 600; }
+code { font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: .95rem; overflow-wrap: anywhere; }
+code .op { color: var(--alt); font-weight: 700; }
+.dist { display: flex; height: .8rem; min-width: 9rem; border-radius: .2rem; overflow: hidden; background: var(--bg); border: 1px solid var(--line); }
+.dist span { display: block; height: 100%; }
+.c1 { background: var(--c1); } .c2 { background: var(--c2); } .c3 { background: var(--c3); } .c4 { background: var(--c4); } .c5 { background: var(--c5); }
+.pager { display: flex; gap: .75rem; align-items: center; justify-content: flex-end; margin-top: .75rem; }
+.msg { border-radius: .35rem; padding: .6rem .8rem; margin: 0 0 .75rem; }
+.error { background: var(--err-bg); color: var(--err-text); }
+a { color: var(--accent); }
+footer { color: var(--muted); font-size: .9rem; }
+[hidden] { display: none !important; }
+@media (max-width: 48rem) { .col-dist { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="/">← Volver al clasificador</a></p>
+  <h1>Catálogo de expresiones regulares</h1>
+  <p class="lead">Lexemas generados por el analizador léxico propio (consigna b) a partir del corpus de TelArg: forma canónica, expresión regular que reconoce sus variantes y frecuencia por categoría. Es el mismo catálogo que consume el servicio web (consigna e) a través de <code>/api/lexemas</code>.</p>
+
+  <form id="filtros" autocomplete="off">
+    <div>
+      <label for="q">Buscar por inicio</label>
+      <input id="q" type="search" maxlength="100" placeholder="p. ej. factur, cobr, pag">
+    </div>
+    <div>
+      <label for="orden">Ordenar por</label>
+      <select id="orden">
+        <option value="variantes">Número de variantes</option>
+        <option value="frecuencia">Frecuencia global</option>
+        <option value="">Orden alfabético</option>
+      </select>
+    </div>
+    <div>
+      <label for="min">Frecuencia mínima</label>
+      <select id="min" aria-describedby="min-ayuda">
+        <option value="0">Todas (0)</option>
+        <option value="5">5</option>
+        <option value="20">20</option>
+        <option value="100" selected>100</option>
+        <option value="1000">1,000</option>
+      </select>
+    </div>
+    <div>
+      <button type="submit">Aplicar</button>
+    </div>
+    <p id="min-ayuda" class="hint">Los lexemas con muy pocas apariciones suelen ser erratas del ruido del corpus; la frecuencia mínima los oculta sin borrarlos del catálogo.</p>
+  </form>
+
+  <section aria-labelledby="titulo-tabla">
+    <div class="resumen">
+      <h2 id="titulo-tabla" style="font-size:1.1rem;margin:0">Lexemas</h2>
+      <p id="total" class="hint" aria-live="polite"></p>
+    </div>
+    <ul class="leyenda" id="leyenda" aria-label="Colores de las categorías"></ul>
+    <p id="error" class="msg error" role="alert" hidden></p>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Lexema</th>
+          <th scope="col">Expresión regular</th>
+          <th scope="col" class="num">Variantes</th>
+          <th scope="col" class="num">Frecuencia</th>
+          <th scope="col" class="col-dist">Distribución por categoría</th>
+        </tr>
+      </thead>
+      <tbody id="filas"></tbody>
+    </table>
+    <div class="pager">
+      <button type="button" id="ant">← Anterior</button>
+      <span id="pagina" class="hint"></span>
+      <button type="button" id="sig">Siguiente →</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>Evidencia en bruto: <a id="json" href="/api/lexemas?orden=variantes" target="_blank" rel="noopener">JSON de /api/lexemas con estos filtros</a>.</p>
+  </footer>
+</main>
+
+<script>
+"use strict";
+var TAM = 50;
+var estado = { pagina: 1, total: 0 };
+var categorias = [];
+
+function el(id) { return document.getElementById(id); }
+
+function params() {
+  var p = new URLSearchParams();
+  p.set("pagina", String(estado.pagina));
+  p.set("tamanio", String(TAM));
+  var orden = el("orden").value;
+  if (orden) { p.set("orden", orden); }
+  var q = el("q").value.trim();
+  if (q) { p.set("q", q); }
+  p.set("min_frecuencia", el("min").value);
+  return p;
+}
+
+// Renders the regular expression with its operators highlighted, using text nodes only.
+function regex(er) {
+  var code = document.createElement("code");
+  for (var i = 0; i < er.length; i++) {
+    var ch = er[i];
+    if (ch === "\\" && i + 1 < er.length) {
+      code.appendChild(document.createTextNode(ch + er[i + 1]));
+      i++;
+    } else if ("()|*+?[]".indexOf(ch) >= 0) {
+      var s = document.createElement("span");
+      s.className = "op";
+      s.textContent = ch;
+      code.appendChild(s);
+    } else {
+      code.appendChild(document.createTextNode(ch));
+    }
+  }
+  return code;
+}
+
+function td(text, cls) {
+  var c = document.createElement("td");
+  c.textContent = text;
+  if (cls) { c.className = cls; }
+  return c;
+}
+
+function distribucion(l) {
+  var cell = document.createElement("td");
+  cell.className = "col-dist";
+  var bar = document.createElement("div");
+  bar.className = "dist";
+  var partes = [];
+  categorias.forEach(function (c, i) {
+    var v = l.frecuencias[c.nombre] || 0;
+    partes.push(c.nombre + ": " + v.toLocaleString("es-MX"));
+    if (v > 0 && l.frecuencia_global > 0) {
+      var s = document.createElement("span");
+      s.className = "c" + (i + 1);
+      s.style.width = (100 * v / l.frecuencia_global).toFixed(2) + "%";
+      bar.appendChild(s);
+    }
+  });
+  bar.title = partes.join(" · ");
+  bar.setAttribute("role", "img");
+  bar.setAttribute("aria-label", partes.join(", "));
+  cell.appendChild(bar);
+  return cell;
+}
+
+function cargar() {
+  var p = params();
+  el("json").href = "/api/lexemas?" + p.toString();
+  el("error").hidden = true;
+  fetch("/api/lexemas?" + p.toString()).then(function (r) {
+    return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+  }).then(function (res) {
+    if (!res.ok) { throw new Error(res.d.error || "Error al leer el catálogo."); }
+    var d = res.d;
+    estado.total = d.total;
+    var tb = el("filas");
+    tb.textContent = "";
+    d.lexemas.forEach(function (l) {
+      var tr = document.createElement("tr");
+      tr.appendChild(td(l.forma_canonica, "lex"));
+      var c = document.createElement("td");
+      c.appendChild(regex(l.expresion_regular));
+      tr.appendChild(c);
+      tr.appendChild(td(String(l.variantes), "num"));
+      tr.appendChild(td(l.frecuencia_global.toLocaleString("es-MX"), "num"));
+      tr.appendChild(distribucion(l));
+      tb.appendChild(tr);
+    });
+    var paginas = Math.max(1, Math.ceil(d.total / TAM));
+    el("total").textContent = d.total.toLocaleString("es-MX") + " lexemas con estos filtros";
+    el("pagina").textContent = "Página " + estado.pagina + " de " + paginas;
+    el("ant").disabled = estado.pagina <= 1;
+    el("sig").disabled = estado.pagina >= paginas;
+  }).catch(function (e) {
+    el("error").textContent = e.message || "No se pudo contactar al servicio local.";
+    el("error").hidden = false;
+  });
+}
+
+el("filtros").addEventListener("submit", function (e) { e.preventDefault(); estado.pagina = 1; cargar(); });
+el("orden").addEventListener("change", function () { estado.pagina = 1; cargar(); });
+el("min").addEventListener("change", function () { estado.pagina = 1; cargar(); });
+el("ant").addEventListener("click", function () { if (estado.pagina > 1) { estado.pagina--; cargar(); } });
+el("sig").addEventListener("click", function () { estado.pagina++; cargar(); });
+
+fetch("/api/categorias").then(function (r) { return r.json(); }).then(function (cs) {
+  categorias = cs;
+  var ul = el("leyenda");
+  cs.forEach(function (c, i) {
+    var li = document.createElement("li");
+    var sw = document.createElement("span");
+    sw.className = "sw c" + (i + 1);
+    li.appendChild(sw);
+    li.appendChild(document.createTextNode(c.nombre));
+    ul.appendChild(li);
+  });
+}).catch(function () {}).then(cargar);
+</script>
+</body>
+</html>

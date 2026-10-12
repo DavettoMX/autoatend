@@ -8,6 +8,8 @@ No necesitas instalar nada. AutoAtend es **un solo archivo** que ya trae dentro 
 
 ---
 
+> **Si ya tenías la versión 1.0.0:** descarga la 1.0.1 y repite los pasos 1.4 a 1.7. El comando `mv` reemplaza el archivo anterior.
+
 ## Parte 1. Preparación en casa (una sola vez, ~15 minutos, con internet)
 
 ### 1.1 Averigua qué procesador tiene tu Mac
@@ -20,7 +22,7 @@ No necesitas instalar nada. AutoAtend es **un solo archivo** que ya trae dentro 
 ### 1.2 Descarga el programa desde GitHub
 
 1. Abre Safari o Chrome e inicia sesión en **github.com** con tu cuenta **DavettoMX**. El repositorio es privado, así que sin sesión no vas a ver nada.
-2. Entra a: **https://github.com/DavettoMX/autoatend/releases/tag/v1.0.0**
+2. Entra a: **https://github.com/DavettoMX/autoatend/releases/tag/v1.0.1**
 3. En la sección **Assets**, haz clic en el archivo que te tocó en el paso 1.1 (`autoatend-macos-arm64` o `autoatend-macos-intel`) y también en **`SHA256SUMS.txt`**.
 4. Los dos archivos quedan en tu carpeta **Descargas**.
 
@@ -62,8 +64,8 @@ Debe imprimir exactamente uno de estos códigos (también vienen en `SHA256SUMS.
 
 | Archivo | SHA-256 |
 |---|---|
-| `autoatend-macos-arm64` | `624f5c827dba3075aa0ac07bcf8369851a8f3caeb978d8cc052e8ba6e603f100` |
-| `autoatend-macos-intel` | `e96b9370db956186d34508cc2fabbdcf72d52efda303a30100c4e520a0e1a3a7` |
+| `autoatend-macos-arm64` | `bbbb1770d8b202fb104eddebcdb99c697d4a3d3ecb229bc816664ade6c3e3406` |
+| `autoatend-macos-intel` | `a149da83ef0fa8e41ab48e47438bd960db1fd6f485d27c9a4bf8e31f2492672e` |
 
 Si el código no coincide, el archivo se descargó mal: bórralo y descárgalo otra vez.
 
@@ -81,7 +83,7 @@ ok     integridad: quick_check ok en corpus.db y resultados.db; ...
 ok     catalogo: 6196 lexemas, 6196 expresiones regulares compiladas y 6891 variantes aceptadas (I-1); ...
 ok     gold5: 5 de 5 comentarios de oro clasificados con su categoria esperada (modelo rls/linea_base)
 ok     puerto: 127.0.0.1:8471 libre
-selftest: todas las verificaciones pasaron (version 1.0.0)
+selftest: todas las verificaciones pasaron (version 1.0.1)
 ```
 
 Para confirmar el código de salida, escribe:
@@ -106,12 +108,12 @@ Solo pasa la primera vez.
 
 1. La Terminal muestra:
    ```text
-   AutoAtend 1.0.0 - clasificador de comentarios de TelArg
+   AutoAtend 1.0.1 - clasificador de comentarios de TelArg
    Servicio listo en http://127.0.0.1:8471
    Abra esa direccion en el navegador. Para terminar presione Ctrl+C o cierre esta ventana.
    ```
 2. Tu navegador se abre solo en **http://127.0.0.1:8471** con la página de AutoAtend. Si no se abre, copia esa dirección en Safari o Chrome.
-3. Escribe un comentario y pulsa **Clasificar**. El atajo **⌘ Cmd + Enter** también funciona, aunque la página diga "Ctrl+Enter".
+3. Escribe un comentario y pulsa **Clasificar**. El atajo **⌘ Cmd + Enter** también funciona, como indica la página.
 4. Para **detener** el servicio, regresa a la Terminal y pulsa **Control + C**. Debe decir `Servicio detenido.`
 
 > **Importante:** mientras la demo esté en curso, **no cierres la ventana de Terminal**. Si la cierras, el servicio se detiene y la página deja de responder.
@@ -172,17 +174,19 @@ Escríbelos a mano frente al sínodo. Estos son los resultados que se midieron c
 - Señala la tabla **"Lexemas clave"** bajo el resultado. Cada fila tiene el lexema, **su expresión regular del catálogo** y cuánto aportó a la decisión.
 - Qué decir: *"La decisión se explica en términos de los lexemas que generó el analizador de la consigna b. Por ejemplo, `sig(e|o)` es la expresión regular que agrupa las variantes 'sigue' y 'sigo'."*
 
-**Paso 4. Mostrar el catálogo en `/api/lexemas` (conecta la consigna e con la b).**
-- Haz clic en el enlace del pie de la página, o escribe en el navegador:
-  `http://127.0.0.1:8471/api/lexemas?orden=variantes`
+**Paso 4. Mostrar el catálogo (conecta la consigna e con la b).**
+- Haz clic en **"Ver el catálogo de expresiones regulares"** al pie de la página, o abre:
+  `http://127.0.0.1:8471/catalogo`
+- Verás una tabla con el lexema, su **expresión regular** (los operadores `( | )` resaltados), el número de variantes, la frecuencia y una barra con la **distribución por categoría**.
 - Muestra 3 expresiones regulares con alternancia, por ejemplo:
   - `cobr(ado|ando|ar|aron|o|os)`
   - `pag(ado|ando|ar|e|o|os)`
   - `aclara(ción|do|ndo|r|ron)`
-- Para buscar una en particular, usa `q`. Por ejemplo: `http://127.0.0.1:8471/api/lexemas?q=factur`
+- Escribe `factur` en **"Buscar por inicio"** y pulsa **Aplicar** para ver `factur(a|ación|as)`.
+- La **frecuencia mínima** arranca en 100, para ocultar las erratas que mete el ruido del corpus. Si eliges "Todas (0)", aparecen las 6,196 entradas; las erratas siguen en el catálogo, solo se ocultan.
 - Qué decir: *"El servicio consume en tiempo real el catálogo que generó el software base: forma canónica, expresión regular y frecuencias por categoría."*
-
-> Si el navegador muestra el JSON en una sola línea difícil de leer, en Firefox y Chrome se ve formateado automáticamente. En Safari puedes activar "Vista de texto sin formato".
+- Si quieren ver la evidencia en bruto, el enlace **"JSON de /api/lexemas con estos filtros"** al pie de la página abre el endpoint del TE con los mismos filtros.
+- Dato para la réplica: `facturacion` (sin tilde) aparece como lexema aparte de `factur(a|ación|as)`. No hay plegado de acentos (ADR-003), y el stemmer reconoce el sufijo "-ación", pero no "-acion". Es una limitación documentada del agrupador.
 
 **Paso 5. Ejecutar `--selftest`.**
 1. En la Terminal, abre una **pestaña nueva** con **⌘ Cmd + T**. No cierres la que tiene el servicio.
@@ -256,7 +260,7 @@ curl -s -X POST http://127.0.0.1:8471/api/clasificar -H 'Content-Type: applicati
 
 ## Parte 4. Datos útiles para responder preguntas
 
-- **Versión:** 1.0.0. `GET /api/health` responde `{"ok":true,"version":"1.0.0","lexemas":6196,"puerto":8471}`.
+- **Versión:** 1.0.1. `GET /api/health` responde `{"ok":true,"version":"1.0.1","lexemas":6196,"puerto":8471}`.
 - **Corpus:** 73,000 comentarios, semilla 10433, SHA-256 `37f285ff…`.
 - **Catálogo:** 6,196 lexemas. I-1: 0 fallos; I-2: 0 filas; I-3: SHA idéntico en dos corridas.
 - **Modelo:** Regresión Logística Softmax. Macro-F1 0.9795 en test temporal; 0.835 con plantillas no vistas (cifra realista). Detalles en `docs/reports/evaluacion_modelo.md` y en ADR-004.

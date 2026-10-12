@@ -538,3 +538,37 @@ func openOracleCorpus(t *testing.T, dir string) *sql.DB {
 	t.Cleanup(func() { d.Close() })
 	return d
 }
+
+// min_frecuencia hides the low-frequency lexemes (mostly typos of the noise injector) so the
+// catalogue page shows real morphology; without it the contract of CPA04 is unchanged.
+func TestLexemasFrecuenciaMinima(t *testing.T) {
+	a := bootApp(t)
+	h := a.Handler()
+	oracle := openOracle(t, a.Dir)
+
+	var want int
+	if err := oracle.QueryRow(`SELECT COUNT(*) FROM frecuencias WHERE categoria_id IS NULL AND valor >= 20`).Scan(&want); err != nil {
+		t.Fatal(err)
+	}
+	r := getLexemas(t, h, "?min_frecuencia=20&orden=variantes&tamanio=500")
+	if want == 0 || r.Total != want {
+		t.Fatalf("min_frecuencia=20: total %d, catalogue has %d", r.Total, want)
+	}
+	for _, l := range r.Lexemas {
+		if l.FrecuenciaGlobal < 20 {
+			t.Errorf("%q has global frequency %d < 20", l.Forma, l.FrecuenciaGlobal)
+		}
+	}
+	all := getLexemas(t, h, "")
+	if zero := getLexemas(t, h, "?min_frecuencia=0"); zero.Total != all.Total {
+		t.Errorf("min_frecuencia=0: total %d, want %d", zero.Total, all.Total)
+	}
+	if both := getLexemas(t, h, "?min_frecuencia=20&q=cobr&tamanio=500"); both.Total > r.Total {
+		t.Errorf("q and min_frecuencia together: total %d exceeds %d", both.Total, r.Total)
+	}
+	for _, bad := range []string{"?min_frecuencia=-1", "?min_frecuencia=abc"} {
+		if rec := do(t, h, http.MethodGet, "/api/lexemas"+bad, nil); rec.Code != http.StatusBadRequest {
+			t.Errorf("%s: status %d, want 400", bad, rec.Code)
+		}
+	}
+}

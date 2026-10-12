@@ -28,6 +28,7 @@ const (
 func (a *App) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/{$}", only(http.MethodGet, a.serveUI))
+	mux.HandleFunc("/catalogo", only(http.MethodGet, a.serveCatalogo))
 	mux.HandleFunc("/api/clasificar", only(http.MethodPost, a.clasificar))
 	mux.HandleFunc("/api/lexemas", only(http.MethodGet, a.lexemasPage))
 	mux.HandleFunc("/api/categorias", only(http.MethodGet, a.categoriasList))
@@ -83,13 +84,19 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 
 // serveUI answers GET / with the embedded single-page UI. The CSP forbids every
 // network access except the same-origin API, so nothing is ever fetched from outside.
-func (a *App) serveUI(w http.ResponseWriter, r *http.Request) {
+func (a *App) serveUI(w http.ResponseWriter, r *http.Request) { servePage(w, a.ui) }
+
+// serveCatalogo answers GET /catalogo with the readable catalogue page, which reads /api/lexemas.
+func (a *App) serveCatalogo(w http.ResponseWriter, r *http.Request) { servePage(w, a.catalogo) }
+
+// servePage writes an embedded HTML page with the same-origin-only CSP.
+func servePage(w http.ResponseWriter, page []byte) {
 	h := w.Header()
 	h.Set("Content-Type", "text/html; charset=utf-8")
 	h.Set("Cache-Control", "no-store")
 	h.Set("X-Content-Type-Options", "nosniff")
 	h.Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'")
-	w.Write(a.ui)
+	w.Write(page)
 }
 
 type clasificarIn struct {
@@ -174,7 +181,7 @@ var lexemasOrder = map[string]string{
 	"variantes":  "nvar DESC, l.forma_canonica",
 }
 
-// lexemasPage implements GET /api/lexemas?pagina=N&tamanio=M[&q=prefijo][&orden=frecuencia|variantes].
+// lexemasPage implements GET /api/lexemas?pagina=N&tamanio=M[&q=prefijo][&orden=frecuencia|variantes][&min_frecuencia=F].
 func (a *App) lexemasPage(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	pagina, err := intParam(q.Get("pagina"), 1)
@@ -200,22 +207,30 @@ func (a *App) lexemasPage(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, `El parametro "q" es demasiado largo.`)
 		return
 	}
+	minFreq, err := intParam(q.Get("min_frecuencia"), 0)
+	if err != nil || minFreq < 0 {
+		writeError(w, http.StatusBadRequest, `El parametro "min_frecuencia" debe ser un entero >= 0.`)
+		return
+	}
 	// Prefix filter as a range on the unique index: prefix <= forma < prefix + max code point.
 	lo, hi := prefix, prefix+maxRune
 
 	out := lexemasOut{Pagina: pagina, Tamanio: tamanio, Lexemas: []lexemaOut{}}
-	if err := a.resultados.QueryRow(`SELECT COUNT(*) FROM lexemas WHERE forma_canonica >= ? AND forma_canonica < ?`, lo, hi).Scan(&out.Total); err != nil {
+	if err := a.resultados.QueryRow(`SELECT COUNT(*) FROM lexemas l
+		JOIN frecuencias g ON g.lexema_id = l.id AND g.categoria_id IS NULL
+		WHERE l.forma_canonica >= ? AND l.forma_canonica < ? AND g.valor >= ?`, lo, hi, minFreq).Scan(&out.Total); err != nil {
 		writeError(w, http.StatusInternalServerError, "No se pudo leer el catalogo de lexemas.")
 		return
 	}
 	rows, err := a.resultados.Query(`
 		SELECT l.id, l.forma_canonica, l.expresion_regular,
-		       COALESCE((SELECT f.valor FROM frecuencias f WHERE f.lexema_id = l.id AND f.categoria_id IS NULL), 0) AS glob,
+		       g.valor AS glob,
 		       (SELECT COUNT(*) FROM variantes v WHERE v.lexema_id = l.id) AS nvar
 		FROM lexemas l
-		WHERE l.forma_canonica >= ? AND l.forma_canonica < ?
+		JOIN frecuencias g ON g.lexema_id = l.id AND g.categoria_id IS NULL
+		WHERE l.forma_canonica >= ? AND l.forma_canonica < ? AND g.valor >= ?
 		ORDER BY `+order+`
-		LIMIT ? OFFSET ?`, lo, hi, tamanio, (pagina-1)*tamanio)
+		LIMIT ? OFFSET ?`, lo, hi, minFreq, tamanio, (pagina-1)*tamanio)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "No se pudo leer el catalogo de lexemas.")
 		return

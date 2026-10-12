@@ -11,9 +11,9 @@ package assets
 
 import "embed"
 
-// FS holds data/<DataFiles...> and ui/index.html.
+// FS holds data/<DataFiles...>, ui/index.html and ui/catalogo.html.
 //
-//go:embed data/corpus.db data/resultados.db data/modelo.json data/modelo_alternativo.json data/gold5.json ui/index.html
+//go:embed data/corpus.db data/resultados.db data/modelo.json data/modelo_alternativo.json data/gold5.json ui/index.html ui/catalogo.html
 var FS embed.FS
 
 // DataFiles are the names of the embedded artifacts under data/, in the order the
@@ -22,3 +22,6 @@ var DataFiles = []string{"corpus.db", "resultados.db", "modelo.json", "modelo_al
 
 // UIPath is the embedded single-page UI.
 const UIPath = "ui/index.html"
+
+// CatalogoPath is the embedded catalogue page (a readable view of /api/lexemas).
+const CatalogoPath = "ui/catalogo.html"

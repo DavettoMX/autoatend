@@ -5,7 +5,7 @@ DF     := data/df_train.json
 CORPUS_SHA ?= 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
-VERSION ?= 1.0.0
+VERSION ?= 1.0.1
 ASSETS_DIR := internal/assets/data
 ASSET_FILES := corpus.db resultados.db modelo.json modelo_alternativo.json gold5.json
 
