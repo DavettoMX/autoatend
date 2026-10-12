@@ -1,0 +1,201 @@
+n,comentario_id,fecha,categoria_id,palabra,contexto,clase
+1,58431,2026-04-06,1,como,toda la tarde que es [[como]] no tener señal espero su,cerrada
+2,58775,2026-04-09,1,como,en las noches q es [[como]] no teenr señal,cerrada
+3,58816,2026-04-10,1,como,lento de madrugada que es [[como]] no tener servicio de llamadas,cerrada
+4,58825,2026-04-10,1,como,lento de madrugada q es [[como]] no tener datos moviles mi,cerrada
+5,59479,2026-04-16,2,como,de equipo y no se [[como]] quitarlo,lexica
+6,59488,2026-04-16,2,como,ayuda me cobran plan adicional [[como]] si lo hubiera pedido ya,cerrada
+7,59516,2026-04-17,1,como,horario de oficina que es [[como]] no tener servicio de mensajes,cerrada
+8,59598,2026-04-17,1,como,toda la tarde que es [[como]] no tener datos móviles saludos,cerrada
+9,59834,2026-04-20,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+10,59848,2026-04-20,2,como,me cobran suscripción de música [[como]] si lo hubiera pedido ya,cerrada
+11,59870,2026-04-20,2,como,me cobran suscripción de música [[como]] si lo hubiera pedido ya,cerrada
+12,59887,2026-04-20,2,como,servicio premium y no se [[como]] quitarlo cargos q no reconozco,lexica
+13,60100,2026-04-22,1,como,toda la tarde que es [[como]] no tener servicio de mensajes,cerrada
+14,60119,2026-04-23,1,como,fines de semana que es [[como]] no tener internet,cerrada
+15,60359,2026-04-25,1,como,lento de madrugada que es [[como]] no tener cobertura me prometieron,cerrada
+16,60445,2026-04-26,1,como,horario de oficina que es [[como]] no tener señal,cerrada
+17,60714,2026-04-29,1,como,en las noches que es [[como]] no tener cobertura la neta,cerrada
+18,61111,2026-05-03,3,como,los impuestos y no entiendo [[como]] llegan a mxn,lexica
+19,61575,2026-05-07,2,como,de equipo y no se [[como]] qyitarlo gracias,lexica
+20,61671,2026-05-08,4,como,exijo q me atiendan [[como]] cliente no es la primera,lexica
+21,62038,2026-05-12,4,como,saludos exijo q me atiendan [[como]] cliente no es la primera,lexica
+22,62082,2026-05-12,2,como,me cobran contenido de terceros [[como]] si lo hubiera pedido ya,cerrada
+23,62186,2026-05-13,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+24,62419,2026-05-16,2,como,me cobran suscripción de música [[como]] si lo hubiera pedido ya,cerrada
+25,62545,2026-05-17,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+26,62609,2026-05-18,1,como,lento de madrugada que es [[como]] no tener internet,cerrada
+27,62806,2026-05-20,3,como,los impuestos y no entiendo [[como]] llegan a no puedo descargar,lexica
+28,63181,2026-05-23,2,como,me cobran suscripcioon de musica [[como]] si lo hubiera pedido ya,cerrada
+29,63389,2026-05-25,3,como,los impuestos y no entiendo [[como]] llgan a mxn cambié de,lexica
+30,63454,2026-05-26,2,como,me cobran membresía de juegos [[como]] si lo hubiera pedido ya,cerrada
+31,63480,2026-05-26,2,como,me cobran seguro de equipo [[como]] si lo hubiera pedido ya,cerrada
+32,63816,2026-05-30,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+33,64033,2026-06-01,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+34,64270,2026-06-03,4,como,caso exijo que me atiendan [[como]] cliente no es la primera,lexica
+35,64760,2026-06-08,3,como,los impuestos y no entiendo [[como]] llegan a mxn,lexica
+36,64815,2026-06-09,1,como,toda la tarde que es [[como]] no tener servicio de mensajes,cerrada
+37,64917,2026-06-10,2,como,de equipo y no sé [[como]] quitarlo pedi la cancelación de,lexica
+38,65275,2026-06-13,1,como,fines de semana que es [[como]] no tener señal mi línea,cerrada
+39,65282,2026-06-13,2,como,mes me cobran plan adicionl [[como]] si lo hubiera pedido ya,cerrada
+40,65441,2026-06-15,1,como,en las noches que es [[como]] no tener señal mi linea,cerrada
+41,65735,2026-06-18,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+42,65803,2026-06-19,1,como,por las mañanas que es [[como]] no tener datos móviles saludos,cerrada
+43,65982,2026-06-20,2,como,folio me cobran roaming internacional [[como]] si lo hubiera pedido ya,cerrada
+44,66216,2026-06-23,2,como,me cobran membresia de juegos [[como]] si lo hubiera pedido ya,cerrada
+45,66371,2026-06-24,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+46,66542,2026-06-26,2,como,de juegos y no se [[como]] quitarlo,lexica
+47,66753,2026-06-28,2,como,cobros me cobran roaming internacional [[como]] si lo hubiera pedido ya,cerrada
+48,66768,2026-06-28,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+49,67289,2026-07-03,2,como,me cobran reconexion [[como]] si lo hubiera pedido ya,cerrada
+50,67468,2026-07-05,2,como,de equipo y no se [[como]] quitarlo,lexica
+51,67488,2026-07-05,2,como,me cobran contenido de terceros [[como]] si lo hubiera pedido ya,cerrada
+52,67681,2026-07-07,4,como,contestó exijo que me atiendan [[como]] cliente no es la primera,lexica
+53,69129,2026-07-22,1,como,horario de oficina que es [[como]] no tener señal,cerrada
+54,69340,2026-07-24,3,como,los impuestos y no entiendo [[como]] llegan a mxn,lexica
+55,69505,2026-07-26,2,como,me cobran roaming internacional [[como]] si lo hubisra pedido ya,cerrada
+56,69798,2026-07-28,1,como,x las mañanas que es [[como]] no tener servicio de mensajes,cerrada
+57,69872,2026-07-29,1,como,por las mñaanas q es [[como]] no tener servicio de mensajes,cerrada
+58,69913,2026-07-30,1,como,lento de madrugada que es [[como]] no tener cobertura en mi,cerrada
+59,69935,2026-07-30,2,como,me cobran renta de equipo [[como]] si lo hubiera pedido ya,cerrada
+60,70289,2026-08-02,1,como,horario de oficina que es [[como]] no tener servicio de llamadas,cerrada
+61,70654,2026-08-06,1,como,horaio de ofiina que es [[como]] no tner datos móviles la,cerrada
+62,70870,2026-08-08,2,como,me cobran reconexión [[como]] si lo hubiera pedido ya,cerrada
+63,71155,2026-08-11,4,como,saludos exijo q me atiendan [[como]] cliente no es la primera,lexica
+64,71415,2026-08-14,2,como,me cobran reconexión [[como]] si lo hubiera pedido ya,cerrada
+65,71494,2026-08-14,2,como,aclararlo me cobran mensajes premium [[como]] si lo hubiera pedido ya,cerrada
+66,71499,2026-08-14,4,como,nombre exijo que me atiendan [[como]] cliente no es la primera,lexica
+67,71612,2026-08-16,1,como,lento de madrugada que es [[como]] no tener serviccio de mensajes,cerrada
+68,71806,2026-08-18,4,como,exijo que me atiendan [[como]] cliente no es la primera,lexica
+69,72195,2026-08-21,2,como,mensajes premium y no sé [[como]] quitarlo,lexica
+70,72268,2026-08-22,1,como,fines de semana que es [[como]] no tener servicio de llamadas,cerrada
+71,58621,2026-04-08,4,entre,quien corresponda me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+72,58655,2026-04-08,4,entre,formal con me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+73,58872,2026-04-10,4,entre,con ustedes me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+74,59456,2026-04-16,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+75,59956,2026-04-21,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+76,60149,2026-04-23,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+77,60373,2026-04-25,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+78,60477,2026-04-26,4,entre,desde villahermosa me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+79,60553,2026-04-27,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+80,60591,2026-04-27,4,entre,personas distintas me transfirieron veces [[entre]] áreas y nadie pudo rwsolver,cerrada
+81,61529,2026-05-07,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+82,61559,2026-05-07,4,entre,buenas tardes me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+83,61652,2026-05-08,4,entre,buenas tardes me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+84,61822,2026-05-10,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+85,62030,2026-05-12,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+86,63186,2026-05-23,4,entre,misma semana me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+87,63216,2026-05-24,4,entre,mensajes automáticos me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+88,64255,2026-06-03,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+89,64296,2026-06-03,4,entre,ninguna empatia me transfirieron veces [[entre]] arwas y naie pudo resolver,cerrada
+90,64415,2026-06-05,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+91,64506,2026-06-06,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+92,64775,2026-06-08,4,entre,me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+93,64948,2026-06-10,4,entre,esperando caso me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+94,64990,2026-06-10,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+95,65073,2026-06-11,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+96,65077,2026-06-11,4,entre,saludos me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+97,65394,2026-06-14,4,entre,con ustedes me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+98,65447,2026-06-15,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+99,65479,2026-06-15,4,entre,hola me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+100,65528,2026-06-16,4,entre,me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+101,65566,2026-06-16,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+102,65778,2026-06-18,4,entre,me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+103,65999,2026-06-20,4,entre,buenas tardes me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+104,66010,2026-06-21,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+105,66054,2026-06-21,4,entre,me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+106,66746,2026-06-28,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+107,66824,2026-06-29,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+108,67156,2026-07-02,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+109,67252,2026-07-03,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+110,67498,2026-07-05,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+111,67697,2026-07-07,4,entre,las llamadas me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+112,68498,2026-07-15,4,entre,necesito ayuda me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+113,68586,2026-07-16,4,entre,la llamada me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+114,69850,2026-07-29,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+115,70059,2026-07-31,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+116,70060,2026-07-31,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+117,70459,2026-08-04,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+118,70770,2026-08-07,4,entre,necesito ayuda me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+119,70790,2026-08-07,4,entre,buenos días me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+120,70833,2026-08-08,4,entre,desde chihuahua me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+121,71285,2026-08-12,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+122,71557,2026-08-15,4,entre,saludos me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+123,71560,2026-08-15,4,entre,me transfirieron veces [[entre]] areas y nadie pudo resolver,cerrada
+124,71710,2026-08-17,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+125,71980,2026-08-19,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+126,72049,2026-08-20,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+127,72050,2026-08-20,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+128,72135,2026-08-21,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+129,72566,2026-08-25,4,entre,que contraté me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+130,72576,2026-08-25,4,entre,me transfirieron veces [[entre]] áreas y nadie pudo resolver,cerrada
+131,58644,2026-04-08,4,para,fila mas de una hora [[para]] nnada,cerrada
+132,58672,2026-04-08,4,para,el proceso [[para]] cambiar de plan a max,cerrada
+133,58873,2026-04-10,5,para,servicio los recomiendo un diez [[para]] soporte técnico resolvieron mi duda,cerrada
+134,58887,2026-04-10,1,para,una solución activé el roaming [[para]] viajar y al llegar a,cerrada
+135,59372,2026-04-15,3,para,no puedo registrar mi correo [[para]] facturación la página me regresa,cerrada
+136,59485,2026-04-16,1,para,activé el roaming [[para]] viajar y al llegar a,cerrada
+137,59645,2026-04-18,4,para,[[para]] cancelar mi línea me ponen,cerrada
+138,59777,2026-04-19,1,para,activé el roaming [[para]] viajar y al llegar a,cerrada
+139,60245,2026-04-24,4,para,que anuncian no aplican nunca [[para]] clientes que ya tenemos años,cerrada
+140,60401,2026-04-26,1,para,móviles necesito servicio de llamadas [[para]] trabajar y llevo cuatro días,cerrada
+141,60837,2026-04-30,5,para,internet funcionando perfecto un diez [[para]] ventas resolvieron mi duda por,cerrada
+142,60856,2026-04-30,1,para,necesito internet [[para]] trabajar y llevo diez días,cerrada
+143,60877,2026-04-30,4,para,center y nadie me contesto [[para]] cancelar mi linea me ponen,cerrada
+144,61277,2026-05-04,4,para,[[para]] cancelar mi línea me ponen,cerrada
+145,61406,2026-05-06,1,para,active el roaming [[para]] viajar y al llegar a,cerrada
+146,61410,2026-05-06,4,para,que anuncian no aplican nunca [[para]] clientes que ya tenemos años,cerrada
+147,61749,2026-05-09,3,para,no puedo registrar mi correo [[para]] fact la página me regresa,cerrada
+148,61794,2026-05-09,4,para,que anuncian no allican nunca [[para]] clientes q ya tenemos años,cerrada
+149,61980,2026-05-11,1,para,que salir a la calle [[para]] poder llamar,cerrada
+150,62340,2026-05-15,4,para,tema y nadie me resuelve [[para]] cancelar mi línea me ponen,cerrada
+151,62449,2026-05-16,4,para,[[para]] cancelar mi linea me ponen,cerrada
+152,62477,2026-05-16,4,para,q anujcian no aplican nunda [[para]] clientes q ya tenemos años,cerrada
+153,62606,2026-05-18,3,para,no puedo registrar mi correo [[para]] facturación la página me regresa,cerrada
+154,62710,2026-05-19,3,para,no puedo registrar mi correo [[para]] facturacion la pagina me regresa,cerrada
+155,62792,2026-05-19,4,para,seguido en fines de semana [[para]] ofrecerme promociones aunque ya les,cerrada
+156,62982,2026-05-21,4,para,esto me parece un abuso [[para]] cancelar mi linea me ponen,cerrada
+157,63061,2026-05-22,1,para,activé el roaming [[para]] viajar y al llegar a,cerrada
+158,63425,2026-05-26,1,para,necesito datos móviles [[para]] trabajar y llevo varias horas,cerrada
+159,63546,2026-05-27,4,para,el proceo [[para]] cambiar de plan a ahorro,cerrada
+160,63953,2026-05-31,4,para,nadie pudo resolver mi problema [[para]] cancelar mi línea me ponen,cerrada
+161,64015,2026-06-01,5,para,un diez [[para]] el call center resolvieron mi,cerrada
+162,64120,2026-06-02,5,para,un diez [[para]] la sucursal resolvieron mi duda,cerrada
+163,64266,2026-06-03,3,para,no puedo registrar mi correo [[para]] faft la pagina me regresa,cerrada
+164,64317,2026-06-04,3,para,no puedo registrar mi correo [[para]] facturación la página me regresa,cerrada
+165,64969,2026-06-10,4,para,llaman seguido por las mañanas [[para]] ofrecerme promociones aunque ya les,cerrada
+166,65100,2026-06-11,1,para,que salir a la calle [[para]] poder llamar ayer hubo una,cerrada
+167,65456,2026-06-15,4,para,nadie me contesto el proceso [[para]] cambiar de plan a joven,cerrada
+168,65804,2026-06-19,1,para,necesito servicio de llamadas [[para]] trabajar y llevo dos dias,cerrada
+169,66462,2026-06-25,1,para,activé el roaming [[para]] viajar y al llegar a,cerrada
+170,66535,2026-06-26,5,para,a quien corresponda un diez [[para]] el área de cobranza resolvieron,cerrada
+171,66599,2026-06-26,1,para,necesito servicio de mensajes [[para]] trabajar y llevo cuatro días,cerrada
+172,66739,2026-06-28,1,para,que salir a la calle [[para]] poder llamar las llamadas se,cerrada
+173,66794,2026-06-28,1,para,activé el roaming [[para]] viajar y al llegar a,cerrada
+174,67377,2026-07-04,5,para,un diez [[para]] soporte técnico resolvieron mi duda,cerrada
+175,67551,2026-07-06,3,para,no puedo registrar mi correo [[para]] facturación la página me regresa,cerrada
+176,68125,2026-07-12,4,para,[[para]] cancelar mi línea me ponen,cerrada
+177,68130,2026-07-12,4,para,harto del servicio de atencion [[para]] cancelar mi linea me ponen,cerrada
+178,68191,2026-07-12,4,para,llaman seguido toda la tarde [[para]] ofrecerme promociones aunque ya les,cerrada
+179,68205,2026-07-13,4,para,seguido en horario de oficina [[para]] ofrecerme promociones aunque ya les,cerrada
+180,68456,2026-07-15,4,para,que anuncian no aplican nunca [[para]] clientes que ya tenemos años,cerrada
+181,68549,2026-07-16,1,para,que salir a la calle [[para]] poder llamar no tengo datos,cerrada
+182,68945,2026-07-20,1,para,que salir a la calle [[para]] poder llamar gracias de antemano,cerrada
+183,69036,2026-07-21,1,para,necesito servicio de mensajes [[para]] trabajar y llevo una semana,cerrada
+184,69608,2026-07-27,4,para,pésima hacen fila cuarenta minutos [[para]] nada me cambiaron las condiciones,cerrada
+185,69773,2026-07-28,5,para,buenos días un diez [[para]] el área de cobranza resolvieron,cerrada
+186,69912,2026-07-30,4,para,a quien corresponda el proceso [[para]] cambiar de plan a hlgar,cerrada
+187,69951,2026-07-30,4,para,llaman seguido por las mañanas [[para]] ofrecerme promociones aunque ya les,cerrada
+188,70048,2026-07-31,1,para,necesito datos móviles [[para]] trabajar y llevo dos días,cerrada
+189,70890,2026-08-08,1,para,que salir a la calle [[para]] poder llamar ayer hubo una,cerrada
+190,70893,2026-08-08,4,para,llaman seguido en las noches [[para]] ofrecerme promociones aunque ya les,cerrada
+191,71010,2026-08-10,4,para,pésima hacen fila cuarenta minutos [[para]] nada gracias de antemano,cerrada
+192,71493,2026-08-14,3,para,no puedo registrar mi correo [[para]] fact la pagina me regresa,cerrada
+193,71651,2026-08-16,1,para,que salir a la calle [[para]] poder llamar no me llegan,cerrada
+194,71869,2026-08-18,4,para,[[para]] cancelar mi línea me ponen,cerrada
+195,71945,2026-08-19,4,para,pesima hacen fila cuarenta minutos [[para]] nada,cerrada
+196,72039,2026-08-20,4,para,llaman seguido x las mañanas [[para]] ofrecerme promocioens aunque ya les,cerrada
+197,72362,2026-08-23,1,para,active el roaming [[para]] viajar y al llegar a,cerrada
+198,72673,2026-08-26,4,para,pido hablar con un supervisor [[para]] cancelar mi linea me ponen,cerrada
+199,72816,2026-08-28,4,para,seguido en horario de oficina [[para]] ofrecerme promociones aunque ya les,cerrada
+200,72960,2026-08-29,1,para,activé el roaming [[para]] viajar y al llegar a,cerrada
