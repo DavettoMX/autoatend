@@ -7,7 +7,7 @@ Atiende las cinco consignas del caso:
 | Consigna | Entregable | Estado |
 |---|---|---|
 | a) Base de datos del corpus | `data/corpus.db` (SQLite 3FN) generado por `cmd/gencorpus` | ✅ Fase 1 |
-| b) Programa analizador | Analizador léxico propio (parser de ER → Thompson → AFN-ε) y `cmd/simulador` → `resultados.db` | ⏳ Fase 2 |
+| b) Programa analizador | Analizador léxico propio (parser de ER → Thompson → AFN-ε) y `cmd/simulador` → `resultados.db` | 🚧 en curso (Fase 2: lexer y barrido listos; falta el motor de ER) |
 | c) Plan de pruebas | TE §6.3 y Anexo II; pruebas en el repo y matriz `docs/CASOS_PRUEBA.md` | ⏳ Fases 2–5 |
 | d) Justificación del plan | TE §6.3 (ISO/IEC 25010, invariantes I-1…I-4); cifras medidas en `PLAN.md` §5.2 | ⏳ Fase 5 |
 | e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | ⏳ Fases 3–4 |
@@ -28,8 +28,22 @@ make test-integration   # suite completa, incluida la integración Level 4a
 make cover              # informa la cobertura por paquete (no falla)
 make cover-gate         # falla si algún paquete queda por debajo del 80 % de cobertura
 make lint-regexp        # falla si aparece import "regexp" o cgo
+make sweep              # barre data/corpus.db y genera data/resultados.db y data/df_train.json
+make sweep-sha          # invariante I-3: dos barridos dan el mismo SHA-256
 make cross              # binarios estáticos en dist/ para windows/amd64 y darwin/arm64
 ```
+
+### Regenerar el catálogo léxico
+
+`data/resultados.db` y `data/df_train.json` están versionados. `cmd/simulador` los reconstruye a partir de `data/corpus.db` con el lexer propio (`internal/lexer`, ADR-003): 6,720 lexemas con su ER, frecuencias global y por categoría, y variantes.
+
+```bash
+make clean-results && make sweep
+sha256sum data/resultados.db
+# d93d33a6b7f28395d20408f5d862d4034985d48e8eefa756405a3b75e266c09f
+```
+
+El simulador no sobrescribe archivos existentes. Si falla algún chequeo posterior (la consulta I-2 del TE §6.3.3, una sola corrida, lexemas sin variantes o sin frecuencias, integridad de `categoria_id`), borra lo que creó. `df_train.json` es la frecuencia de documento de train para el entrenamiento en Python.
 
 ### Regenerar el corpus
 
@@ -49,13 +63,16 @@ Para generar en otra ruta: `go run ./cmd/gencorpus -out /tmp/c.db -report /tmp/r
 
 ```
 cmd/gencorpus/          CLI del generador (solo flags)
+cmd/simulador/          CLI del barrido léxico (solo flags)
 internal/corpus/        generación, ruido, validación, persistencia y reporte
 internal/corpus/templates/  plantillas y vocabularios del dominio (solo datos)
 internal/db/            acceso en tiempo de ejecución: categorías, OpenReadOnly, DSN
 internal/db/build/      solo pipeline de generación: crear, finalizar, split 80/20, ATTACH
 internal/db/schema/     DDL de corpus.db y resultados.db (.sql embebido, Anexo I)
+internal/lexer/         normalizador, tokenizador AFD, stoplist, stemmer, tabla de símbolos, generador de ER
+internal/sweep/         barrido del corpus: construye resultados.db y df_train.json
 internal/testutil/      helpers de prueba compartidos
-data/                   artefactos generados (corpus.db)
+data/                   artefactos generados (corpus.db, resultados.db, df_train.json)
 docs/adr/               decisiones de arquitectura (ADR)
 docs/reports/           reportes generados
 ```
@@ -63,7 +80,7 @@ docs/reports/           reportes generados
 ## Bases de datos
 
 - **`corpus.db`**: `categorias` (CHECK con las 5 etiquetas del caso) y `comentarios` (FK `ON DELETE RESTRICT`, fecha `YYYY-MM-DD`), como en el Anexo I. El split 80/20 no se guarda: es la consulta `db.SplitCutoff`, un corte temporal global (TE §5.2.2). Todo comentario de train es anterior a todo comentario de test; con este corpus el corte es 2026-04-06 (58,400 / 14,600).
-- **`resultados.db`** (Fase 2): `corridas`, `lexemas`, `frecuencias` (`categoria_id NULL` = frecuencia global) y `variantes`.
+- **`resultados.db`**: `corridas`, `lexemas`, `frecuencias` (`categoria_id NULL` = frecuencia global) y `variantes`.
 
 Como indica el Anexo I, `corpus.db` usa `journal_mode=WAL` y `resultados.db` `journal_mode=DELETE`. Los dos se compactan con `VACUUM` y quedan como un único archivo, sin `-wal` ni `-shm`, para poder embeberse en el binario. La lectura usa `mode=ro&immutable=1` (TE §5.1.4).
 
@@ -74,8 +91,9 @@ Solo hay ADR para las decisiones que el Trabajo Escrito promete documentar (§5.
 | ADR | Tema |
 |---|---|
 | [ADR-001](docs/adr/ADR-001-sqlite-modernc.md) | SQLite mediante `modernc.org/sqlite` (Go puro, sin CGo) |
+| [ADR-003](docs/adr/ADR-003-stoplist.md) | Stoplist, homógrafos, números y criterio de agrupación de variantes |
 
-Pendientes: ADR-002 (simulación directa del AFN-ε), ADR-003 (stoplist y homógrafos), ADR-004 (modelo) y ADR-005 (despliegue: solo loopback, sin TLS, autenticación ni CORS).
+Pendientes: ADR-002 (simulación directa del AFN-ε), ADR-004 (modelo) y ADR-005 (despliegue: solo loopback, sin TLS, autenticación ni CORS).
 
 ## Objetivos de despliegue
 

@@ -60,7 +60,7 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 ## Criterios de éxito
 
 ### Por tarea (Definition of Done)
-- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover` (informa la cobertura; no bloquea hasta la demo), `corpus-sha` y `cross`.
+- [ ] `make verify` en verde: `fmt-check`, `vet`, `lint-regexp`, `test-integration`, `cover` (informa la cobertura; no bloquea hasta la demo), `corpus-sha`, `sweep-sha` y `cross`.
 - [ ] Commits rojo → verde → refactor visibles en la rama.
 - [ ] Pruebas nombradas con su ID del plan cuando exista.
 - [ ] Sin código duplicado respecto a lo que reportó `mapeo-reuso`.
@@ -84,8 +84,9 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 
 ```bash
 make verify       # criterio de terminado: todos los gates en orden
-make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | cross
+make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | sweep-sha | cross
 make gen          # se niega a sobrescribir data/corpus.db; usa make clean-data antes
+make sweep        # genera data/resultados.db y data/df_train.json; usa make clean-results antes
 go test -count=1 -run NombrePrueba ./internal/...
 ```
 
@@ -97,7 +98,10 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`, `CheckCategoriaIntegrity`).
 - `internal/db/schema`: DDL embebida, literal del Anexo I.
 - `internal/testutil`: helpers de prueba compartidos (`MustExec`, `ExpectErr`, `Scalar`).
-- Por crear según `PLAN.md`: `internal/regex`, `internal/lexer` (stoplist versionada en `internal/lexer/stoplist/v1.json`), `cmd/simulador`, `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
+- `internal/lexer`: front end léxico (ADR-003). `Normalize` (NFC restringida al alfabeto), `Tokenize` (AFD de 4 estados), `Lookup`/`Version` (stoplist versionada en `stoplist/v1.json`), `Stem`, `Analyze` (única definición léxica compartida), `Table` (tabla de símbolos), `GenerateER` y `PrefixIndex`.
+- `internal/sweep`: barrido del corpus (`Run`): construye `resultados.db` (corridas, lexemas, frecuencias, variantes) y `df_train.json`, y verifica I-2 reabriendo el archivo. Puede importar `internal/db/build`.
+- `cmd/simulador`: flags de `sweep.Run` (`make sweep`; `make sweep-sha` comprueba I-3).
+- Por crear según `PLAN.md`: `internal/regex`, `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
 
 ## Apego al Trabajo Escrito
 
