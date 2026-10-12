@@ -1,0 +1,17 @@
+patron,palabra,frase,ejemplo,frecuencia,clase,nota
+como-es-como-no-tener,como,es como no tener …,toda la tarde que es [[como]] no tener señal espero su,24,cerrada,etiqueta del usuario en las 24 filas etiquetadas
+como-si-lo-hubiera,como,me cobran … como si lo hubiera pedido,ayuda me cobran plan adicional [[como]] si lo hubiera pedido ya,19,cerrada,etiqueta del usuario en las 19 filas etiquetadas
+como-no-se-como,como,no sé cómo quitarlo,de equipo y no se [[como]] quitarlo,7,,"PENDIENTE: etiquetas inconsistentes (lexica 6, cerrada 1)"
+como-no-entiendo-como,como,no entiendo cómo llegan a …,los impuestos y no entiendo [[como]] llegan a mxn,5,lexica,etiqueta del usuario en las 5 filas etiquetadas
+como-atiendan-como-cliente,como,exijo que me atiendan como cliente,exijo que me atiendan [[como]] cliente no es la primera,15,,"PENDIENTE: etiquetas inconsistentes (lexica 12, cerrada 3)"
+entre-veces-entre-areas,entre,me transfirieron … veces entre áreas,quien corresponda me transfirieron veces [[entre]] areas y nadie pudo resolver,60,cerrada,etiqueta del usuario en las 60 filas etiquetadas
+para-viajar,para,activé el roaming para viajar,una solución activé el roaming [[para]] viajar y al llegar a,9,,PENDIENTE: sin etiquetar
+para-trabajar,para,necesito … para trabajar,móviles necesito servicio de llamadas [[para]] trabajar y llevo cuatro días,7,,PENDIENTE: sin etiquetar
+para-cancelar,para,para cancelar mi línea,[[para]] cancelar mi línea me ponen,11,,PENDIENTE: sin etiquetar
+para-facturacion,para,registrar mi correo para facturación,no puedo registrar mi correo [[para]] facturación la página me regresa,8,,PENDIENTE: sin etiquetar
+para-clientes,para,no aplican nunca para clientes,que anuncian no aplican nunca [[para]] clientes que ya tenemos años,5,,PENDIENTE: sin etiquetar
+para-un-diez-para,para,un diez para …,servicio los recomiendo un diez [[para]] soporte técnico resolvieron mi duda,7,,PENDIENTE: sin etiquetar
+para-poder-llamar,para,salir a la calle para poder llamar,que salir a la calle [[para]] poder llamar,7,,PENDIENTE: sin etiquetar
+para-ofrecerme,para,llaman … para ofrecerme promociones,seguido en fines de semana [[para]] ofrecerme promociones aunque ya les,8,,PENDIENTE: sin etiquetar
+para-cambiar,para,el proceso para cambiar de plan,el proceso [[para]] cambiar de plan a max,4,,PENDIENTE: sin etiquetar
+para-nada,para,fila … para nada,fila mas de una hora [[para]] nnada,4,,"PENDIENTE: el usuario puso lexica en 1 fila; ""para nada"" es frase preposicional (sugerencia: cerrada)"
