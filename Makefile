@@ -2,7 +2,7 @@ GO     ?= go
 CORPUS := data/corpus.db
 RESULTS := data/resultados.db
 DF     := data/df_train.json
-CORPUS_SHA ?= ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219
+CORPUS_SHA ?= b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
 
