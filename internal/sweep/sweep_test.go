@@ -443,3 +443,16 @@ func TestRun_WithoutDFPathWritesOnlyResultados(t *testing.T) {
 		t.Errorf("dir has %d files, want only resultados.db", len(entries))
 	}
 }
+
+// If the DF export fails after resultados.db was written, the run is all or nothing.
+func TestRun_DFWriteFailureRemovesResultados(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "r.db")
+	df := filepath.Join(dir, "missing-dir", "df.json")
+	if _, err := sweep.Run(sweep.Options{CorpusPath: fixtureCorpus(t), OutPath: out, DFPath: df, Seed: 1}); err == nil {
+		t.Fatal("expected an error when df_train.json cannot be created")
+	}
+	if _, err := os.Stat(out); !os.IsNotExist(err) {
+		t.Error("resultados.db left behind after the DF export failed")
+	}
+}
