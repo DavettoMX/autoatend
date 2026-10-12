@@ -136,3 +136,31 @@ func TestCoherence_NumberAgreementAndSpecificFrames(t *testing.T) {
 		t.Errorf("the two-receipts frame was seen %d times: the check is vacuous", seen)
 	}
 }
+
+// TestCoherence_ComplementsFitEveryBaseTemplateOfTheirCategory: a complement is attached to any base template of its
+// category, so it must not assume a channel (a phone call, a visit), a person, a document, a recurrence, a promised
+// date or a kind of service that only some templates have ("Es un gusto que existan personas así" after
+// "Excelente cobertura en Villahermosa…").
+func TestCoherence_ComplementsFitEveryBaseTemplateOfTheirCategory(t *testing.T) {
+	assumptions := map[string][]string{
+		"channel":          {"llam", "teléfono", "chat", "sucursal", "acudir", "visita", "correo"},
+		"person":           {"persona", "atendi", "trato", "amable", "agente"},
+		"document":         {"documento", "recibo", "factura", "datos"},
+		"recurrence":       {"cada mes", "cada vez", "periodo", "otra vez", "siempre"},
+		"promised date":    {"fecha", "hoy mismo"},
+		"specific service": {"fácil", "rápid", "cobertura", "señal", "aplicación", "promoci"},
+		"own purchase":     {"no pedí", "contraté"},
+	}
+	for ci, cs := range templates.Complements {
+		for _, c := range cs {
+			lowered := strings.ToLower(c)
+			for kind, words := range assumptions {
+				for _, w := range words {
+					if strings.Contains(lowered, w) {
+						t.Errorf("category %d: complement %q assumes a %s (%q), which not every base template has", ci+1, c, kind, w)
+					}
+				}
+			}
+		}
+	}
+}
