@@ -85,6 +85,8 @@ Los comandos `make` y `go` se ejecutan desde `proyect/`; la raíz del repositori
 ```bash
 make verify       # criterio de terminado: todos los gates en orden
 make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | sweep-sha | cross
+make assets       # copia data/* a internal/assets/data/ (requisito de todo lo que compila Go)
+make build        # dist/autoatend para este equipo; ./dist/autoatend --selftest debe salir con 0
 make gen          # se niega a sobrescribir data/corpus.db; usa make clean-data antes
 make sweep        # genera data/resultados.db y data/df_train.json; usa make clean-results antes
 make train        # entrena (uv + scikit-learn) y regenera modelo.json, modelo_alternativo.json, gold5.json, paridad_1000.json y el reporte; make train-sha comprueba el determinismo
@@ -95,8 +97,8 @@ go test -count=1 -run NombrePrueba ./internal/...
 
 - `cmd/<herramienta>/main.go`: solo flags; la lógica vive en `internal/`.
 - `internal/corpus`: generador del corpus sintético (semilla 10433, 73,000 filas, 30/20/20/20/10).
-- `internal/db`: acceso en tiempo de ejecución, solo lectura (`Categories`, `OpenReadOnly`, `FileURI`, `ReadOnlyParams`, `SplitCutoff`).
-- `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`, `CheckCategoriaIntegrity`).
+- `internal/db`: acceso en tiempo de ejecución, solo lectura (`Categories`, `OpenReadOnly`, `FileURI`, `ReadOnlyParams`, `SplitCutoff`, `CheckCategoriaIntegrity`).
+- `internal/db/build`: solo generación (`CreateCorpus`, `CreateResultados`, `InsertCategorias`, `Finalize`; `CheckCategoriaIntegrity` delega en `db.CheckCategoriaIntegrity`).
 - `internal/db/schema`: DDL embebida, literal del Anexo I.
 - `internal/testutil`: helpers de prueba compartidos (`MustExec`, `ExpectErr`, `Scalar`).
 - `internal/lexer`: front end léxico (ADR-003). `Normalize` (NFC restringida al alfabeto), `Tokenize` (AFD de 4 estados), `Lookup`/`Version` (stoplist versionada en `stoplist/v1.json`), `Stem`, `Analyze` (única definición léxica compartida), `Table` (tabla de símbolos), `GenerateER` y `PrefixIndex`.
@@ -106,7 +108,9 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `internal/ml`: lado de ejecución del clasificador (ADR-004). `Lexicon`/`NewLexicon`/`LoadCatalogue` (forma → lexema canónico del catálogo por `lexer.Stem`), `RunTokenizar` (lógica de `cmd/tokenizar`: JSON lines `{id,texto}` → `{id,lexemas}`), `Load` (lee y valida `modelo.json`), `(*Model).Vectorize` (TF conteo × IDF almacenado, L2, suma en orden ascendente sin FMA), `Predict`/`PredictSparse` (`z = b + Σ w·x` sobre el soporte, softmax con resta del máximo, `LexemasClave` top-5 por `|w·x|`; `Vacio` si ningún token está en el vocabulario). Go nunca recalcula el IDF. Importa `internal/db`, nunca `internal/db/build`.
 - `cmd/tokenizar`: flags de `ml.RunTokenizar`; Python lo invoca por lotes (CPA06). `make train` lo compila a `dist/tokenizar`.
 - `ml/` (Python 3.11 + scikit-learn 1.9.1 con `uv`, solo desarrollo, nunca en el binario): `autoatend_ml.train` (split con la misma consulta SQL de `db.SplitCutoff`, TF-IDF de train, NBM y RLS × 3 estrategias de desbalance, CV estratificada de 5, evaluación en test con y sin duplicados, exportación), `export` (JSON determinista y escalador de referencia), `report`, `paridad`. `make train` regenera `data/modelo.json`, `data/modelo_alternativo.json`, `data/gold5.json`, `testdata/paridad_1000.json` y `docs/reports/evaluacion_modelo.md`; `make train-sha` comprueba que dos entrenamientos dan los mismos bytes. `make verify` no requiere Python: las pruebas Go leen los JSON versionados (CPA06, equivalencia lineal, `gold5`, CPM01/CPM02 medidos).
-- Por crear según `PLAN.md`: `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
+- `internal/assets`: `go:embed` (no admite `..`) de `data/{corpus.db,resultados.db,modelo.json,modelo_alternativo.json,gold5.json}` y `ui/index.html`. `make assets` copia los cinco de `data/` a `internal/assets/data/` (copias ignoradas por git, nunca se editan; todo objetivo que compila Go depende de `assets`). La UI (`ui/index.html`) sí está versionada.
+- `internal/web`: servicio de la consigna e (ADR-005). `Boot` (artefactos a `os.MkdirTemp`, `db.OpenReadOnly`, `db.CheckCategoriaIntegrity` por ATTACH, `ml.Load`), `Handler` (`GET /`, `POST /api/clasificar`, `GET /api/lexemas`, `GET /api/categorias`, `GET /api/health`; solo consultas parametrizadas, `MaxBytesReader` de 1 MB), `Listen` (127.0.0.1:8471, fallback 8472–8480), `Banner`, `BrowserCommand` (único `runtime.GOOS`), `Selftest` y `Run`. La salida de consola es ASCII (cmd.exe no es UTF-8). No importa `internal/db/build`.
+- `cmd/autoatend`: flags `-modelo principal|alternativo`, `-no-browser`, `--selftest`; versión con `-ldflags -X main.version`; SIGINT/SIGTERM cancelan el contexto y se borra el temporal. `TestNoDependeDeDBBuild` comprueba con `go list -deps` que no enlaza `internal/db/build`. `make build` → `dist/autoatend`; `make cross` → `dist/autoatend.exe` y `dist/autoatend-macos-arm64`.
 
 ## Apego al Trabajo Escrito
 

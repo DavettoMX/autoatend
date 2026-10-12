@@ -249,8 +249,8 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | Macro-F1 (CPM01) | ≥ 0.85 en test | 1.0000 en test (14,600) con `modelo.json` (RLS, pesos balanceados, C = 10); NBM 0.9997 > 0.99: señal de corpus fácil (`docs/reports/evaluacion_modelo.md`) | 2026-10-12 |
 | Recall de Reconocimientos (CPM02) | ≥ 0.70 | 1.0000 (1,495 Reconocimientos de test); NBM 1.0000 | 2026-10-12 |
 | Macro-F1 y recall sin duplicados en train | se reporta | Test sin duplicados (10,884): Macro-F1 1.0000 y recall de Reconocimientos 1.0000 (RLS); NBM 0.9996 y 1.0000 | 2026-10-12 |
-| Latencia P99 de `/api/clasificar` | < 50 ms | | |
-| `--selftest` | < 3 s, salida 0 | | |
+| Latencia P99 de `/api/clasificar` | < 50 ms | 0.11–0.17 ms en Linux (5 corridas de `TestLatencia_P99DeClasificar`: 100 llamadas HTTP consecutivas por loopback con un comentario de longitud media, 111 caracteres; mediana 0.04 ms). Pendiente medir en el hardware objetivo (Windows y Mac) en el Bloque E | 2026-10-12 |
+| `--selftest` | < 3 s, salida 0 | Salida 0 en 0.05 s en Linux (`dist/autoatend --selftest`: 73,000 comentarios, 6,289 ER compiladas y 6,967 variantes aceptadas, `gold5` 5/5, puerto 8471 libre; `TestSelftestExit0` y las pruebas de salida 1). Pendiente medir en Windows y Mac (Bloque E) | 2026-10-12 |
 | Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | 250/250 sin observaciones (`docs/reports/muestra_250_borrador.md`); el corpus anterior tenía 93 de 250 con defectos y se corrigió | 2026-10-12 |
 | L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado b810bad2…) | 2026-10-12 |
 | L-2 lexemas con una sola variante | se reporta | 91.6 % (5,759 de 6,289; la mayoría son erratas del ruido o formas irregulares) | 2026-10-12 |

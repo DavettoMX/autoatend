@@ -10,7 +10,7 @@ Atiende las cinco consignas del caso:
 | b) Programa analizador | Analizador léxico propio (parser de ER → Thompson → AFN-ε) y `cmd/simulador` → `resultados.db` | 🚧 en curso (Fase 2: lexer y barrido listos; falta el motor de ER) |
 | c) Plan de pruebas | TE §6.3 y Anexo II; pruebas en el repo y matriz `docs/CASOS_PRUEBA.md` | ⏳ Fases 2–5 |
 | d) Justificación del plan | TE §6.3 (ISO/IEC 25010, invariantes I-1…I-4); cifras medidas en `PLAN.md` §5.2 | ⏳ Fase 5 |
-| e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | 🚧 en curso (Fase 3: modelo entrenado, `internal/ml` y paridad Python↔Go listos; falta el servicio web de la Fase 4) |
+| e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | ✅ Fase 4 implementada (servicio, UI y `--selftest` listos en Linux; falta la verificación nativa en Windows y Mac, Bloque E) |
 
 El plan de ejecución hacia la demo, con su checklist de aceptación, está en [`PLAN.md`](PLAN.md).
 
@@ -32,8 +32,12 @@ make sweep              # barre data/corpus.db y genera data/resultados.db y dat
 make sweep-sha          # invariante I-3: dos barridos dan el mismo SHA-256
 make train              # entrena y regenera modelo.json, modelo_alternativo.json, gold5.json, paridad_1000.json y el reporte (requiere uv)
 make train-sha          # dos entrenamientos independientes producen los mismos bytes
+make assets             # copia los artefactos de data/ a internal/assets/data/ (los embebe el binario)
+make build              # dist/autoatend para este equipo, con los artefactos embebidos
 make cross              # binarios estáticos en dist/ para windows/amd64 y darwin/arm64
 ```
+
+Los objetivos que compilan Go dependen de `make assets`. Con `go test` o `go build` directos, ejecute `make assets` antes (las copias en `internal/assets/data/` no se versionan).
 
 ### Regenerar el catálogo léxico
 
@@ -50,6 +54,34 @@ El simulador no sobrescribe archivos existentes. Si falla algún chequeo posteri
 ### Entrenar el modelo (consigna e, Fase 3)
 
 `data/modelo.json` (ganador), `data/modelo_alternativo.json` (mejor de la otra familia), `data/gold5.json` y `testdata/paridad_1000.json` están versionados; `make verify` solo los lee. `make train` los reproduce: compila `cmd/tokenizar` (la tokenización la hace Go, no Python), entrena en `ml/` con TF-IDF de train, compara Naive Bayes multinomial y regresión logística softmax bajo tres estrategias de desbalance con validación cruzada estratificada de 5 particiones, evalúa una sola vez en test (también sin los duplicados exactos de train) y mide en Go la paridad Python↔Go (CPA06). El resultado y la evidencia están en [`docs/reports/evaluacion_modelo.md`](docs/reports/evaluacion_modelo.md) y en [`ADR-004`](docs/adr/ADR-004-modelo.md): ganador regresión logística (C = 10, pesos balanceados), Macro-F1 de test 1.0000 y recall de Reconocimientos 1.0000, con la salvedad de que el corpus sintético es fácil (Naive Bayes llega a 0.9997).
+
+### Servicio web (consigna e, Fase 4)
+
+`cmd/autoatend` es un único ejecutable con el corpus, el catálogo, los dos modelos, `gold5` y la interfaz embebidos (`internal/assets`). Al iniciar escribe las bases en un directorio temporal propio, las abre con `mode=ro&immutable=1`, verifica la integridad de `categoria_id` por `ATTACH` y escucha solo en `127.0.0.1:8471` (fallback 8472–8480). Detalles y la desviación aprobada "sin CI ni Wine" en [`ADR-005`](docs/adr/ADR-005-despliegue.md).
+
+```bash
+make assets build                      # o make cross para Windows y macOS
+./dist/autoatend                       # banner con la URL y abre el navegador
+./dist/autoatend -no-browser           # sin abrir el navegador
+./dist/autoatend -modelo alternativo   # sirve Naive Bayes (modelo_alternativo.json)
+./dist/autoatend --selftest            # verificaciones headless: salida 0 (éxito) o 1 (fallo), < 3 s
+```
+
+| Bandera | Efecto |
+|---|---|
+| `-modelo principal` o `alternativo` | Modelo servido; por omisión `principal` (regresión logística) |
+| `-no-browser` | No abre el navegador |
+| `--selftest` | Corre las verificaciones (corpus de 73,000 filas y 5 categorías, integridad, ER del catálogo compiladas con `internal/regex` que aceptan sus variantes, `gold5`, puerto) y sale con 0 o 1 |
+
+La versión se fija al compilar: `go build -ldflags "-X main.version=1.0.0" ./cmd/autoatend` (`make` usa `VERSION`).
+
+| Endpoint | Respuesta |
+|---|---|
+| `GET /` | Interfaz web (un HTML, fuentes del sistema, sin CDN) |
+| `POST /api/clasificar` con `{"texto": "..."}` | `{"categoria", "confianzas": {5 categorías, suman 1}, "lexemas_clave": [{"lexema", "expresion_regular", "contribucion"}], "vacio"}`; texto vacío o JSON inválido → 400; cuerpo mayor a 1 MB → 413 |
+| `GET /api/lexemas?pagina=1&tamanio=100` | Catálogo paginado (máx. 500 por página): `{total, pagina, tamanio, lexemas: [{forma_canonica, expresion_regular, frecuencia_global, frecuencias, variantes}]}`; filtros opcionales `q=prefijo` y `orden=frecuencia` o `orden=variantes` |
+| `GET /api/categorias` | Las 5 categorías con su `id` |
+| `GET /api/health` | `{"ok": true, "version", "lexemas", "puerto"}` |
 
 ### Regenerar el corpus
 
@@ -71,6 +103,7 @@ Para generar en otra ruta: `go run ./cmd/gencorpus -out /tmp/c.db -report /tmp/r
 cmd/gencorpus/          CLI del generador (solo flags)
 cmd/simulador/          CLI del barrido léxico (solo flags)
 cmd/tokenizar/          CLI del tokenizador por lotes para Python (solo flags)
+cmd/autoatend/          servicio web (consigna e): flags, señales y versión
 internal/corpus/        generación, ruido, validación, persistencia y reporte
 internal/corpus/templates/  plantillas y vocabularios del dominio (solo datos)
 internal/db/            acceso en tiempo de ejecución: categorías, OpenReadOnly, DSN
@@ -80,6 +113,8 @@ internal/lexer/         normalizador, tokenizador AFD, stoplist, stemmer, tabla 
 internal/regex/         motor de ER propio: parser, Thompson y simulación del AFN-ε
 internal/sweep/         barrido del corpus: construye resultados.db y df_train.json
 internal/ml/            carga de modelo.json, vectorización TF-IDF e inferencia lineal + softmax
+internal/web/           servicio: arranque a temporal, endpoints, puerto, navegador y --selftest
+internal/assets/        go:embed de las bases, modelos, gold5 (copias de data/ por make assets) y ui/index.html
 ml/                     entrenamiento offline en Python (uv, scikit-learn); nunca forma parte del binario
 internal/testutil/      helpers de prueba compartidos
 data/                   artefactos generados (corpus.db, resultados.db, df_train.json, modelo.json, modelo_alternativo.json, gold5.json)
@@ -104,8 +139,8 @@ Solo hay ADR para las decisiones que el Trabajo Escrito promete documentar (§5.
 | [ADR-001](docs/adr/ADR-001-sqlite-modernc.md) | SQLite mediante `modernc.org/sqlite` (Go puro, sin CGo) |
 | [ADR-002](docs/adr/ADR-002-simulacion-afn.md) | Simulación directa del AFN-ε por conjuntos de estados, sin construir un AFD (O(n·m)) |
 | [ADR-003](docs/adr/ADR-003-stoplist.md) | Stoplist, homógrafos, números y criterio de agrupación de variantes |
-
-Pendientes: ADR-004 (modelo) y ADR-005 (despliegue: solo loopback, sin TLS, autenticación ni CORS).
+| [ADR-004](docs/adr/ADR-004-modelo.md) | Elección del modelo y formato JSON |
+| [ADR-005](docs/adr/ADR-005-despliegue.md) | Despliegue: solo loopback, sin TLS, autenticación ni CORS; un binario; sin CI ni Wine |
 
 ## Objetivos de despliegue
 
