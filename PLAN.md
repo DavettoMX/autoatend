@@ -260,9 +260,9 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 
 | Criterio | Umbral (TE) | Medido | Fecha |
 |---|---|---|---|
-| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,289 lexemas, 6,967 variantes; `TestCPP01_I1_RoundTripCatalogue`; corpus b810bad2…) | 2026-10-12 |
-| I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`) | 2026-10-12 |
-| I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `236cb9f6…1cc1` (`make sweep-sha`) | 2026-10-12 |
+| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,196 lexemas, 6,891 variantes; `TestCPP01_I1_RoundTripCatalogue`; corpus 37f285ff…) | 2026-10-12 |
+| I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`; corpus 37f285ff…) | 2026-10-12 |
+| I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `9620196f…79f3` (`make sweep-sha`; corpus 37f285ff…) | 2026-10-12 |
 | I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |
 | Cobertura | ≥ 80 % (líneas) | Fases 1–2: corpus 91.8 %, db 87.5 %, db/build 90.8 %, db/schema 100 %, lexer 99.4 %, regex 98.7 %, sweep 82.3 % (`make cover`) | 2026-10-12 |
 | Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.4e-17 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`) | 2026-10-12 |
@@ -273,7 +273,7 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | `--selftest` | < 3 s, salida 0 | | |
 | Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | 250/250 sin observaciones (`docs/reports/muestra_250_borrador.md`); el corpus anterior tenía 93 de 250 con defectos y se corrigió | 2026-10-12 |
 | L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado b810bad2…) | 2026-10-12 |
-| L-2 lexemas con una sola variante | se reporta | 91.6 % (5,759 de 6,289; la mayoría son erratas del ruido o formas irregulares) | 2026-10-12 |
+| L-2 lexemas con una sola variante | se reporta | 91.4 % (5,660 de 6,196; la mayoría son erratas del ruido o formas irregulares; corpus 37f285ff…) | 2026-10-12 |
 
 ---
 

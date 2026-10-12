@@ -37,12 +37,12 @@ make cross              # binarios estáticos en dist/ para windows/amd64 y darw
 
 ### Regenerar el catálogo léxico
 
-`data/resultados.db` y `data/df_train.json` están versionados. `cmd/simulador` los reconstruye a partir de `data/corpus.db` con el lexer propio (`internal/lexer`, ADR-003): 6,289 lexemas con su ER, frecuencias global y por categoría, y variantes.
+`data/resultados.db` y `data/df_train.json` están versionados. `cmd/simulador` los reconstruye a partir de `data/corpus.db` con el lexer propio (`internal/lexer`, ADR-003): 6,196 lexemas con su ER, frecuencias global y por categoría, y variantes.
 
 ```bash
 make clean-results && make sweep
 sha256sum data/resultados.db
-# d93d33a6b7f28395d20408f5d862d4034985d48e8eefa756405a3b75e266c09f
+# 9620196ffdd4e10e231ca4b7dc66b5a68bfa6e67057fbf4447ecaed8b24a79f3
 ```
 
 El simulador no sobrescribe archivos existentes. Si falla algún chequeo posterior (la consulta I-2 del TE §6.3.3, una sola corrida, lexemas sin variantes o sin frecuencias, integridad de `categoria_id`), borra lo que creó. `df_train.json` es la frecuencia de documento de train para el entrenamiento en Python.
