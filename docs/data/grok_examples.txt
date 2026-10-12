@@ -1,0 +1,100 @@
+{"categoria": "Falta de Servicio", "texto": "Ya van 5 dias sin internet en [EMPRESA] y siguen cobrando el recibo completo, puro cuento.", "palabras_enganosas": ["cobrando", "recibo"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Increible la atencion, mi negocio sigue sin señal despues de una semana de reportes.", "palabras_enganosas": ["atencion", "reportes"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Gracias [EMPRESA], la factura llega puntual pero el internet no desde el martes.", "palabras_enganosas": ["Gracias", "factura"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Sin servicio desde el viernes, ya pague y nomas no llega el tecnico.", "palabras_enganosas": ["pague", "tecnico"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Me dicen q hay falla en la zona pero el recibo si llega a tiempo, q asco.", "palabras_enganosas": ["recibo"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Llevo 3 dias sin llamadas ni datos y me mandan mensajes de q debo pagar ya.", "palabras_enganosas": ["pagar"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Por fin reportaron la falla pero sigue sin internet, la atencion es de risa.", "palabras_enganosas": ["reportaron", "atencion"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Cancelé el servicio xq nunca tuve cobertura decente y aun asi no hay senal.", "palabras_enganosas": ["Cancelé"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "El asesor fue amable pero sigo sin internet despues de 4 visitas, de que sirve.", "palabras_enganosas": ["asesor", "amable"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Me cobraron el mes completo y no hay ni una barrita de senal desde el lunes.", "palabras_enganosas": ["cobraron"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Que buena atencion, ya son 10 dias sin wifi y nadie da fecha de solucion.", "palabras_enganosas": ["buena atencion"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "La factura dice servicio activo pero el modem esta muerto desde ayer.", "palabras_enganosas": ["factura"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Sin internet otra vez, ya van 6 reportes y el cobro sigue igual.", "palabras_enganosas": ["reportes", "cobro"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Gracias por el descuento de 20 pesos, pero sigo sin senal toda la semana.", "palabras_enganosas": ["Gracias", "descuento"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "El tecnico dijo q ya estaba solucionado y al rato se cayo de nuevo el internet.", "palabras_enganosas": ["tecnico", "solucionado"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Me estan cobrando normal pero no hay cobertura ni para mandar un mensaje.", "palabras_enganosas": ["cobrando"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Pésima atencion al cliente, llevo 2 dias sin internet y nomas me dicen espera.", "palabras_enganosas": ["atencion"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Ya pague el recibo y sigo sin servicio, que onda [EMPRESA].", "palabras_enganosas": ["pague", "recibo"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Increible como atienden, reporté la falla el lunes y sigue sin senal.", "palabras_enganosas": ["atienden", "reporté"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "Sin internet pero el cobro automatico si se hizo, de risa.", "palabras_enganosas": ["cobro automatico"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Falta de Servicio", "texto": "El plan dice ilimitado pero no hay ni para abrir whatsapp, q basura.", "palabras_enganosas": ["plan"], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Llevo 8 dias sin wifi, ya no se que mas hacer con [EMPRESA].", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "No hay senal en toda la colonia y dicen q es mantenimiento, puro cuento.", "palabras_enganosas": ["mantenimiento"], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Se cayo el internet a las 3 y hasta ahorita nada, ya van horas.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Sin llamadas ni datos desde la manana, [EMPRESA] no responde.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Otra vez sin servicio, esto ya es todos los fines de semana.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "El modem prende pero no hay internet, ya reinicie mil veces.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Cobertura de risa, en el centro no hay ni una barrita.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Ya 4 dias sin internet y nadie llega, puro reporte.", "palabras_enganosas": ["reporte"], "tipo": "directo"}
+{"categoria": "Falta de Servicio", "texto": "Sin senal para trabajar, esto no puede seguir asi [EMPRESA].", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Cancelé el servicio xq nunca tuve senal y me siguen cobrando en la tarjeta.", "palabras_enganosas": ["senal", "Cancelé"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Me hicieron un cobro doble despues de reportar q no tenia internet.", "palabras_enganosas": ["internet", "reportar"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Gracias por el cargo no reconocido de 500 pesos, ni idea que es.", "palabras_enganosas": ["Gracias"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Ya di de baja y siguen cobrando el plan, la atencion no sirve.", "palabras_enganosas": ["atencion", "baja"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Me cargaron Netflix y Disney q nunca pedi, el recibo viene inflado.", "palabras_enganosas": ["recibo"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Sin servicio hace 2 semanas y me cobraron el mes completo, de locos.", "palabras_enganosas": ["servicio"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "El asesor me dijo q no me cobrarian mas y ayer me salio el cargo.", "palabras_enganosas": ["asesor"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Increible, cancele x mala atencion y me siguen jalando de la tarjeta.", "palabras_enganosas": ["atencion", "cancele"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Me cobraron una instalacion q nunca se hizo, puro robo.", "palabras_enganosas": ["instalacion"], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Cargo no reconocido de 300 pesos despues de q reporté falla.", "palabras_enganosas": ["reporté", "falla"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Ya pague y me volvieron a cobrar lo mismo, doble cobro.", "palabras_enganosas": ["pague"], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Siguen cobrando despues de cancelar, la factura ni llega bien.", "palabras_enganosas": ["factura", "cancelar"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Me salio un cargo de servicio premium q no active, q asco.", "palabras_enganosas": ["servicio"], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Por fin me quitaron el cobro extra pero ya me habian jalado 2 veces.", "palabras_enganosas": ["Por fin"], "tipo": "problema_resuelto"}
+{"categoria": "Cobros Indebidos", "texto": "El recibo trae cargos q no reconozco y no me dan respuesta.", "palabras_enganosas": ["recibo"], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Me cobraron el mes aunque ya habia cancelado por falta de senal.", "palabras_enganosas": ["senal", "cancelado"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Cargo automatico de un plan q ya no tengo, de locos.", "palabras_enganosas": ["plan"], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Increible la atencion, me siguen cobrando lo q no pedi.", "palabras_enganosas": ["atencion"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Cobros Indebidos", "texto": "Ya devolvi el equipo y me cobraron renta otra vez.", "palabras_enganosas": ["equipo"], "tipo": "directo"}
+{"categoria": "Cobros Indebidos", "texto": "Cobro indebido despues de q el tecnico no resolvio nada.", "palabras_enganosas": ["tecnico"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "Gracias por nada, la factura llego otra vez con el plan equivocado.", "palabras_enganosas": ["Gracias"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "El recibo no cuadra con lo q contraté y sigo sin senal decente.", "palabras_enganosas": ["senal"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "Me cobran el monto completo pero la factura dice descuento q no aplicaron.", "palabras_enganosas": ["cobran"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "La CFDI no llega y el cobro si se hizo, q desmadre.", "palabras_enganosas": ["cobro"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "Factura con fecha incorrecta y el servicio sigue caido.", "palabras_enganosas": ["servicio"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "El monto del recibo no coincide y la atencion no me resuelve.", "palabras_enganosas": ["atencion"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "Me mandaron la factura del plan viejo, ya habia cambiado.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Problemas de Facturación", "texto": "Increible, la factura dice q pague y no me aparece el abono.", "palabras_enganosas": ["pague"], "tipo": "sarcasmo"}
+{"categoria": "Problemas de Facturación", "texto": "Recibo con cargos de meses atras q ya habia reportado.", "palabras_enganosas": ["reportado"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "La factura no llega al correo y me dicen q ya la enviaron.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Problemas de Facturación", "texto": "Montos q no cuadran y aun asi me quitan el servicio por adeudo.", "palabras_enganosas": ["servicio", "adeudo"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "Gracias [EMPRESA], otra vez la factura con el nombre equivocado.", "palabras_enganosas": ["Gracias"], "tipo": "sarcasmo"}
+{"categoria": "Problemas de Facturación", "texto": "El recibo trae el doble de lo q es y no me dan explicacion.", "palabras_enganosas": ["doble"], "tipo": "directo"}
+{"categoria": "Problemas de Facturación", "texto": "CFDI incorrecto despues de q el tecnico vino y no arreglo nada.", "palabras_enganosas": ["tecnico"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "Fecha de corte mal y el cobro se hizo antes.", "palabras_enganosas": ["cobro"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "La factura dice servicio activo pero no tengo internet hace dias.", "palabras_enganosas": ["servicio", "internet"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "No me llega el recibo y cuando lo pido trae errores.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Problemas de Facturación", "texto": "Monto del plan no cuadra con la factura, puro desorden.", "palabras_enganosas": ["plan"], "tipo": "directo"}
+{"categoria": "Problemas de Facturación", "texto": "Me facturaron un mes extra despues de cancelar.", "palabras_enganosas": ["cancelar"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Problemas de Facturación", "texto": "El recibo no trae el descuento q me prometieron por la falla.", "palabras_enganosas": ["descuento", "falla"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Me quitan el servicio por un peso de adeudo cuando el problema es la atencion.", "palabras_enganosas": ["servicio", "adeudo"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Pésima atencion, me siguen cobrando y nadie resuelve la factura mal.", "palabras_enganosas": ["cobrando", "factura"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Increible la atencion, 2 horas en linea y nomas robots.", "palabras_enganosas": ["atencion"], "tipo": "sarcasmo"}
+{"categoria": "Quejas", "texto": "El asesor fue grosero y me dejo sin senal por no pagar a tiempo.", "palabras_enganosas": ["senal", "pagar"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Filas eternas para cancelar y me cobran de mas mientras espero.", "palabras_enganosas": ["cobran", "cancelar"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Publicidad engañosa, prometen cobertura y ni hay senal.", "palabras_enganosas": ["cobertura", "senal"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Mala atencion, me reagendan el tecnico mil veces y sigue el cobro.", "palabras_enganosas": ["tecnico", "cobro"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Gracias por nada, la atencion es de lo peor y el recibo no llega.", "palabras_enganosas": ["Gracias", "recibo"], "tipo": "sarcasmo vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Procesos de risa, para cancelar te piden mil cosas y te cobran.", "palabras_enganosas": ["cancelar", "cobran"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Trato pesimo en sucursal, me dijeron q el problema es mio.", "palabras_enganosas": [], "tipo": "directo"}
+{"categoria": "Quejas", "texto": "Tiempos de espera eternos y luego me dicen q no hay solucion para el internet.", "palabras_enganosas": ["internet"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Me cortan por adeudo minimo cuando ellos no mandan la factura bien.", "palabras_enganosas": ["adeudo", "factura"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Atencion de robots, no entienden q el cobro esta mal.", "palabras_enganosas": ["cobro"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Que asco de servicio al cliente, puro paseo y no resuelven.", "palabras_enganosas": ["servicio"], "tipo": "directo"}
+{"categoria": "Quejas", "texto": "Publicidad dice velocidad alta y es una porqueria, mala atencion.", "palabras_enganosas": ["velocidad"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Me hacen dar mil vueltas para un simple ajuste y me siguen cobrando.", "palabras_enganosas": ["cobrando"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "El trato es de lo peor, te cuelgan y no te resuelven el reporte.", "palabras_enganosas": ["reporte"], "tipo": "directo"}
+{"categoria": "Quejas", "texto": "Procesos complicados a proposito, para no devolverte el cobro.", "palabras_enganosas": ["cobro"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Mala atencion en redes, solo responden con plantillas y el servicio sigue mal.", "palabras_enganosas": ["servicio"], "tipo": "vocabulario_cruzado"}
+{"categoria": "Quejas", "texto": "Increible como te atienden, te hacen sentir q el problema es tuyo.", "palabras_enganosas": ["atienden"], "tipo": "sarcasmo"}
+{"categoria": "Reconocimientos", "texto": "Por fin me devolvieron el cobro doble, el asesor fue muy amable.", "palabras_enganosas": ["cobro doble"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Gracias [EMPRESA], despues de dias sin internet ya lo arreglaron rapido.", "palabras_enganosas": ["sin internet"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Excelente atencion, me ajustaron la factura mal en un dia.", "palabras_enganosas": ["factura"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Por fin resolvieron la falta de senal, el tecnico llego puntual.", "palabras_enganosas": ["senal", "tecnico"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Gracias, me quitaron el cargo indebido sin tanto rollo.", "palabras_enganosas": ["cargo indebido"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Buena atencion en redes, me solucionaron el problema de cobro.", "palabras_enganosas": ["cobro"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Por fin la factura correcta, gracias al asesor q insistio.", "palabras_enganosas": ["factura"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Me devolvieron lo del doble cobro y me dieron un mes gratis, bien.", "palabras_enganosas": ["doble cobro"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Excelente, despues de la queja me arreglaron el internet el mismo dia.", "palabras_enganosas": ["internet", "queja"], "tipo": "problema_resuelto"}
+{"categoria": "Reconocimientos", "texto": "Gracias por la pronta solucion, ya no me siguen cobrando de mas.", "palabras_enganosas": ["cobrando"], "tipo": "problema_resuelto"}

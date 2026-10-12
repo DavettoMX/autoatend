@@ -9,12 +9,14 @@ import (
 	"unicode"
 )
 
-// Comment is one generated row of corpus.db. Noisy is generator metadata and is never persisted.
+// Comment is one generated row of corpus.db. Noisy and Base are generator metadata
+// and are never persisted: Base is the clean (pre-noise) filled base sentence.
 type Comment struct {
 	Fecha       string
 	Texto       string
 	CategoriaID int
 	Noisy       bool
+	Base        string
 }
 
 // Config fully determines the generated corpus.
@@ -78,7 +80,7 @@ func Generate(cfg Config) ([]Comment, error) {
 
 	out := make([]Comment, len(cats))
 	for i, cat := range cats {
-		text, err := compose(cat, rng)
+		text, base, err := compose(cat, rng)
 		if err != nil {
 			return nil, err
 		}
@@ -88,6 +90,7 @@ func Generate(cfg Config) ([]Comment, error) {
 			Texto:       text,
 			CategoriaID: cat,
 			Noisy:       noisy,
+			Base:        base,
 		}
 	}
 	return out, nil
@@ -96,8 +99,8 @@ func Generate(cfg Config) ([]Comment, error) {
 // compose builds one clean comment: optional opener, exactly one category base
 // template, optional complement of the same category and optional closer.
 // Opener, complement and closer never add a second incident: the comment talks
-// about one problem.
-func compose(cat int, rng *rand.Rand) (string, error) {
+// about one problem. It also returns the filled base sentence alone.
+func compose(cat int, rng *rand.Rand) (string, string, error) {
 	ts := templates.Templates[cat-1]
 	f := newSlotFiller(rng)
 	var parts []string
@@ -112,25 +115,26 @@ func compose(cat int, rng *rand.Rand) (string, error) {
 
 	if rng.Float64() < pOpener {
 		if err := add(pick(rng, templates.SharedOpeners, templates.Openers[cat-1])); err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 	first := rng.Intn(len(ts))
 	if err := add(ts[first]); err != nil {
-		return "", err
+		return "", "", err
 	}
+	base := parts[len(parts)-1]
 	if rng.Float64() < pComplement {
 		cs := templates.Complements[cat-1]
 		if err := add(cs[rng.Intn(len(cs))]); err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
 	if rng.Float64() < pCloser {
 		if err := add(pick(rng, templates.SharedClosers, templates.Closers[cat-1])); err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
-	return strings.Join(parts, " "), nil
+	return strings.Join(parts, " "), base, nil
 }
 
 // pick draws uniformly from the concatenation of shared and own.

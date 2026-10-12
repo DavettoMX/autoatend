@@ -108,6 +108,20 @@ Entregado y verificado con `make verify` en verde:
 - El ruido escribe `q` por "que" y `x` por "por" (6,007 y 3,152 comentarios). Ya están cubiertos en ADR-003.
 - El Jaccard del reporte se calcula sin stoplist, así que el rango 0.19–0.34 refleja sobre todo palabras funcionales. Se recalcula con la stoplist v1 (Bloque A, P2).
 
+**Criterio de separabilidad registrado antes de tocar las plantillas (12-oct-2026, aprobado por el usuario).** Con el corpus `b810bad2…` el modelo obtuvo Macro-F1 = 1.0000 y una matriz diagonal, lo que contradice el TE §6.1.4 ("evita que el corpus sea trivialmente separable"). Antes de cambiar el generador se fijan tres compuertas de la batería, que no se modifican después. Si alguna falla, el corpus no se persiste:
+
+| Id | Medida | Rango aceptado |
+|---|---|---|
+| K1 | Jaccard de los 100 tokens más frecuentes por par de categorías, **después de la stoplist v1** | [0.15, 0.80] (el rango que ya existía) |
+| K2 | Colisión de la oración base: % de comentarios cuya oración base limpia, como bolsa de tokens sin stoplist, aparece también en otra categoría | global [0.05, 0.10]; ≥ 0.03 por categoría; ≤ 0.05 en Reconocimientos |
+| K3 | Sonda Naive Bayes multinomial (α = 1, 5 pliegues estratificados, semilla 10433, tokens de la batería sin stoplist): Macro-F1 promedio | [0.80, 0.99] |
+
+Otras reglas:
+- Son solo de reporte, no compuertas: la regla de una palabra y el F1 con plantillas no vistas.
+- No se fija ningún umbral sobre el modelo final: se entrena una sola vez, al final, y se reporta tal cual.
+- No hay ruido de etiquetas. La ambigüedad es controlada: textos compatibles con las dos etiquetas, de forma determinista y con una tasa declarada.
+- El commit de prueba en rojo demuestra que el corpus `b810bad2…` falla K1, K2 y K3.
+
 **Deuda conocida, no bloqueante (después de la demo):**
 - `internal/corpus/pipeline.go`: `defer f.Close()` ignora el error al cerrar el reporte.
 - `internal/corpus/pipeline.go`: si `verifyCorpus` falla, `corpus.db` se queda en disco.

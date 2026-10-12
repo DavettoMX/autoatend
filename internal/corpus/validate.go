@@ -21,6 +21,22 @@ const (
 	sampleMaxRunes = 800
 )
 
+// Pre-registered separability criterion (PLAN.md §3, 2026-10-12), fixed before the
+// templates were changed. K1 is the lexical overlap check above, measured after
+// stoplist v1. K2 bounds the share of comments whose clean base sentence, as a bag of
+// stoplist-filtered tokens, also occurs in another category (controlled ambiguity).
+// K3 bounds the Macro-F1 of a fixed Naive Bayes probe: distinguishable, not trivial.
+const (
+	collisionGlobalMin = 0.05 // K2: global share of comments in the collision subset
+	collisionGlobalMax = 0.10
+	collisionCatMin    = 0.03 // K2: per category
+	collisionRecMax    = 0.05 // K2: Reconocimientos (minority class)
+	probeAlpha         = 1.0  // K3: Laplace smoothing of the probe
+	probeFolds         = 5    // K3: stratified folds, rng seeded with Config.Seed
+	probeMin           = 0.80 // K3: below, categories are not statistically distinguishable
+	probeMax           = 0.99 // K3: above, the corpus is trivially separable
+)
+
 // Check is one named, pass/fail validation with a human-readable detail.
 type Check struct {
 	Name   string
@@ -39,7 +55,11 @@ type Validation struct {
 		Min, Max int // in runes
 		Mean     float64
 	}
-	Overlap [5][5]float64 // Jaccard of the top-K token sets
+	Overlap [5][5]float64 // Jaccard of the top-K token sets (after stoplist v1)
+	// K2: share of comments, per category and global, whose base bag occurs in another category.
+	Collision       [5]float64
+	CollisionGlobal float64
+	ProbeF1         float64 // K3: mean Macro-F1 of the Naive Bayes probe over the folds
 	Samples [5][]string   // sampleSize comments per category, chronological
 }
 
@@ -266,3 +286,6 @@ func sampleLooksSane(t string) bool {
 	return strings.TrimSpace(t) != "" && !strings.ContainsAny(t, "{}") &&
 		n >= sampleMinRunes && n <= sampleMaxRunes && len(strings.Fields(t)) >= 2
 }
+
+// macroF1 is the unweighted mean F1 over the classes present in gold or pred.
+func macroF1(gold, pred []int) float64 { return -1 }
