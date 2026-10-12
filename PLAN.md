@@ -239,7 +239,7 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 
 | Criterio | Umbral (TE) | Medido | Fecha |
 |---|---|---|---|
-| I-1 round-trip | 0 fallos sobre el catálogo completo | | |
+| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,720 lexemas, 7,439 variantes; `TestCPP01_I1_RoundTripCatalogue`) | 2026-10-12 |
 | I-2 conservación de frecuencias | 0 lexemas con discrepancia | | |
 | I-3 idempotencia | SHA-256 idéntico en 2 corridas | | |
 | I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |

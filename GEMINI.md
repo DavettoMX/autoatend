@@ -99,9 +99,10 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `internal/db/schema`: DDL embebida, literal del Anexo I.
 - `internal/testutil`: helpers de prueba compartidos (`MustExec`, `ExpectErr`, `Scalar`).
 - `internal/lexer`: front end léxico (ADR-003). `Normalize` (NFC restringida al alfabeto), `Tokenize` (AFD de 4 estados), `Lookup`/`Version` (stoplist versionada en `stoplist/v1.json`), `Stem`, `Analyze` (única definición léxica compartida), `Table` (tabla de símbolos), `GenerateER` y `PrefixIndex`.
-- `internal/sweep`: barrido del corpus (`Run`): construye `resultados.db` (corridas, lexemas, frecuencias, variantes) y `df_train.json`, y verifica I-2 reabriendo el archivo. Puede importar `internal/db/build`.
+- `internal/regex`: motor de ER propio (ADR-002). `Parse` (descenso recursivo sobre runas; AST tipado `Alternation`, `Concatenation`, `Closure`, `Group`, `Class`, `Char`; `ParseError` con posición; `MaxDepth` = 200), `Thompson`/`Compile` (AFN-ε de a lo más 2·|r| estados) y `(*NFA).Match` (simulación por conjuntos de estados, O(n·m), cadena completa). No importa `regexp`.
+- `internal/sweep`: barrido del corpus (`Run`): construye `resultados.db` (corridas, lexemas, frecuencias, variantes) y `df_train.json`, y verifica I-2 reabriendo el archivo. Valida cada ER por ida y vuelta con `internal/regex` antes de persistirla (`validatedER`; respaldo a la forma canónica; `Result.ERFallbacks`, esperado 0). Puede importar `internal/db/build`.
 - `cmd/simulador`: flags de `sweep.Run` (`make sweep`; `make sweep-sha` comprueba I-3).
-- Por crear según `PLAN.md`: `internal/regex`, `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
+- Por crear según `PLAN.md`: `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
 
 ## Apego al Trabajo Escrito
 

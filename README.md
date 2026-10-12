@@ -70,6 +70,7 @@ internal/db/            acceso en tiempo de ejecución: categorías, OpenReadOnl
 internal/db/build/      solo pipeline de generación: crear, finalizar, split 80/20, ATTACH
 internal/db/schema/     DDL de corpus.db y resultados.db (.sql embebido, Anexo I)
 internal/lexer/         normalizador, tokenizador AFD, stoplist, stemmer, tabla de símbolos, generador de ER
+internal/regex/         motor de ER propio: parser, Thompson y simulación del AFN-ε
 internal/sweep/         barrido del corpus: construye resultados.db y df_train.json
 internal/testutil/      helpers de prueba compartidos
 data/                   artefactos generados (corpus.db, resultados.db, df_train.json)
@@ -91,9 +92,10 @@ Solo hay ADR para las decisiones que el Trabajo Escrito promete documentar (§5.
 | ADR | Tema |
 |---|---|
 | [ADR-001](docs/adr/ADR-001-sqlite-modernc.md) | SQLite mediante `modernc.org/sqlite` (Go puro, sin CGo) |
+| [ADR-002](docs/adr/ADR-002-simulacion-afn.md) | Simulación directa del AFN-ε por conjuntos de estados, sin construir un AFD (O(n·m)) |
 | [ADR-003](docs/adr/ADR-003-stoplist.md) | Stoplist, homógrafos, números y criterio de agrupación de variantes |
 
-Pendientes: ADR-002 (simulación directa del AFN-ε), ADR-004 (modelo) y ADR-005 (despliegue: solo loopback, sin TLS, autenticación ni CORS).
+Pendientes: ADR-004 (modelo) y ADR-005 (despliegue: solo loopback, sin TLS, autenticación ni CORS).
 
 ## Objetivos de despliegue
 
