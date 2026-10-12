@@ -1,10 +1,12 @@
 GO     ?= go
 CORPUS := data/corpus.db
+RESULTS := data/resultados.db
+DF     := data/df_train.json
 CORPUS_SHA ?= ee3f7d55420b455f914359d248facde22c14227b55ce7c838f424fd57ac8d219
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
 
-.PHONY: gen clean-data test test-integration cover cover-gate lint-regexp cross sweep train assets fmt-check vet corpus-sha verify
+.PHONY: gen clean-data clean-results sweep-sha test test-integration cover cover-gate lint-regexp cross sweep train assets fmt-check vet corpus-sha verify
 
 # Generates data/corpus.db and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
@@ -13,6 +15,9 @@ gen:
 
 clean-data:
 	rm -f $(CORPUS)
+
+clean-results:
+	rm -f $(RESULTS) $(DF)
 
 test:
 	$(GO) test -short -count=1 ./...
@@ -55,11 +60,15 @@ cross:
 	mkdir -p $(DIST)
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus.exe ./cmd/gencorpus
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus-macos-arm64 ./cmd/gencorpus
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador.exe ./cmd/simulador
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador-macos-arm64 ./cmd/simulador
 #	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/autoatend.exe ./cmd/autoatend
 #	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
 
+# Sweeps data/corpus.db into data/resultados.db and data/df_train.json.
+# Fails if either exists (the catalogue is built once); use make clean-results first.
 sweep:
-	@echo "pendiente: Fase 2"; exit 1
+	$(GO) run ./cmd/simulador
 
 train:
 	@echo "pendiente: Fase 3"; exit 1
@@ -82,6 +91,16 @@ corpus-sha:
 	diff -q "$$d/r.md" $(REPORT) >/dev/null || { echo "corpus-sha: FAIL report differs from $(REPORT)"; exit 1; }; \
 	echo "corpus-sha: ok $$got"
 
+# Invariant I-3: two sweeps of the corpus must produce byte-identical files.
+sweep-sha:
+	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
+	$(GO) run ./cmd/simulador -corpus $(CORPUS) -out "$$d/a.db" -df "$$d/a.json" >/dev/null || exit 1; \
+	$(GO) run ./cmd/simulador -corpus $(CORPUS) -out "$$d/b.db" -df "$$d/b.json" >/dev/null || exit 1; \
+	a=$$(sha256sum "$$d/a.db" | cut -d' ' -f1); b=$$(sha256sum "$$d/b.db" | cut -d' ' -f1); \
+	if [ "$$a" != "$$b" ]; then echo "sweep-sha: FAIL $$a != $$b"; exit 1; fi; \
+	cmp -s "$$d/a.json" "$$d/b.json" || { echo "sweep-sha: FAIL df_train.json differs"; exit 1; }; \
+	echo "sweep-sha: ok $$a"
+
 # Definition of done for a task: everything must pass before asking for a merge.
-verify: fmt-check vet lint-regexp test-integration cover corpus-sha cross
+verify: fmt-check vet lint-regexp test-integration cover corpus-sha sweep-sha cross
 	@echo "verify: PASS"
