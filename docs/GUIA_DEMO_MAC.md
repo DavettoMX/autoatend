@@ -47,10 +47,9 @@ macOS bloquea los programas que se descargan de internet y no vienen de la App S
 
 ```bash
 chmod +x autoatend                              # permiso para ejecutarlo como programa
-xattr -d com.apple.quarantine autoatend          # quita la marca de "descargado de internet"
+xattr -c autoatend                              # quita la marca de "descargado de internet"
 ```
 
-- Si el segundo comando responde **`No such xattr`**, no pasa nada: significa que no había bloqueo.
 - Ninguno de los dos pide contraseña ni permisos de administrador.
 
 ### 1.6 Comprueba que el archivo es el correcto
@@ -112,7 +111,7 @@ Solo pasa la primera vez.
    Abra esa direccion en el navegador. Para terminar presione Ctrl+C o cierre esta ventana.
    ```
 2. Tu navegador se abre solo en **http://127.0.0.1:8471** con la página de AutoAtend. Si no se abre, copia esa dirección en Safari o Chrome.
-3. Escribe un comentario y pulsa **Clasificar** (o **⌘ Cmd + Enter**).
+3. Escribe un comentario y pulsa **Clasificar**. El atajo **⌘ Cmd + Enter** también funciona, aunque la página diga "Ctrl+Enter".
 4. Para **detener** el servicio, regresa a la Terminal y pulsa **Control + C**. Debe decir `Servicio detenido.`
 
 > **Importante:** mientras la demo esté en curso, **no cierres la ventana de Terminal**. Si la cierras, el servicio se detiene y la página deja de responder.
@@ -218,7 +217,8 @@ Pulsa **Control + C** en la Terminal del servicio. Al salir, el programa borra s
 |---|---|---|
 | `zsh: permission denied: ./autoatend` | Falta el permiso de ejecución | `chmod +x autoatend` |
 | `zsh: no such file or directory: ./autoatend` | No estás en la carpeta correcta | `cd ~/AutoAtend` y vuelve a intentar |
-| Aviso de "desarrollador no identificado" | Bloqueo de macOS (Gatekeeper) | Paso 1.7: Configuración del Sistema → Privacidad y seguridad → **Abrir de todos modos** |
+| Aviso **"Apple could not verify … is free of malware"** o de "desarrollador no identificado" | macOS bloquea los programas descargados que no están notarizados por Apple (no es malware; el SHA-256 lo verifica) | Pulsa **Done/Listo** (no lo mandes a la papelera). En la Terminal: `cd ~/AutoAtend && xattr -c autoatend && chmod +x autoatend`. Si persiste: Configuración del Sistema → Privacidad y seguridad → **Abrir de todos modos** |
+| La Terminal dice `killed` o `zsh: killed` | macOS rechazó la firma del binario | `codesign --force --sign - autoatend` y vuelve a ejecutar |
 | `zsh: bad CPU type in executable` | Descargaste el archivo del procesador equivocado | Repite el paso 1.1 y descarga el otro archivo |
 | El banner dice `:8472` (u otro puerto) en lugar de `:8471` | Ya hay otro AutoAtend o programa en el 8471 | Es normal (respaldo automático). Usa la dirección que muestra el banner. Para cerrar otros: `pkill autoatend` |
 | El navegador no se abre solo | Bloqueo o navegador por defecto | Copia la dirección del banner en Safari o Chrome |
