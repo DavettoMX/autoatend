@@ -6,13 +6,13 @@
 
 ## Contexto
 
-La consigna b pide un analizador léxico cuyas expresiones regulares (ER) se interpreten con un motor propio. El TE §6.2.3 fija la gramática y §6.2.4 la construcción de Thompson, y deja abierto cómo se ejecuta el autómata resultante: se puede (a) simular el AFN-ε directamente o (b) convertirlo a un AFD con la construcción de subconjuntos y recorrer el AFD. El motor corre en dos lugares: el round-trip de cada ER antes de persistirla (6,720 lexemas en el catálogo) y la verificación de I-1 sobre todas las variantes observadas (7,439).
+La consigna b pide un analizador léxico cuyas expresiones regulares (ER) se interpreten con un motor propio. El TE §6.2.3 fija la gramática y §6.2.4 la construcción de Thompson, y deja abierto cómo se ejecuta el autómata resultante: se puede (a) simular el AFN-ε directamente o (b) convertirlo a un AFD con la construcción de subconjuntos y recorrer el AFD. El motor corre en dos lugares: el round-trip de cada ER antes de persistirla (6,289 lexemas en el catálogo) y la verificación de I-1 sobre todas las variantes observadas (6,967).
 
 Restricciones: Go puro sin CGo, prohibido `import "regexp"` y cualquier generador de parsers (`make lint-regexp`).
 
 ## Decisión
 
-El AFN-ε de Thompson se **simula directamente por conjuntos de estados**, sin construir un AFD (Thompson 1968; Aho et al. 2006, §3.7.2 y algoritmo 3.22; Hopcroft et al. 2007, §2.5.3 para la clausura respecto de ε y §4.3.2 para la comprobación de pertenencia):
+El AFN-ε de Thompson se **simula directamente por conjuntos de estados**, sin construir un AFD (Thompson 1968; Aho et al. 2006, §3.7.4 para la construcción, §3.7.2 y algoritmo 3.22 para la simulación, §3.7.3 para su eficiencia; Hopcroft et al. 2007, §2.5.3 para la clausura respecto de ε y §4.3.2 para la comprobación de pertenencia):
 
 1. El estado inicial del recorrido es `S₀ = ε-cerradura({inicio})`.
 2. Por cada runa `c` de la cadena, `S' = ε-cerradura(movida(S, c))`.
@@ -35,7 +35,7 @@ La ε-cerradura se calcula con una pila explícita y una marca por estado (sella
 
 | Alternativa | Por qué se descarta |
 |---|---|
-| **AFN → AFD por construcción de subconjuntos**, y recorrer el AFD (Aho et al. 2006, §3.7.1; Hopcroft et al. 2007, §2.3.5, Teorema 2.11; el caso exponencial está en §2.3.6, "Un caso desfavorable para la construcción de subconjuntos", y el costo de las conversiones en §4.3.1) | El AFD hace cada comparación en `O(n)`, pero la construcción cuesta hasta `O(2^m)` en el peor caso y debe repetirse para cada ER. Aquí las ER son cortas y numerosas (una por lexema) y cada una se ejecuta contra unas pocas variantes (7,439 comparaciones para 6,720 ER, es decir 1.1 por ER), de modo que el costo de construcción no se amortiza. Además añade código (estados del AFD como conjuntos canónicos, memoización) que el TE no pide y que habría que defender y probar. |
+| **AFN → AFD por construcción de subconjuntos**, y recorrer el AFD (Aho et al. 2006, §3.7.1; Hopcroft et al. 2007, §2.3.5, Teorema 2.11; el caso exponencial está en §2.3.6, "Un caso desfavorable para la construcción de subconjuntos", y el costo de las conversiones en §4.3.1) | El AFD hace cada comparación en `O(n)`, pero la construcción cuesta hasta `O(2^m)` en el peor caso y debe repetirse para cada ER. Aquí las ER son cortas y numerosas (una por lexema) y cada una se ejecuta contra unas pocas variantes (6,967 comparaciones para 6,289 ER, es decir 1.1 por ER), de modo que el costo de construcción no se amortiza. Además añade código (estados del AFD como conjuntos canónicos, memoización) que el TE no pide y que habría que defender y probar. |
 | **AFD perezoso** (construir los subconjuntos al vuelo y guardarlos en caché) | Mantiene el peor caso lineal, pero complica el motor con una caché por ER y exige sincronización si el NFA se comparte entre goroutines. Con cadenas de pocas runas la caché casi nunca se reutiliza. |
 | **Retroceso** (como el motor de Perl o de PCRE) | Es exponencial en el peor caso: `(a?){n}a{n}` contra `aⁿ`. `TestCPU08_NoBacktrackingBlowup` fija n = 60 y falla si tarda más de un segundo. No ofrece garantía de `O(n·m)`, que es la que promete el TE. |
 | **Usar `regexp` de la biblioteca estándar** | Prohibido por la consigna b (el analizador léxico debe ser propio) y por `make lint-regexp`. |
@@ -45,8 +45,8 @@ La ε-cerradura se calcula con una pila explícita y una marca por estado (sella
 
 - **Corrección:** `TestCPU04` a `TestCPU07` y `TestMatchSemantics` (cadena completa, cerraduras, clases, escapes, ciclos ε). `TestCPP01_GeneratorRoundTripRandom` genera 2,000 conjuntos de variantes aleatorios sobre un alfabeto que mezcla letras y todos los metacaracteres, y comprueba que la ER de `GenerateER` acepta exactamente las variantes.
 - **Complejidad:** `TestCPU08_LinearCost` cuenta de forma determinista los estados visitados y las transiciones examinadas, y exige que el trabajo crezca 10 veces (con tolerancia de 8 a 12) entre 10, 100, 1,000 y 10,000 caracteres y que no pase de `8·n·m`. `TestCPU08_LinearTime` mide el tiempo real con la misma escala (se omite con `-short`) y falla si algún paso crece más de 40 veces, ya que un algoritmo cuadrático crecería 100.
-- **Invariante I-1:** `TestCPP01_I1_RoundTripCatalogue` abre `data/resultados.db` en solo lectura, compila la ER de cada lexema y comprueba que acepta todas sus variantes: 6,720 lexemas, 7,439 variantes, 0 fallos. El barrido hace el mismo round-trip antes de persistir cada ER (TE Etapa 6): si una ER no compila o rechaza una variante, el lexema cae a su forma canónica y `Result.ERFallbacks` lo cuenta (hoy 0, y por eso `resultados.db` no cambió de SHA).
-- **Tamaño del AFN sobre el catálogo:** máximo 46 estados, media 14.4.
+- **Invariante I-1:** `TestCPP01_I1_RoundTripCatalogue` abre `data/resultados.db` en solo lectura, compila la ER de cada lexema y comprueba que acepta todas sus variantes: 6,289 lexemas, 6,967 variantes, 0 fallos. El barrido hace el mismo round-trip antes de persistir cada ER (TE Etapa 6): si una ER no compila o rechaza una variante, el lexema cae a su forma canónica y `Result.ERFallbacks` lo cuenta (hoy 0, y por eso `resultados.db` no cambió de SHA).
+- **Tamaño del AFN sobre el catálogo:** máximo 54 estados, media 14.3 (corpus `b810bad2…`).
 
 ## Consecuencias
 
@@ -61,7 +61,7 @@ El TE (§5.1.1, §6.2.4 y la tabla de §6.5) atribuye la complejidad `O(n·m)` d
 
 | Cita del TE | Contenido real | Referencia correcta |
 |---|---|---|
-| §3.4 | "Álgebra de las expresiones regulares" (leyes de equivalencia) | §4.3.2, "Cómo comprobar la pertenencia a un lenguaje regular" (p. 129), y Aho et al. (2006), §3.7.2–§3.7.3 |
+| §3.4 | "Álgebra de las expresiones regulares" (leyes de equivalencia) | §4.3.2, "Cómo comprobar la pertenencia a un lenguaje regular" (p. 129), y Aho et al. (2006), §3.7.2–§3.7.3 (pp. 156–157); la comparación de costos AFN contra AFD está en §3.7.5 (p. 163) |
 | Teorema 2.11 | Corrección de la construcción de subconjuntos: L(D) = L(N) (§2.3.5) | Correcto para la equivalencia; el peor caso exponencial es §2.3.6 (p. 54), y el costo de convertir AFN en AFD, §4.3.1 (p. 126) |
 
 El TE está congelado y no se modifica. Este ADR usa las referencias correctas. El contenido técnico del TE (algoritmo, complejidad y argumento de diseño) no cambia: solo cambia el número de sección que lo respalda.
@@ -69,5 +69,5 @@ El TE está congelado y no se modifica. Este ADR usa las referencias correctas. 
 ## Referencias
 
 - Thompson, K. (1968). Regular expression search algorithm. *Communications of the ACM*, 11(6), 419-422.
-- Aho, A. V., Lam, M. S., Sethi, R. y Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2.ª ed.), §3.7.
+- Aho, A. V., Lam, M. S., Sethi, R. y Ullman, J. D. (2006). *Compilers: Principles, Techniques, and Tools* (2.ª ed.), §3.7.1–§3.7.5 (pp. 152–166).
 - Hopcroft, J. E., Motwani, R. y Ullman, J. D. (2007). *Introduction to Automata Theory, Languages, and Computation* (3.ª ed.; ed. en español: *Introducción a la teoría de autómatas, lenguajes y computación*, Pearson), §2.3.5–§2.3.6, §2.5.3 y §4.3.1–§4.3.2.
