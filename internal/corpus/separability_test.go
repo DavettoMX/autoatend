@@ -1,7 +1,6 @@
 package corpus
 
 import (
-	"fmt"
 	"math"
 	"strings"
 	"testing"
@@ -138,32 +137,4 @@ func TestK3_MacroF1Oracle(t *testing.T) {
 	if got, want := macroF1(gold, pred), (0.8+2.0/3)/2; math.Abs(got-want) > 1e-12 {
 		t.Errorf("macroF1 = %v, want %v", got, want)
 	}
-}
-
-// TestPreRegistration_CurrentTemplatesFailK1K2K3 is the evidence that the criterion
-// precedes the template changes: the corpus of b810bad2… fails all three.
-func TestPreRegistration_CurrentTemplatesFailK1K2K3(t *testing.T) {
-	if testing.Short() {
-		t.Skip("generates the full corpus")
-	}
-	cfg := DefaultConfig()
-	cs, err := Generate(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	v := Validate(cs, cfg)
-	for _, name := range []string{"lexical overlap", "base collision", "probe classifier"} {
-		c := checkByName(t, v, name)
-		t.Log(fmt.Sprintf("%s: %s", name, c.Detail))
-		if c.Pass {
-			t.Errorf("%s passes on the current templates; the pre-registration expects a failure", name)
-		}
-	}
-}
-
-// pendingTemplates skips a test that needs the generated corpus to pass the battery.
-// The pre-registered K1–K3 reject the current templates; the template change removes it.
-func pendingTemplates(t *testing.T) {
-	t.Helper()
-	t.Skip("pending: the current templates fail the pre-registered K1–K3 (PLAN.md §3)")
 }
