@@ -223,3 +223,6 @@ var Closers = []string{
 	"Es mi número de línea el que aparece en el sistema.",
 	"Por favor, avísenme cualquier novedad.",
 }
+
+// Complements[i] holds the complement sentences of category id i+1.
+var Complements [5][]string
