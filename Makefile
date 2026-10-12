@@ -6,7 +6,7 @@ CORPUS_SHA ?= b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
 
-.PHONY: gen clean-data clean-results sweep-sha test test-integration cover cover-gate lint-regexp cross sweep train assets fmt-check vet corpus-sha verify
+.PHONY: gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets fmt-check vet corpus-sha verify
 
 # Generates data/corpus.db and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
@@ -62,6 +62,8 @@ cross:
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/gencorpus-macos-arm64 ./cmd/gencorpus
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador.exe ./cmd/simulador
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/simulador-macos-arm64 ./cmd/simulador
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar.exe ./cmd/tokenizar
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/tokenizar-macos-arm64 ./cmd/tokenizar
 #	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/autoatend.exe ./cmd/autoatend
 #	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(GO) build -trimpath -ldflags="-s -w" -o $(DIST)/autoatend-macos-arm64 ./cmd/autoatend
 
@@ -70,8 +72,33 @@ cross:
 sweep:
 	$(GO) run ./cmd/simulador
 
+# Offline training (Phase 3, consigna e). Python is dev-machine only and never part of the binary.
+# Builds the Go tokenizer, trains (uv run, project venv in ml/.venv), writes data/modelo.json,
+# data/modelo_alternativo.json, data/gold5.json, testdata/paridad_1000.json and the report, then
+# measures the Python<->Go parity (CPA06) in Go and writes it into the report.
+ML_ENV := OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+EVAL_REPORT := docs/reports/evaluacion_modelo.md
 train:
-	@echo "pendiente: Fase 3"; exit 1
+	mkdir -p $(DIST) testdata
+	$(GO) build -o $(DIST)/tokenizar ./cmd/tokenizar
+	$(ML_ENV) uv run --project ml python -m autoatend_ml.train
+	$(GO) test -count=1 -v -run TestCPA06 ./internal/ml > $(DIST)/paridad.log || { cat $(DIST)/paridad.log; exit 1; }
+	uv run --project ml python -m autoatend_ml.paridad $(EVAL_REPORT) $(DIST)/paridad.log
+
+# Determinism of the training: two independent trainings must write byte-identical artifacts,
+# identical to the committed data/modelo.json.
+train-sha:
+	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
+	mkdir -p $(DIST) "$$d/a" "$$d/b"; \
+	$(GO) build -o $(DIST)/tokenizar ./cmd/tokenizar || exit 1; \
+	for r in a b; do \
+	  $(ML_ENV) uv run --project ml python -m autoatend_ml.train --out "$$d/$$r" --testdata "$$d/$$r" --report "$$d/$$r/r.md" 2>/dev/null || exit 1; \
+	done; \
+	for f in modelo.json modelo_alternativo.json gold5.json paridad_1000.json r.md; do \
+	  cmp -s "$$d/a/$$f" "$$d/b/$$f" || { echo "train-sha: FAIL $$f differs between two trainings"; exit 1; }; \
+	done; \
+	cmp -s "$$d/a/modelo.json" data/modelo.json || { echo "train-sha: FAIL data/modelo.json differs from a fresh training"; exit 1; }; \
+	echo "train-sha: ok $$(sha256sum data/modelo.json | cut -d' ' -f1)"
 
 assets:
 	@echo "pendiente: Fase 4"; exit 1
