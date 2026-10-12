@@ -5,6 +5,8 @@ Proyecto de examen. Las fuentes de verdad, en orden de precedencia:
 2. `../documentos/TrabajoEscrito_Consolidado.pdf`: diseño ya entregado a los sinodales, por lo que se encuentra congelado y no se modifica. La implementación lo respeta tanto como sea posible; cualquier diferencia requiere la aprobación previa del usuario (ver "Apego al Trabajo Escrito").
 3. `PLAN.md`: plan hacia la demo del 13-oct-2026. Su §5 es la checklist viva: marca `[x]` solo lo que verificaste ejecutándolo.
 
+**Contexto de la sesión de desarrollo** (decisiones del usuario, cifras, respuestas para la réplica, pendientes y preferencias): lee `docs/CONTEXTO_SESION.md` al empezar.
+
 ## Reglas duras (no negociables)
 
 - **Prohibido `import "regexp"`** y cualquier biblioteca de NLP o generador de parsers. El analizador léxico (parser de ER, Thompson, simulación del AFN-ε) se escribe a mano. Verifícalo con `make lint-regexp`.
