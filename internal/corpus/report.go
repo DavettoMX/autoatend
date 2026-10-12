@@ -1,13 +1,21 @@
 package corpus
 
 import (
+	_ "embed"
 	"fmt"
 	"io"
+	"math"
 	"strings"
 
 	"autoatend/internal/corpus/templates"
 	"autoatend/internal/db"
 )
+
+// iterations is the hand-kept log of the generator iterations under the pre-registered
+// K1–K3 (PLAN.md §3), appended verbatim to the report.
+//
+//go:embed iteraciones.md
+var iterations string
 
 // writeReport renders the generator validation report. The output is a pure
 // function of cfg and res: no timestamps, no map iteration, so it is reproducible.
@@ -53,6 +61,15 @@ func writeReport(w io.Writer, cfg Config, res Result) error {
 	pf("\n## Generator parameters\n\n| Parameter | Value |\n|---|---:|\n")
 	ts := templates.Templates
 	pf("| Templates per category | %d / %d / %d / %d / %d |\n", len(ts[0]), len(ts[1]), len(ts[2]), len(ts[3]), len(ts[4]))
+	pf("| Base / cross-context / shared templates |")
+	for i := range ts {
+		b, c := templates.BaseCount[i], templates.CrossCount[i]
+		if i > 0 {
+			pf(" /")
+		}
+		pf(" %d·%d·%d", b, c, len(ts[i])-b-c)
+	}
+	pf(" |\n")
 	pf("| Complements per category | %d / %d / %d / %d / %d |\n", len(templates.Complements[0]), len(templates.Complements[1]), len(templates.Complements[2]), len(templates.Complements[3]), len(templates.Complements[4]))
 	pf("| Shared openers / closers | %d / %d |\n", len(templates.SharedOpeners), len(templates.SharedClosers))
 	pf("| Own openers per category | %d / %d / %d / %d / %d |\n", len(templates.Openers[0]), len(templates.Openers[1]), len(templates.Openers[2]), len(templates.Openers[3]), len(templates.Openers[4]))
@@ -77,6 +94,9 @@ func writeReport(w io.Writer, cfg Config, res Result) error {
 	pf("\nTest comments with an identical text in train: %d of %d (%.2f%%). A temporal split does not prevent exact repeats of a template draw.\n",
 		p.TestInTrain, nTest, 100*float64(p.TestInTrain)/float64(nTest))
 	pf("\ncorpus.db SHA-256: `%s`\n\n", p.SHA256)
+
+	pf("Ambiguous subset (K2 collision): %d comments (%.2f%%), ids in `data/corpus_ambiguos.json`.\n\n", int(math.Round(v.CollisionGlobal*float64(p.Rows))), 100*v.CollisionGlobal)
+	pf("%s\n", iterations)
 
 	pf("## Sample review\n\n%d comments per category, drawn with a dedicated rng stream (seed+1) for manual inspection.\n", sampleSize)
 	for i, c := range db.Categories {

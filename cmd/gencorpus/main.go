@@ -15,6 +15,7 @@ import (
 func main() {
 	out := flag.String("out", "data/corpus.db", "path of the corpus.db to create (must not exist)")
 	report := flag.String("report", "docs/reports/generator_validation_report.md", "path of the validation report")
+	ambiguous := flag.String("ambiguos", "data/corpus_ambiguos.json", "path of the ids of the ambiguous (K2 collision) subset")
 	seed := flag.Int64("seed", 10433, "random seed")
 	total := flag.Int("total", 73000, "approximate total comments")
 	noiseRate := flag.Float64("noise-rate", 0.30, "lexical noise rate")
@@ -25,7 +26,7 @@ func main() {
 	cfg.Total = *total
 	cfg.Noise.Rate = *noiseRate
 
-	res, err := corpus.Run(corpus.Options{Config: cfg, OutPath: *out, ReportPath: *report})
+	res, err := corpus.Run(corpus.Options{Config: cfg, OutPath: *out, ReportPath: *report, AmbiguousPath: *ambiguous})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "gencorpus:", err)
 		os.Exit(1)
