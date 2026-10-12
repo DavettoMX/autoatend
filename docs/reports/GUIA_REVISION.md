@@ -68,11 +68,19 @@ Si algo falla, deja *OK* vacío y escribe un motivo corto en *Observación*:
 
 | Motivo | Ejemplo |
 |---|---|
+| `slot incoherente` | Dentro de **una misma oración** el hueco no concuerda: "el internet está tan lento… que es como no tener **servicio de llamadas**" |
+| `temas mezclados` | Dos oraciones sobre problemas distintos sin conexión: "hay mantenimiento en Oaxaca…" + "pagué puntual y me suspendieron" |
+| `contradicción` | Las oraciones se contradicen: "desde hace varias horas…" + "llevo dos semanas…" |
 | `categoría ambigua` | Un reconocimiento que también se queja |
-| `contradicción` | "llevo 2 días… llevo varias semanas" en el mismo texto |
-| `inverosímil` | Combinación de datos que un cliente no escribiría |
 | `repetitivo` | Idéntico a otro de la muestra (anótalo, no es grave: el reporte mide un 16 % de duplicados) |
 
-**Al terminar**, llena la constancia: fecha, revisor (tu nombre), `250/250` y un resumen como "*N observaciones: X ambiguas, Y repetidas; ningún hueco de plantilla*".
+**De dónde salen estas incoherencias.** `compose` (`internal/corpus/generate.go`) arma cada comentario así: un saludo opcional, una plantilla de la categoría, a veces una **segunda plantilla de la misma categoría** y una despedida opcional. Cada hueco (`{SERVICIO}`, `{ZONA}`, `{HORARIO}`…) se llena al azar y de forma independiente. Nada obliga a que dos oraciones hablen del mismo problema ni a que un hueco concuerde con el resto de su oración. En cambio, como las dos plantillas son siempre de la misma categoría, **la etiqueta casi siempre sigue siendo correcta**: la incoherencia afecta la plausibilidad, no la clasificación.
 
-**Para la réplica.** Los comentarios con observación no se corrigen en el corpus, porque eso cambiaría el SHA y todo lo que depende de él. Se reportan como hallazgo de validez del corpus sintético, ligado a la limitación de validez externa del TE §7.3.
+**Cómo decidir rápido.**
+- `slot incoherente` y `contradicción` → *OK* vacío.
+- `temas mezclados` → *OK* con `x` si un cliente real podría quejarse de las dos cosas a la vez (es común listar varios problemas). Vacío si no tiene sentido juntarlas. Anota el motivo en los dos casos.
+- No corrijas nada: el objetivo de esta revisión es **medir** cuántos hay. Ese número es el resultado.
+
+**Al terminar**, llena la constancia: fecha, revisor (tu nombre), `250/250` y un resumen como "*N de 250 con observación: X slot incoherente, Y temas mezclados, Z contradicción; categoría correcta en W de 250*".
+
+**Para la réplica.** Los comentarios con observación no se corrigen en el corpus, porque eso cambiaría el SHA y todo lo que depende de él. Se reportan como hallazgo de validez del corpus sintético, ligado a la limitación de validez externa del TE §7.3. La propuesta de mejora (TE §7.4) es un generador con restricciones de coherencia: un solo problema por comentario y huecos dependientes entre sí (si la oración habla de "internet lento", `{SERVICIO}` solo puede ser internet o datos).
