@@ -265,13 +265,13 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 | I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `9620196f…79f3` (`make sweep-sha`; corpus 37f285ff…) | 2026-10-12 |
 | I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |
 | Cobertura | ≥ 80 % (líneas) | Fases 1–2: corpus 91.8 %, db 87.5 %, db/build 90.8 %, db/schema 100 %, lexer 99.4 %, regex 98.7 %, sweep 82.3 % (`make cover`) | 2026-10-12 |
-| Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.4e-17 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`) | 2026-10-12 |
-| Macro-F1 (CPM01) | ≥ 0.85 en test | 1.0000 en test (14,600) con `modelo.json` (RLS, pesos balanceados, C = 10); NBM 0.9997 > 0.99: señal de corpus fácil (`docs/reports/evaluacion_modelo.md`) | 2026-10-12 |
-| Recall de Reconocimientos (CPM02) | ≥ 0.70 | 1.0000 (1,495 Reconocimientos de test); NBM 1.0000 | 2026-10-12 |
-| Macro-F1 y recall sin duplicados en train | se reporta | Test sin duplicados (10,884): Macro-F1 1.0000 y recall de Reconocimientos 1.0000 (RLS); NBM 0.9996 y 1.0000 | 2026-10-12 |
+| Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.1e-16 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`; corpus 37f285ff…) | 2026-10-12 |
+| Macro-F1 (CPM01) | ≥ 0.85 en test | 0.9795 en test (14,600) con `modelo.json` (RLS, línea base, C = 1); NBM 0.9708. Un solo entrenamiento, después de que la batería K1–K3 pasó (corpus 37f285ff…). El corpus anterior b810bad2… daba 1.0000 (trivialmente separable) | 2026-10-12 |
+| Recall de Reconocimientos (CPM02) | ≥ 0.70 | 0.9819 (1,495 Reconocimientos de test); NBM 0.9746 | 2026-10-12 |
+| Macro-F1 y recall sin duplicados en train | se reporta | Test sin duplicados (11,040): RLS 0.9826 y recall 0.9877; NBM 0.9726 y 0.9793. Test sin el subconjunto ambiguo (13,348): RLS 0.9997 y 0.9986; NBM 0.9952 y 0.9910. Plantillas no vistas (solo reporte, `docs/reports/plantillas_no_vistas.md`): RLS 0.8350 de media (0.7637–0.8855), NBM 0.7592 | 2026-10-12 |
 | Latencia P99 de `/api/clasificar` | < 50 ms | | |
 | `--selftest` | < 3 s, salida 0 | | |
-| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | 250/250 sin observaciones (`docs/reports/muestra_250_borrador.md`); el corpus anterior tenía 93 de 250 con defectos y se corrigió | 2026-10-12 |
+| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | Pendiente para el corpus 37f285ff…: borrador `docs/reports/muestra_250_borrador.md` (Auto 250/250 ok; Tipo base 202, contexto cruzado 33, compartida 15) y `docs/reports/plantillas_nuevas.md` (47 plantillas para revisar). La revisión anterior (250/250 sin observaciones) era del corpus b810bad2… | |
 | L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en los mismos 16 contextos, sin contextos nuevos que etiquetar; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; las etiquetas del usuario se reaplicaron por contexto; corpus 37f285ff…) | 2026-10-12 |
 | L-2 lexemas con una sola variante | se reporta | 91.4 % (5,660 de 6,196; la mayoría son erratas del ruido o formas irregulares; corpus 37f285ff…) | 2026-10-12 |
 
