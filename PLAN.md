@@ -96,7 +96,7 @@ Se conserva, ya aprobado: la stoplist de ADR-003, el IDF solo de train, el embed
 
 Entregado y verificado con `make verify` en verde:
 - `data/corpus.db`: semilla 10433, 73,000 comentarios, distribución 30/20/20/20/10, del 2024-08-30 al 2026-08-29.
-- SHA-256 `b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71`.
+- SHA-256 `37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63`.
 - Reporte en `docs/reports/generator_validation_report.md`.
 - Corpus regenerado el 12-oct por defectos de coherencia detectados en la revisión de la muestra (TE §6.1.4): un solo problema por comentario (base + complemento de la misma categoría), precios de plan coherentes con los cobros, huecos que concuerdan dentro de la oración y aperturas/cierres por categoría. Pruebas `TestCoherence_*` en `internal/corpus`.
 - Split temporal global `db.SplitCutoff`: corte 2026-04-06, 58,400 / 14,600.
@@ -104,9 +104,29 @@ Entregado y verificado con `make verify` en verde:
 - `gencorpus` acepta los flags `-seed`, `-total` y `-noise-rate` (los usa la medición I-4).
 
 **Hechos que afectan las fases siguientes:**
-- El 25.5 % del test (3,716 de 14,600) tiene un texto idéntico en train, lo que infla CPM01/CPM02. Las métricas también se reportan sin duplicados (Bloque C).
+- El 24.4 % del test (3,560 de 14,600) tiene un texto idéntico en train, lo que infla CPM01/CPM02. Las métricas también se reportan sin duplicados (Bloque C).
 - El ruido escribe `q` por "que" y `x` por "por" (6,007 y 3,152 comentarios). Ya están cubiertos en ADR-003.
 - El Jaccard del reporte se calcula sin stoplist, así que el rango 0.19–0.34 refleja sobre todo palabras funcionales. Se recalcula con la stoplist v1 (Bloque A, P2).
+
+**Criterio de separabilidad registrado antes de tocar las plantillas (12-oct-2026, aprobado por el usuario).** Con el corpus `b810bad2…` el modelo obtuvo Macro-F1 = 1.0000 y una matriz diagonal, lo que contradice el TE §6.1.4 ("evita que el corpus sea trivialmente separable"). Antes de cambiar el generador se fijan tres compuertas de la batería, que no se modifican después. Si alguna falla, el corpus no se persiste:
+
+| Id | Medida | Rango aceptado |
+|---|---|---|
+| K1 | Jaccard de los 100 tokens más frecuentes por par de categorías, **después de la stoplist v1** | [0.15, 0.80] (el rango que ya existía) |
+| K2 | Colisión de la oración base: % de comentarios cuya oración base limpia, como bolsa de tokens sin las palabras de la stoplist v1, aparece también en otra categoría | global [0.05, 0.10]; ≥ 0.03 por categoría; ≤ 0.05 en Reconocimientos |
+| K3 | Sonda Naive Bayes multinomial (α = 1, 5 pliegues estratificados, semilla 10433, tokens de la batería sin las palabras de la stoplist v1): Macro-F1 promedio | [0.80, 0.99] |
+
+Otras reglas:
+- Son solo de reporte, no compuertas: la regla de una palabra y el F1 con plantillas no vistas.
+- No se fija ningún umbral sobre el modelo final: se entrena una sola vez, al final, y se reporta tal cual.
+- No hay ruido de etiquetas. La ambigüedad es controlada: textos compatibles con las dos etiquetas, de forma determinista y con una tasa declarada.
+- El commit de prueba en rojo demuestra que el corpus `b810bad2…` falla K1, K2 y K3.
+
+**Corpus regenerado el 12-oct con el criterio aplicado (`fix/corpus-separabilidad`).**
+- Nuevo SHA `37f285ff…`. Las plantillas por categoría quedan en 45 / 44 / 44 / 47 / 46, con 6 de contexto cruzado por categoría, 10 compartidas en los pares del plan y el marco "(ref. {FOLIO})" en las cinco categorías.
+- Batería: K1 [0.156, 0.299], K2 0.0895 global (0.0661 / 0.0928 / 0.0858 / 0.1507 / 0.0381) y K3 0.9726. Pasa en la iteración 3 de 4; el registro está en "Iteraciones del generador" del reporte.
+- El subconjunto ambiguo son 6,533 comentarios (8.95 %), con sus ids en `data/corpus_ambiguos.json`.
+- Semilla, filas, distribución e inyector de ruido no cambian.
 
 **Deuda conocida, no bloqueante (después de la demo):**
 - `internal/corpus/pipeline.go`: `defer f.Close()` ignora el error al cerrar el reporte.
@@ -207,7 +227,7 @@ Entregado y verificado con `make verify` en verde:
 
 | Prioridad | Tarea |
 |---|---|
-| P0 | **Windows (partición propia):** `gencorpus.exe` reproduce el SHA `b810bad2…`; `autoatend.exe --selftest` = 0; el guion completo de 5 pasos |
+| P0 | **Windows (partición propia):** `gencorpus.exe` reproduce el SHA `37f285ff…`; `autoatend.exe --selftest` = 0; el guion completo de 5 pasos |
 | P0 | **Mac:** lo mismo con `gencorpus-macos-arm64` y `autoatend-macos-arm64` |
 | P1 | I-4: barrido con `gencorpus -total` de 1k, 10k, 30k, 50k y 73k → R² y T(73k) (CPP04, medido) |
 | P1 | Cobertura por paquete (`make cover`, se informa) |
@@ -240,20 +260,20 @@ Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 
 | Criterio | Umbral (TE) | Medido | Fecha |
 |---|---|---|---|
-| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,289 lexemas, 6,967 variantes; `TestCPP01_I1_RoundTripCatalogue`; corpus b810bad2…) | 2026-10-12 |
-| I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`) | 2026-10-12 |
-| I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `236cb9f6…1cc1` (`make sweep-sha`) | 2026-10-12 |
+| I-1 round-trip | 0 fallos sobre el catálogo completo | 0 fallos (6,196 lexemas, 6,891 variantes; `TestCPP01_I1_RoundTripCatalogue`; corpus 37f285ff…) | 2026-10-12 |
+| I-2 conservación de frecuencias | 0 lexemas con discrepancia | 0 filas (consulta literal del TE §6.3.3 sobre `data/resultados.db`; corpus 37f285ff…) | 2026-10-12 |
+| I-3 idempotencia | SHA-256 idéntico en 2 corridas | Idéntico: `9620196f…79f3` (`make sweep-sha`; corpus 37f285ff…) | 2026-10-12 |
 | I-4 linealidad | R² ≥ 0.99; T(73k) < 60 s | | |
 | Cobertura | ≥ 80 % (líneas) | Fases 1–2: corpus 91.8 %, db 87.5 %, db/build 90.8 %, db/schema 100 %, lexer 99.4 %, regex 98.7 %, sweep 82.3 % (`make cover`) | 2026-10-12 |
-| Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.4e-17 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`) | 2026-10-12 |
-| Macro-F1 (CPM01) | ≥ 0.85 en test | 1.0000 en test (14,600) con `modelo.json` (RLS, pesos balanceados, C = 10); NBM 0.9997 > 0.99: señal de corpus fácil (`docs/reports/evaluacion_modelo.md`) | 2026-10-12 |
-| Recall de Reconocimientos (CPM02) | ≥ 0.70 | 1.0000 (1,495 Reconocimientos de test); NBM 1.0000 | 2026-10-12 |
-| Macro-F1 y recall sin duplicados en train | se reporta | Test sin duplicados (10,884): Macro-F1 1.0000 y recall de Reconocimientos 1.0000 (RLS); NBM 0.9996 y 1.0000 | 2026-10-12 |
+| Paridad Python ↔ Go | 0 discrepancias en 1,000 | 0 discrepancias: mismo soporte y L1 = 0 (igualdad de bits) en los 1,000 vectores, clase idéntica en 1,000/1,000, máx. \|Δprob\| = 1.1e-16 (`TestCPA06_ParidadPythonGo`, `testdata/paridad_1000.json`; corpus 37f285ff…) | 2026-10-12 |
+| Macro-F1 (CPM01) | ≥ 0.85 en test | 0.9795 en test (14,600) con `modelo.json` (RLS, línea base, C = 1); NBM 0.9708. Un solo entrenamiento, después de que la batería K1–K3 pasó (corpus 37f285ff…). El corpus anterior b810bad2… daba 1.0000 (trivialmente separable) | 2026-10-12 |
+| Recall de Reconocimientos (CPM02) | ≥ 0.70 | 0.9819 (1,495 Reconocimientos de test); NBM 0.9746 | 2026-10-12 |
+| Macro-F1 y recall sin duplicados en train | se reporta | Test sin duplicados (11,040): RLS 0.9826 y recall 0.9877; NBM 0.9726 y 0.9793. Test sin el subconjunto ambiguo (13,348): RLS 0.9997 y 0.9986; NBM 0.9952 y 0.9910. Plantillas no vistas (solo reporte, `docs/reports/plantillas_no_vistas.md`): RLS 0.8350 de media (0.7637–0.8855), NBM 0.7592 | 2026-10-12 |
 | Latencia P99 de `/api/clasificar` | < 50 ms | 0.11–0.17 ms en Linux (5 corridas de `TestLatencia_P99DeClasificar`: 100 llamadas HTTP consecutivas por loopback con un comentario de longitud media, 111 caracteres; mediana 0.04 ms). Pendiente medir en el hardware objetivo (Windows y Mac) en el Bloque E | 2026-10-12 |
 | `--selftest` | < 3 s, salida 0 | Salida 0 en 0.05 s en Linux (`dist/autoatend --selftest`: 73,000 comentarios, 6,289 ER compiladas y 6,967 variantes aceptadas, `gold5` 5/5, puerto 8471 libre; `TestSelftestExit0` y las pruebas de salida 1). Pendiente medir en Windows y Mac (Bloque E) | 2026-10-12 |
-| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | 250/250 sin observaciones (`docs/reports/muestra_250_borrador.md`); el corpus anterior tenía 93 de 250 con defectos y se corrigió | 2026-10-12 |
-| L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en 16 contextos; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; corpus regenerado b810bad2…) | 2026-10-12 |
-| L-2 lexemas con una sola variante | se reporta | 91.6 % (5,759 de 6,289; la mayoría son erratas del ruido o formas irregulares) | 2026-10-12 |
+| Revisión manual de la muestra (TE §6.1.4) | detección manual de inconsistencias | Pendiente para el corpus 37f285ff…: borrador `docs/reports/muestra_250_borrador.md` (Auto 250/250 ok; Tipo base 202, contexto cruzado 33, compartida 15) y `docs/reports/plantillas_nuevas.md` (47 plantillas para revisar). La revisión anterior (250/250 sin observaciones) era del corpus b810bad2… | |
+| L-1 sub-filtrado de homógrafos | se reporta | 86.0 % (172 cerrada / 28 léxica, 0 duda; 200 tokens de test en los mismos 16 contextos, sin contextos nuevos que etiquetar; para 70, como 70, entre 60; bajo y sobre no aparecen en el corpus; las etiquetas del usuario se reaplicaron por contexto; corpus 37f285ff…) | 2026-10-12 |
+| L-2 lexemas con una sola variante | se reporta | 91.4 % (5,660 de 6,196; la mayoría son erratas del ruido o formas irregulares; corpus 37f285ff…) | 2026-10-12 |
 
 ---
 

@@ -53,7 +53,7 @@ func TestValidationPassesOnGeneratedCorpus(t *testing.T) {
 	if !v.OK() {
 		t.Fatal("OK() = false on a freshly generated corpus")
 	}
-	want := []string{"category counts", "no empty texts", "no unfilled slots", "dates", "noise rate", "lexical overlap", "sample review"}
+	want := []string{"category counts", "no empty texts", "no unfilled slots", "dates", "noise rate", "lexical overlap", "base collision", "probe classifier", "sample review"}
 	if !reflect.DeepEqual(checkNames(v), want) {
 		t.Errorf("check names = %v, want %v", checkNames(v), want)
 	}

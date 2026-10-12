@@ -2,35 +2,48 @@
 
 **Estado:** aceptada (Fase 3, Bloque C). Es la decisión que el Trabajo Escrito (TE) §6.4 promete documentar.
 **Implementación:** `ml/autoatend_ml` (entrenamiento offline en Python), `cmd/tokenizar` e `internal/ml` (tokenizador por lotes, carga del JSON e inferencia en Go).
-**Evidencia:** `docs/reports/evaluacion_modelo.md` (generado por `make train`), `data/modelo.json`, `data/modelo_alternativo.json`, `testdata/paridad_1000.json`.
+**Evidencia:** `docs/reports/evaluacion_modelo.md` (generado por `make train`), `docs/reports/plantillas_no_vistas.md`, `data/modelo.json`, `data/modelo_alternativo.json`, `testdata/paridad_1000.json`.
 **Pruebas:** CPA06 (`TestCPA06_ParidadPythonGo`), equivalencia lineal con scikit-learn, `gold5`, y CPM01/CPM02 (medidos, no bloquean).
 
 ## Contexto
 
-El TE §5.1.3 compara Naive Bayes multinomial (NBM) con regresión logística softmax (RLS) sobre TF-IDF, con tres estrategias de desbalance y validación cruzada estratificada; §6.4.2 fija que el vocabulario y el IDF son "precalculados durante el entrenamiento" y que el servicio calcula `z_k = b_k + Σ w_{k,i}·x_i`. El binario final es un único `.exe` sin Python, sin red y sin instalación (`PLAN.md` §1), así que el modelo debe viajar como dato y la inferencia debe ser nativa en Go. El corpus tiene un desbalance 30/20/20/20/10 y el 25.5 % del test repite textos de train.
+El TE §5.1.3 compara Naive Bayes multinomial (NBM) con regresión logística softmax (RLS) sobre TF-IDF, con tres estrategias de desbalance y validación cruzada estratificada; §6.4.2 fija que el vocabulario y el IDF son "precalculados durante el entrenamiento" y que el servicio calcula `z_k = b_k + Σ w_{k,i}·x_i`. El binario final es un único `.exe` sin Python, sin red y sin instalación (`PLAN.md` §1), así que el modelo debe viajar como dato y la inferencia debe ser nativa en Go. El corpus tiene un desbalance 30/20/20/20/10 y el 24.4 % del test repite textos de train.
 
 ## Decisión
 
 ### 1. Familia y estrategia
 
-El modelo ganador es **regresión logística softmax con penalización L2, C = 10, estrategia de pesos balanceados (`class_weight='balanced'`), solver `saga`**, exportado como `data/modelo.json`. El mejor de NBM (sobremuestreo de Reconocimientos, α = 0.5) se exporta como `data/modelo_alternativo.json`, para mostrar a los sinodales la otra familia con sus propios pesos.
+El modelo ganador es **regresión logística softmax con penalización L2, C = 1, sin ajuste de desbalance (línea base), solver `saga`**. Se exporta como `data/modelo.json`. El mejor de NBM (sobremuestreo de Reconocimientos, α = 0.1) se exporta como `data/modelo_alternativo.json`, para mostrar a los sinodales la otra familia con sus propios pesos.
 
-Evidencia (validación cruzada de 5 particiones estratificadas sobre train, Macro-F1 promedio ± desviación; detalle y rejilla completa en el reporte):
+Las cifras son del corpus `37f285ff…`. Ese corpus se regeneró con el criterio de separabilidad K1–K3, registrado en `PLAN.md` §3 antes de cambiar las plantillas, y el modelo se entrenó **una sola vez**, después de que la batería pasó.
+
+Evidencia: validación cruzada de 5 particiones estratificadas sobre train, Macro-F1 promedio ± desviación. El detalle y la rejilla completa están en el reporte.
 
 | Familia | Pesos balanceados | Sobremuestreo | Línea base |
 |---|---|---|---|
-| NBM (mejor α) | 0.99987 ± 0.00013 (α = 0.5) | 0.99989 ± 0.00014 (α = 0.5) | 0.99964 ± 0.00023 (α = 0.1) |
-| RLS (mejor C) | 1.00000 ± 0.00000 (C = 10) | 1.00000 ± 0.00000 (C = 10) | 1.00000 ± 0.00000 (C = 10) |
+| NBM (mejor α) | 0.97107 ± 0.00080 (α = 0.1) | 0.97231 ± 0.00045 (α = 0.1) | 0.96990 ± 0.00093 (α = 0.1) |
+| RLS (mejor C) | 0.97697 ± 0.00141 (C = 1) | 0.97748 ± 0.00124 (C = 1) | 0.97792 ± 0.00115 (C = 1) |
 
-En test (una sola evaluación, sin ajuste): RLS Macro-F1 = 1.0000 y recall de Reconocimientos = 1.0000; sin duplicados de train (10,884 de 14,600), igual. NBM: 0.9997 y 0.9996 sin duplicados, recall de Reconocimientos 1.0000. Los umbrales CPM01 (≥ 0.85) y CPM02 (≥ 0.70) se cumplen con holgura.
+En test (una sola evaluación, sin ajuste):
+
+| Medida | RLS | NBM |
+|---|---|---|
+| Macro-F1, test completo | 0.9795 | 0.9708 |
+| Macro-F1 sin duplicados de train (11,040) | 0.9826 | 0.9726 |
+| Macro-F1 sin el subconjunto ambiguo (13,348) | 0.9997 | 0.9952 |
+| Recall de Reconocimientos (RLS) | 0.9819; sin ambiguos, 0.9986 | |
+
+Los umbrales CPM01 (≥ 0.85) y CPM02 (≥ 0.70) se cumplen.
 
 **Cómo leer esta evidencia con honestidad:**
 
-- **El corpus es fácil.** NBM supera 0.99 de Macro-F1, que es la señal que el plan manda registrar: las 21 combinaciones de la rejilla quedan entre 0.9994 y 1.0000. La holgura sobre los umbrales describe al corpus sintético generado con plantillas, no la dificultad del problema real de TelArg.
-- **Empate entre estrategias.** Las tres estrategias de desbalance de RLS empatan en 1.00000 ± 0.00000 en CV. El ganador lo decide el criterio de desempate fijado antes de entrenar (mayor media, luego menor desviación, luego primera de la rejilla en el orden pesos balanceados, sobremuestreo, línea base), no una ventaja medida. Con este corpus no se puede afirmar que una estrategia de desbalance sea mejor que otra; sí que RLS ≥ NBM en CV y en test, por una diferencia menor a 0.001.
-- **C = 10 es el borde de la rejilla** (`C ∈ {0.1, 1, 10}`), fijada por el diseño y no ampliada. Como el resultado ya es perfecto en CV, ampliarla no cambiaría la elección verificable.
+- **El corpus anterior era trivialmente separable** (`b810bad2…`). Con él, RLS obtuvo 1.0000 y una matriz diagonal, y NBM 0.9997, lo que contradice el TE §6.1.4. El generador se corrigió con plantillas de contexto cruzado y con plantillas compartidas entre dos categorías, y la batería lo verifica con K1–K3. La regla fue fijar el criterio primero, sin umbral sobre el modelo final.
+- **El error vive en el subconjunto ambiguo.** Sin los 1,252 comentarios ambiguos de test, RLS queda en 0.9997. La matriz de confusión del test completo muestra justo las confusiones que el TE §5.2.2 anticipa (Quejas → Falta 3.0 %; Cobros ↔ Facturación 2.2 % y 1.7 %; Reconocimientos → Quejas 1.7 %). Fuera de ese subconjunto, el corpus sigue siendo casi separable, porque el test temporal contiene las mismas plantillas que train.
+- **Plantillas no vistas** (`docs/reports/plantillas_no_vistas.md`; solo reporte, no participa en la selección): con el 20 % de las plantillas fuera del entrenamiento, RLS promedia 0.8350 de Macro-F1 (rango 0.7637–0.8855) y NBM 0.7592. Es la cota práctica de la limitación L-1.
+- **RLS > NBM** en CV (0.978 contra 0.972, con desviaciones ≈ 0.001) y en test (0.9795 contra 0.9708). Ahora la diferencia se puede medir.
+- **Estrategias de desbalance casi empatadas.** Las tres de RLS quedan a menos de una desviación estándar entre sí (0.97697 a 0.97792). La línea base gana por la media, y la elección no es estadísticamente firme. En NBM, el sobremuestreo supera a las otras dos por más de una desviación.
 - **Fuga no supervisada en CV.** El vocabulario y el IDF se calculan una vez con todo train, como pide el TE, y no por pliegue; las estadísticas de documento de los pliegues de validación entran en el IDF. Puede inflar ligeramente el Macro-F1 de CV; no afecta a test, que nunca participa.
-- Se descartaron 846 lexemas del catálogo con df = 0 en train (aparecen solo en test); el vocabulario del modelo tiene 5,443.
+- Se descartaron 793 lexemas del catálogo con df = 0 en train (aparecen solo en test); el vocabulario del modelo tiene 5,403.
 
 ### 2. Un solo escalador lineal para las dos familias
 
@@ -67,11 +80,11 @@ Python tokeniza invocando `cmd/tokenizar` (la misma `lexer.Analyze` que el barri
 - **`TfidfVectorizer` de scikit-learn con su propio tokenizador:** habría dos definiciones de token (la de Python y la del analizador léxico propio de la consigna b) y la paridad CPA06 sería inalcanzable. Su fórmula de IDF suavizado es la misma que se usa aquí, pero el cálculo se hace sobre la salida del tokenizador Go.
 - **Servir con Python (`pickle` + `predict_proba`):** contradice el sobre de despliegue (`.exe` único, sin runtime) y la regla de que Python es solo de desarrollo.
 - **Exportar solo el ganador:** se conserva también el mejor de la otra familia como `modelo_alternativo.json`, porque el plan B ante una pregunta o un umbral incumplido es mostrarlo (`PLAN.md` §6).
-- **Escalar a otros clasificadores (SVM, árboles, redes):** fuera del TE §5.1.3, que compara NBM y RLS; con Macro-F1 de CV de 1.0000 no habría qué ganar.
+- **Escalar a otros clasificadores (SVM, árboles, redes):** fuera del TE §5.1.3, que compara NBM y RLS.
 - **Calcular el IDF por pliegue:** más estricto en CV, pero el TE pide IDF "precalculados durante el entrenamiento" con un solo vocabulario; se declara la limitación en lugar de cambiar el diseño.
 
 ## Consecuencias
 
 - `make train` reproduce los artefactos versionados y `make train-sha` comprueba que dos entrenamientos independientes producen los mismos bytes. `make verify` no requiere Python: las pruebas Go leen los JSON versionados.
 - Si cambian el corpus, la stoplist o el stemmer, hay que regenerar `resultados.db` y `df_train.json` (`make clean-results sweep`) y volver a entrenar (`make train`); la prueba de paridad y la de `gold5` detectan un desajuste.
-- Como el corpus es fácil, las cifras de CPM01/CPM02 deben presentarse a los sinodales con esa salvedad: miden el corpus sintético, no la operación real.
+- Las cifras de CPM01/CPM02 deben presentarse a los sinodales con su salvedad: miden el corpus sintético con plantillas vistas. Hay que mostrar las tres vistas: test, sin ambiguos y plantillas no vistas.

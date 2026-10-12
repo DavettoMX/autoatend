@@ -12,7 +12,9 @@ type Options struct {
 	Config     Config
 	OutPath    string // corpus.db to create (must not exist)
 	ReportPath string // validation report; empty = do not write
-	generate   func(Config) ([]Comment, error)
+	// AmbiguousPath receives the ids of the K2 collision subset; empty = do not write.
+	AmbiguousPath string
+	generate      func(Config) ([]Comment, error)
 }
 
 // Result is everything a run measured.
@@ -58,6 +60,11 @@ func Run(opts Options) (Result, error) {
 	}
 	if res.Persisted, err = verifyCorpus(opts.OutPath); err != nil {
 		return res, err
+	}
+	if opts.AmbiguousPath != "" {
+		if err := writeAmbiguous(opts.AmbiguousPath, cs, res.Persisted.SHA256); err != nil {
+			return res, err
+		}
 	}
 	if opts.ReportPath != "" {
 		if err := os.MkdirAll(filepath.Dir(opts.ReportPath), 0o755); err != nil {

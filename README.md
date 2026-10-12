@@ -41,19 +41,19 @@ Los objetivos que compilan Go dependen de `make assets`. Con `go test` o `go bui
 
 ### Regenerar el catálogo léxico
 
-`data/resultados.db` y `data/df_train.json` están versionados. `cmd/simulador` los reconstruye a partir de `data/corpus.db` con el lexer propio (`internal/lexer`, ADR-003): 6,289 lexemas con su ER, frecuencias global y por categoría, y variantes.
+`data/resultados.db` y `data/df_train.json` están versionados. `cmd/simulador` los reconstruye a partir de `data/corpus.db` con el lexer propio (`internal/lexer`, ADR-003): 6,196 lexemas con su ER, frecuencias global y por categoría, y variantes.
 
 ```bash
 make clean-results && make sweep
 sha256sum data/resultados.db
-# d93d33a6b7f28395d20408f5d862d4034985d48e8eefa756405a3b75e266c09f
+# 9620196ffdd4e10e231ca4b7dc66b5a68bfa6e67057fbf4447ecaed8b24a79f3
 ```
 
 El simulador no sobrescribe archivos existentes. Si falla algún chequeo posterior (la consulta I-2 del TE §6.3.3, una sola corrida, lexemas sin variantes o sin frecuencias, integridad de `categoria_id`), borra lo que creó. `df_train.json` es la frecuencia de documento de train para el entrenamiento en Python.
 
 ### Entrenar el modelo (consigna e, Fase 3)
 
-`data/modelo.json` (ganador), `data/modelo_alternativo.json` (mejor de la otra familia), `data/gold5.json` y `testdata/paridad_1000.json` están versionados; `make verify` solo los lee. `make train` los reproduce: compila `cmd/tokenizar` (la tokenización la hace Go, no Python), entrena en `ml/` con TF-IDF de train, compara Naive Bayes multinomial y regresión logística softmax bajo tres estrategias de desbalance con validación cruzada estratificada de 5 particiones, evalúa una sola vez en test (también sin los duplicados exactos de train) y mide en Go la paridad Python↔Go (CPA06). El resultado y la evidencia están en [`docs/reports/evaluacion_modelo.md`](docs/reports/evaluacion_modelo.md) y en [`ADR-004`](docs/adr/ADR-004-modelo.md): ganador regresión logística (C = 10, pesos balanceados), Macro-F1 de test 1.0000 y recall de Reconocimientos 1.0000, con la salvedad de que el corpus sintético es fácil (Naive Bayes llega a 0.9997).
+`data/modelo.json` (ganador), `data/modelo_alternativo.json` (mejor de la otra familia), `data/gold5.json` y `testdata/paridad_1000.json` están versionados; `make verify` solo los lee. `make train` los reproduce: compila `cmd/tokenizar` (la tokenización la hace Go, no Python), entrena en `ml/` con TF-IDF de train, compara Naive Bayes multinomial y regresión logística softmax bajo tres estrategias de desbalance con validación cruzada estratificada de 5 particiones, evalúa una sola vez en test (también sin los duplicados exactos de train y sin el subconjunto ambiguo de `data/corpus_ambiguos.json`) y mide en Go la paridad Python↔Go (CPA06). El resultado y la evidencia están en [`docs/reports/evaluacion_modelo.md`](docs/reports/evaluacion_modelo.md) y en [`ADR-004`](docs/adr/ADR-004-modelo.md): ganador regresión logística (C = 1, línea base), Macro-F1 de test 0.9795 y recall de Reconocimientos 0.9819 (Naive Bayes: 0.9708). Las métricas se reportan también sin duplicados de train, sin el subconjunto ambiguo (0.9997) y, solo como reporte, con plantillas no vistas (0.8350 de media, [`plantillas_no_vistas.md`](docs/reports/plantillas_no_vistas.md)).
 
 ### Servicio web (consigna e, Fase 4)
 
@@ -90,10 +90,10 @@ La versión se fija al compilar: `go build -ldflags "-X main.version=1.0.0" ./cm
 ```bash
 make clean-data && make gen
 sha256sum data/corpus.db
-# b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
+# 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 ```
 
-`gencorpus` no sobrescribe un archivo existente. Antes de escribir, ejecuta una batería de validación (conteos por categoría, textos vacíos, fechas, tasa de ruido, solapamiento léxico y una muestra de 50 comentarios por categoría); si algo falla, no persiste nada. El resultado queda en [`docs/reports/generator_validation_report.md`](docs/reports/generator_validation_report.md).
+`gencorpus` no sobrescribe un archivo existente. Antes de escribir, ejecuta una batería de validación (conteos por categoría, textos vacíos, fechas, tasa de ruido, solapamiento léxico después de la stoplist, colisión de la oración base entre categorías, sonda Naive Bayes y una muestra de 50 comentarios por categoría); si algo falla, no persiste nada. Los tres criterios de separabilidad (K1–K3) se registraron en `PLAN.md` §3 antes de cambiar las plantillas. `make gen` escribe también `data/corpus_ambiguos.json`, con los ids del subconjunto ambiguo. El resultado queda en [`docs/reports/generator_validation_report.md`](docs/reports/generator_validation_report.md).
 
 Para generar en otra ruta: `go run ./cmd/gencorpus -out /tmp/c.db -report /tmp/r.md`.
 

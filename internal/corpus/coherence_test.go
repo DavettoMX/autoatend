@@ -28,7 +28,7 @@ func cleanTexts(t *testing.T, cat, n int, seed int64) []string {
 	rng := rand.New(rand.NewSource(seed))
 	out := make([]string, n)
 	for i := range out {
-		s, err := compose(cat, rng)
+		s, _, err := compose(cat, rng)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -48,3 +48,19 @@ def test_idf_formula():
     vocab = features.load_vocabulary(ROOT / "data/df_train.json")
     i = 0
     assert vocab.idf[i] == math.log((1 + vocab.n_train) / (1 + vocab.df[i])) + 1.0
+
+
+def test_ambiguous_subset_belongs_to_the_corpus():
+    ids = data.load_ambiguous(ROOT / "data/corpus_ambiguos.json", ROOT / "data/corpus.db")
+    corpus = data.load_corpus(ROOT / "data/corpus.db")
+    assert ids and ids <= set(corpus.ids)
+
+
+def test_ambiguous_subset_rejects_another_corpus(tmp_path):
+    other = tmp_path / "otro.db"
+    other.write_bytes(b"no es el corpus")
+    try:
+        data.load_ambiguous(ROOT / "data/corpus_ambiguos.json", other)
+    except SystemExit:
+        return
+    raise AssertionError("a subset of another corpus must be rejected")

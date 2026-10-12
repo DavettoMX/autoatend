@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"autoatend/internal/lexer"
 )
 
 // Validation thresholds of the pre-persist battery.
@@ -19,6 +21,22 @@ const (
 	sampleSize     = 50    // comments reviewed per category
 	sampleMinRunes = 10
 	sampleMaxRunes = 800
+)
+
+// Pre-registered separability criterion (PLAN.md §3, 2026-10-12), fixed before the
+// templates were changed. K1 is the lexical overlap check above, measured after
+// stoplist v1. K2 bounds the share of comments whose clean base sentence, as a bag of
+// stoplist-filtered tokens, also occurs in another category (controlled ambiguity).
+// K3 bounds the Macro-F1 of a fixed Naive Bayes probe: distinguishable, not trivial.
+const (
+	collisionGlobalMin = 0.05 // K2: global share of comments in the collision subset
+	collisionGlobalMax = 0.10
+	collisionCatMin    = 0.03 // K2: per category
+	collisionRecMax    = 0.05 // K2: Reconocimientos (minority class)
+	probeAlpha         = 1.0  // K3: Laplace smoothing of the probe
+	probeFolds         = 5    // K3: stratified folds, rng seeded with Config.Seed
+	probeMin           = 0.80 // K3: below, categories are not statistically distinguishable
+	probeMax           = 0.99 // K3: above, the corpus is trivially separable
 )
 
 // Check is one named, pass/fail validation with a human-readable detail.
@@ -39,8 +57,12 @@ type Validation struct {
 		Min, Max int // in runes
 		Mean     float64
 	}
-	Overlap [5][5]float64 // Jaccard of the top-K token sets
-	Samples [5][]string   // sampleSize comments per category, chronological
+	Overlap [5][5]float64 // Jaccard of the top-K token sets (after stoplist v1)
+	// K2: share of comments, per category and global, whose base bag occurs in another category.
+	Collision       [5]float64
+	CollisionGlobal float64
+	ProbeF1         float64     // K3: mean Macro-F1 of the Naive Bayes probe over the folds
+	Samples         [5][]string // sampleSize comments per category, chronological
 }
 
 // OK reports whether every check passed.
@@ -111,7 +133,19 @@ func Validate(cs []Comment, cfg Config) Validation {
 		}
 	}
 	add("lexical overlap", lo >= overlapMin && hi <= overlapMax,
-		fmt.Sprintf("pairwise Jaccard of top-%d tokens in [%.3f, %.3f], required within [%.2f, %.2f]", overlapTopK, lo, hi, overlapMin, overlapMax))
+		fmt.Sprintf("K1: pairwise Jaccard of top-%d tokens after stoplist v1 in [%.3f, %.3f], required within [%.2f, %.2f]", overlapTopK, lo, hi, overlapMin, overlapMax))
+
+	v.Collision, v.CollisionGlobal = collisionRates(cs)
+	ok = v.CollisionGlobal >= collisionGlobalMin && v.CollisionGlobal <= collisionGlobalMax && v.Collision[4] <= collisionRecMax
+	for _, r := range v.Collision {
+		ok = ok && r >= collisionCatMin
+	}
+	add("base collision", ok, fmt.Sprintf("K2: global %.4f (required [%.2f, %.2f]), per category %.4f / %.4f / %.4f / %.4f / %.4f (each >= %.2f, Reconocimientos <= %.2f)",
+		v.CollisionGlobal, collisionGlobalMin, collisionGlobalMax, v.Collision[0], v.Collision[1], v.Collision[2], v.Collision[3], v.Collision[4], collisionCatMin, collisionRecMax))
+
+	v.ProbeF1 = probeMacroF1(cs, cfg.Seed)
+	add("probe classifier", v.ProbeF1 >= probeMin && v.ProbeF1 <= probeMax,
+		fmt.Sprintf("K3: Naive Bayes probe (alpha %.0f, %d stratified folds) Macro-F1 %.4f, required within [%.2f, %.2f]", probeAlpha, probeFolds, v.ProbeF1, probeMin, probeMax))
 
 	v.Samples = drawSamples(cs, cfg.Seed)
 	bad := 0
@@ -180,6 +214,143 @@ func tokens(s string) []string {
 	return strings.FieldsFunc(strings.ToLower(s), func(r rune) bool { return !unicode.IsLetter(r) })
 }
 
+// contentTokens are tokens without the stoplist v1 entries: the tokens K1, K2 and K3 measure.
+func contentTokens(s string) []string {
+	var out []string
+	for _, t := range tokens(s) {
+		if _, stop := lexer.Lookup(t); !stop {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// bagKey is the order-free identity of a bag of content tokens: its sorted distinct tokens.
+func bagKey(s string) string {
+	ts := contentTokens(s)
+	sort.Strings(ts)
+	out := ts[:0]
+	for i, t := range ts {
+		if i == 0 || t != ts[i-1] {
+			out = append(out, t)
+		}
+	}
+	return strings.Join(out, " ")
+}
+
+// collisionRates measures K2: the share of comments whose clean base sentence, as a bag
+// of content tokens, also occurs as the base of a comment of another category.
+func collisionRates(cs []Comment) (perCat [5]float64, global float64) {
+	cats := map[string]uint8{} // bag -> bitmask of categories
+	keys := make([]string, len(cs))
+	for i, c := range cs {
+		if c.CategoriaID < 1 || c.CategoriaID > 5 {
+			continue
+		}
+		keys[i] = bagKey(c.Base)
+		cats[keys[i]] |= 1 << (c.CategoriaID - 1)
+	}
+	var hit, n [5]int
+	total := 0
+	for i, c := range cs {
+		if c.CategoriaID < 1 || c.CategoriaID > 5 {
+			continue
+		}
+		k := c.CategoriaID - 1
+		n[k]++
+		if m := cats[keys[i]]; m&(m-1) != 0 {
+			hit[k]++
+			total++
+		}
+	}
+	for k := range perCat {
+		if n[k] > 0 {
+			perCat[k] = float64(hit[k]) / float64(n[k])
+		}
+	}
+	if len(cs) > 0 {
+		global = float64(total) / float64(len(cs))
+	}
+	return perCat, global
+}
+
+// probeMacroF1 measures K3: a multinomial Naive Bayes over content-token counts
+// (Laplace alpha, vocabulary of the whole corpus), trained on four folds and scored on
+// the fifth, with folds stratified by category from a dedicated rng stream (seed+2).
+// It returns the mean Macro-F1 of the folds.
+func probeMacroF1(cs []Comment, seed int64) float64 {
+	vocab := map[string]int{}
+	docs := make([][]int, len(cs))
+	for i, c := range cs {
+		for _, t := range contentTokens(c.Texto) {
+			id, ok := vocab[t]
+			if !ok {
+				id = len(vocab)
+				vocab[t] = id
+			}
+			docs[i] = append(docs[i], id)
+		}
+	}
+	fold := make([]int, len(cs))
+	rng := rand.New(rand.NewSource(seed + 2))
+	var byCat [5][]int
+	for i, c := range cs {
+		if c.CategoriaID >= 1 && c.CategoriaID <= 5 {
+			byCat[c.CategoriaID-1] = append(byCat[c.CategoriaID-1], i)
+		}
+	}
+	for _, idx := range byCat {
+		for j, p := range rng.Perm(len(idx)) {
+			fold[idx[p]] = j % probeFolds
+		}
+	}
+	sum := 0.0
+	for f := 0; f < probeFolds; f++ {
+		var classDocs [5]int
+		var tokTotal [5]float64
+		counts := make([][5]float64, len(vocab))
+		for i, c := range cs {
+			if fold[i] == f || c.CategoriaID < 1 || c.CategoriaID > 5 {
+				continue
+			}
+			k := c.CategoriaID - 1
+			classDocs[k]++
+			for _, id := range docs[i] {
+				counts[id][k]++
+				tokTotal[k]++
+			}
+		}
+		nTrain := 0
+		for _, d := range classDocs {
+			nTrain += d
+		}
+		var gold, pred []int
+		for i, c := range cs {
+			if fold[i] != f || c.CategoriaID < 1 || c.CategoriaID > 5 {
+				continue
+			}
+			best, bestScore := 0, math.Inf(-1)
+			for k := 0; k < 5; k++ {
+				if classDocs[k] == 0 {
+					continue
+				}
+				score := math.Log(float64(classDocs[k]) / float64(nTrain))
+				den := math.Log(tokTotal[k] + probeAlpha*float64(len(vocab)))
+				for _, id := range docs[i] {
+					score += math.Log(counts[id][k]+probeAlpha) - den
+				}
+				if score > bestScore {
+					best, bestScore = k, score
+				}
+			}
+			gold = append(gold, c.CategoriaID)
+			pred = append(pred, best+1)
+		}
+		sum += macroF1(gold, pred)
+	}
+	return sum / probeFolds
+}
+
 func overlapMatrix(cs []Comment) [5][5]float64 {
 	var freq [5]map[string]int
 	for i := range freq {
@@ -189,7 +360,7 @@ func overlapMatrix(cs []Comment) [5][5]float64 {
 		if c.CategoriaID < 1 || c.CategoriaID > 5 {
 			continue
 		}
-		for _, t := range tokens(c.Texto) {
+		for _, t := range contentTokens(c.Texto) {
 			freq[c.CategoriaID-1][t]++
 		}
 	}
@@ -265,4 +436,29 @@ func sampleLooksSane(t string) bool {
 	n := len([]rune(t))
 	return strings.TrimSpace(t) != "" && !strings.ContainsAny(t, "{}") &&
 		n >= sampleMinRunes && n <= sampleMaxRunes && len(strings.Fields(t)) >= 2
+}
+
+// macroF1 is the unweighted mean F1 over the classes 1..5 present in gold or pred.
+func macroF1(gold, pred []int) float64 {
+	var tp, fp, fn [6]int
+	for i := range gold {
+		if gold[i] == pred[i] {
+			tp[gold[i]]++
+		} else {
+			fp[pred[i]]++
+			fn[gold[i]]++
+		}
+	}
+	sum, n := 0.0, 0
+	for k := 1; k <= 5; k++ {
+		if tp[k]+fp[k]+fn[k] == 0 {
+			continue
+		}
+		n++
+		sum += 2 * float64(tp[k]) / float64(2*tp[k]+fp[k]+fn[k])
+	}
+	if n == 0 {
+		return 0
+	}
+	return sum / float64(n)
 }

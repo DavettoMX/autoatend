@@ -206,7 +206,7 @@ func TestGold5_ClasificadosEnGo(t *testing.T) {
 // failing threshold is logged, never tuned away.
 func TestCPM01_MacroF1(t *testing.T) {
 	m := mustLoad(t, modeloPath)
-	for name, e := range map[string]ml.Eval{"test": m.Metricas.Test, "test_sin_duplicados": m.Metricas.TestSinDuplicados} {
+	for name, e := range map[string]ml.Eval{"test": m.Metricas.Test, "test_sin_duplicados": m.Metricas.TestSinDuplicados, "test_sin_ambiguos": m.Metricas.TestSinAmbiguos} {
 		if e.N == 0 || e.MacroF1 <= 0 || e.MacroF1 > 1 {
 			t.Errorf("%s: metrics missing or out of range: %+v", name, e)
 		}
@@ -220,7 +220,7 @@ func TestCPM01_MacroF1(t *testing.T) {
 
 func TestCPM02_RecallReconocimientos(t *testing.T) {
 	m := mustLoad(t, modeloPath)
-	for name, e := range map[string]ml.Eval{"test": m.Metricas.Test, "test_sin_duplicados": m.Metricas.TestSinDuplicados} {
+	for name, e := range map[string]ml.Eval{"test": m.Metricas.Test, "test_sin_duplicados": m.Metricas.TestSinDuplicados, "test_sin_ambiguos": m.Metricas.TestSinAmbiguos} {
 		if e.N == 0 || e.RecallReconocimientos <= 0 || e.RecallReconocimientos > 1 {
 			t.Errorf("%s: metrics missing or out of range: %+v", name, e)
 		}

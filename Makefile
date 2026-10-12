@@ -2,7 +2,7 @@ GO     ?= go
 CORPUS := data/corpus.db
 RESULTS := data/resultados.db
 DF     := data/df_train.json
-CORPUS_SHA ?= b810bad233f9180484082e056b0aefd7676a63e5c4c87441c3ffc2b309760d71
+CORPUS_SHA ?= 37f285ff1da70f4bd5205c51e255a612d1a72ad45b70fc9fda35dbac1b3e6e63
 REPORT := docs/reports/generator_validation_report.md
 DIST   := dist
 VERSION ?= 1.0.0
@@ -11,13 +11,13 @@ ASSET_FILES := corpus.db resultados.db modelo.json modelo_alternativo.json gold5
 
 .PHONY: gen clean-data clean-results sweep-sha train-sha test test-integration cover cover-gate lint-regexp cross sweep train assets build fmt-check vet corpus-sha verify
 
-# Generates data/corpus.db and docs/reports/generator_validation_report.md.
+# Generates data/corpus.db, data/corpus_ambiguos.json and docs/reports/generator_validation_report.md.
 # Fails if data/corpus.db already exists (the corpus is built once).
 gen:
 	$(GO) run ./cmd/gencorpus
 
 clean-data:
-	rm -f $(CORPUS)
+	rm -f $(CORPUS) data/corpus_ambiguos.json
 
 clean-results:
 	rm -f $(RESULTS) $(DF)
@@ -125,10 +125,11 @@ vet: assets
 # Regenerates the corpus in a temp dir and requires the baseline SHA-256 and an identical report (invariant I-3 groundwork).
 corpus-sha:
 	@d=$$(mktemp -d); trap 'rm -rf "$$d"' EXIT; \
-	$(GO) run ./cmd/gencorpus -out "$$d/c.db" -report "$$d/r.md" >/dev/null || exit 1; \
+	$(GO) run ./cmd/gencorpus -out "$$d/c.db" -report "$$d/r.md" -ambiguos "$$d/a.json" >/dev/null || exit 1; \
 	got=$$(sha256sum "$$d/c.db" | cut -d' ' -f1); \
 	if [ "$$got" != "$(CORPUS_SHA)" ]; then echo "corpus-sha: FAIL got $$got, want $(CORPUS_SHA)"; exit 1; fi; \
 	diff -q "$$d/r.md" $(REPORT) >/dev/null || { echo "corpus-sha: FAIL report differs from $(REPORT)"; exit 1; }; \
+	cmp -s "$$d/a.json" data/corpus_ambiguos.json || { echo "corpus-sha: FAIL data/corpus_ambiguos.json differs"; exit 1; }; \
 	echo "corpus-sha: ok $$got"
 
 # Invariant I-3: two sweeps of the corpus must produce byte-identical files.

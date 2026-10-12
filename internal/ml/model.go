@@ -32,6 +32,7 @@ type Eval struct {
 type Metricas struct {
 	Test              Eval `json:"test"`
 	TestSinDuplicados Eval `json:"test_sin_duplicados"`
+	TestSinAmbiguos   Eval `json:"test_sin_ambiguos"` // without the K2 collision subset (data/corpus_ambiguos.json)
 }
 
 // Model is a trained classifier: TF-IDF features and a linear scorer

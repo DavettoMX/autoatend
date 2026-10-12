@@ -9,6 +9,8 @@ parameter (TrainPercent = 80). Train is ``fecha < corte``; test is
 
 from __future__ import annotations
 
+import hashlib
+import json
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -72,3 +74,24 @@ def catalogue_size(path: str | Path) -> int:
         return con.execute("SELECT COUNT(*) FROM lexemas").fetchone()[0]
     finally:
         con.close()
+
+
+def sha256_file(path: str | Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def load_ambiguous(path: str | Path, corpus_path: str | Path) -> set[int]:
+    """Ids of the ambiguous subset (K2 collision, data/corpus_ambiguos.json). The file
+    names the corpus it was generated with; a subset of another corpus is rejected."""
+    with open(path, encoding="utf-8") as f:
+        d = json.load(f)
+    sha = sha256_file(corpus_path)
+    if d["corpus_sha256"] != sha:
+        raise SystemExit(f"{path} belongs to corpus {d['corpus_sha256'][:8]}, not {sha[:8]}")
+    if d["total"] != len(d["ids"]):
+        raise SystemExit(f"{path}: total {d['total']} != {len(d['ids'])} ids")
+    return set(d["ids"])
