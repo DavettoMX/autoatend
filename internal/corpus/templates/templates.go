@@ -216,7 +216,7 @@ var Templates = [5][]string{
 		"Fui a aclarar un cobro de {MONTO} y en {AREA} me dejaron esperando sin darme respuesta.",
 		"Pedí {VECES} veces que corrijan mi factura y en {AREA} nadie me hace caso.",
 		"Al final sí me resolvieron en {AREA}, aunque tardaron bastante.",
-		"Me atendieron {CANAL} y quedó resuelto, aunque tuve que llamar {VECES} veces.",
+		"Me atendieron {CANAL} y quedó resuelto, aunque tuve que insistir {VECES} veces.",
 	},
 	// 5 — Reconocimientos
 	{
@@ -267,7 +267,7 @@ var Templates = [5][]string{
 		"Buena atención {CANAL}, me aclararon el monto de mi estado de cuenta en un momento.",
 		// shared: the same text is also a template of another category (controlled ambiguity)
 		"Al final sí me resolvieron en {AREA}, aunque tardaron bastante.",
-		"Me atendieron {CANAL} y quedó resuelto, aunque tuve que llamar {VECES} veces.",
+		"Me atendieron {CANAL} y quedó resuelto, aunque tuve que insistir {VECES} veces.",
 	},
 }
 
