@@ -251,12 +251,14 @@ Decisión del usuario (12-oct): la demo se presenta en la **Mac propia** (autori
 
 | Paso | Windows | Mac |
 |---|---|---|
-| 1. Doble clic → banner con URL → se abre el navegador | [ ] | [ ] |
-| 2. Clasificar en vivo un comentario claro y uno frontera | [ ] | [ ] |
-| 3. `lexemas_clave` explica la decisión con lexemas del catálogo | [ ] | [ ] |
-| 4. `/api/lexemas` muestra 3 ER del catálogo (conecta la consigna e con la b) | [ ] | [ ] |
-| 5. `--selftest` → salida 0 en < 3 s | [ ] | [ ] |
+| 1. Doble clic → banner con URL → se abre el navegador | [ ] | [x] |
+| 2. Clasificar en vivo un comentario claro y uno frontera | [ ] | [x] |
+| 3. `lexemas_clave` explica la decisión con lexemas del catálogo | [ ] | [x] |
+| 4. `/api/lexemas` muestra 3 ER del catálogo (conecta la consigna e con la b) | [ ] | [x] |
+| 5. `--selftest` → salida 0 en < 3 s | [ ] | [x] |
 | `gencorpus` reproduce el SHA del corpus | [ ] | [ ] |
+
+Mac verificada por el usuario el 12-oct con la versión 1.0.0 (MacBook Air, Apple Silicon): `--selftest` 5/5 ok; el navegador se abre solo; caso claro (Falta de Servicio 99.5 %) y frontera (Reconocimientos 52.0 % frente a Quejas 46.5 %); `lexemas_clave` con sus ER; `/api/lexemas` muestra el catálogo. La versión 1.0.1 agrega la página `/catalogo`; volver a confirmar en la Mac. Pendiente: `gencorpus` en la Mac.
 
 ### 5.2 Mediciones (TE §6.3.8 y §6.3.10)
 
