@@ -2,8 +2,10 @@ package corpus
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -170,5 +172,91 @@ func TestPersistedTestDuplicatesInTrain(t *testing.T) {
 	}
 	if res.Persisted.TestInTrain != want {
 		t.Fatalf("TestInTrain = %d, want %d", res.Persisted.TestInTrain, want)
+	}
+}
+
+func TestRunReportsSeparabilityAndIterations(t *testing.T) {
+	opts := runOptions(t)
+	if _, err := Run(opts); err != nil {
+		t.Fatal(err)
+	}
+	rep, err := os.ReadFile(opts.ReportPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, c := templates.BaseCount, templates.CrossCount
+	for _, want := range []string{
+		"## Iteraciones del generador",
+		fmt.Sprintf("| Base / cross-context / shared templates | %d·%d·%d / %d·%d·%d / %d·%d·%d / %d·%d·%d / %d·%d·%d |",
+			b[0], c[0], len(templates.Templates[0])-b[0]-c[0], b[1], c[1], len(templates.Templates[1])-b[1]-c[1],
+			b[2], c[2], len(templates.Templates[2])-b[2]-c[2], b[3], c[3], len(templates.Templates[3])-b[3]-c[3],
+			b[4], c[4], len(templates.Templates[4])-b[4]-c[4]),
+		"K1: pairwise Jaccard", "K2: global", "K3: Naive Bayes probe",
+	} {
+		if !strings.Contains(string(rep), want) {
+			t.Errorf("report lacks %q", want)
+		}
+	}
+}
+
+// The ambiguous subset file lists the ids of the K2 collision subset. The oracle
+// regroups the persisted rows by the base sentence of the generated comments.
+func TestRunWritesAmbiguousSubset(t *testing.T) {
+	opts := runOptions(t)
+	opts.AmbiguousPath = filepath.Join(t.TempDir(), "ambiguos.json")
+	res, err := Run(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(opts.AmbiguousPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var f struct {
+		Corpus string `json:"corpus_sha256"`
+		Total  int    `json:"total"`
+		IDs    []int  `json:"ids"`
+	}
+	if err := json.Unmarshal(raw, &f); err != nil {
+		t.Fatal(err)
+	}
+	if f.Corpus != res.Persisted.SHA256 || f.Total != len(f.IDs) {
+		t.Fatalf("header = %s / %d, want %s / %d", f.Corpus, f.Total, res.Persisted.SHA256, len(f.IDs))
+	}
+	if want := int(math.Round(res.Validation.CollisionGlobal * float64(opts.Config.Total))); len(f.IDs) != want {
+		t.Errorf("%d ids, want %d (K2 global share)", len(f.IDs), want)
+	}
+	cs, err := Generate(opts.Config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cats := map[string]map[int]bool{}
+	for _, c := range cs {
+		k := bagKey(c.Base)
+		if cats[k] == nil {
+			cats[k] = map[int]bool{}
+		}
+		cats[k][c.CategoriaID] = true
+	}
+	d, err := db.OpenReadOnly(opts.OutPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	prev := 0
+	for _, id := range f.IDs {
+		if id <= prev {
+			t.Fatalf("ids not strictly increasing at %d", id)
+		}
+		prev = id
+		var texto string
+		var cat int
+		if err := d.QueryRow(`SELECT texto, categoria_id FROM comentarios WHERE id = ?`, id).Scan(&texto, &cat); err != nil {
+			t.Fatal(err)
+		}
+		c := cs[id-1]
+		if c.Texto != texto || c.CategoriaID != cat || len(cats[bagKey(c.Base)]) < 2 {
+			t.Fatalf("id %d is not a persisted comment of the collision subset", id)
+		}
 	}
 }
