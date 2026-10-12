@@ -4,6 +4,16 @@
 // these slices, so any edit or reordering changes corpus.db.
 package templates
 
+// Kinds of base template. In Templates[i], the first BaseCount[i] entries are the
+// original base templates, the next CrossCount[i] are cross-context templates (another
+// category's vocabulary used in this category's sense: sarcasm, a solved problem, a
+// side mention) and the rest are shared templates: the same text is also a template of
+// another category, so its label is a reading the text supports, not the only one.
+var (
+	BaseCount  = [5]int{36, 34, 34, 34, 38}
+	CrossCount = [5]int{6, 6, 6, 6, 6}
+)
+
 // Templates[i] holds the slot-typed base templates of category id i+1
 // (1 Falta de Servicio, 2 Cobros Indebidos, 3 Problemas de Facturación,
 // 4 Quejas, 5 Reconocimientos). Domain text stays in Spanish.
@@ -46,6 +56,17 @@ var Templates = [5][]string{
 		"Mi línea sigue sin servicio tras la reconexión que pagué (ref. {FOLIO}).",
 		"El módem se queda con la luz roja y no hay internet, llevo {DURACION} igual.",
 		"Cambié de SIM y quedé incomunicado, sin {SERVICIO} desde hace {DURACION}.",
+		// cross-context: vocabulary of another category used in this category's sense
+		"Llevo {DURACION} sin {SERVICIO} y me siguen cobrando el recibo completo, puro cuento.",
+		"Es increíble la falta de atención, mi negocio sigue sin internet desde hace {DURACION}.",
+		"Gracias, TelArg: la factura llega puntual, pero el internet no funciona desde {MES}.",
+		"La factura dice servicio activo, pero el módem no da internet desde hace {DURACION}.",
+		"El asesor fue amable, pero sigo sin {SERVICIO} después de {VECES} visitas del técnico.",
+		"Qué buena atención, ya van {DIAS} días sin {SERVICIO_DATOS} y nadie me da fecha de solución.",
+		// shared: the same text is also a template of another category (controlled ambiguity)
+		"Llevo {DURACION} esperando una solución y nadie me da respuesta.",
+		"Ya reporté la falla {VECES} veces y nadie de soporte me resuelve.",
+		"Otra vez me dejaron sin servicio y en atención a clientes solo me dan largas (ref. {FOLIO}).",
 	},
 	// 2 — Cobros Indebidos
 	{
@@ -54,7 +75,7 @@ var Templates = [5][]string{
 		"Cancelé {CONCEPTO_SERV} hace meses y me siguen descontando {MONTO_CHICO} cada mes.",
 		"Me hicieron un cobro doble de {MONTO} en {MES}, exijo la devolución.",
 		"Mi plan {PLAN} cuesta {PRECIO} y me están cobrando {COBRO}, no es lo que acordamos.",
-		"Me descontaron {MONTO} de mi saldo sin haber usado nada ({FOLIO}).",
+		"Me descontaron {MONTO} de mi saldo sin haber usado nada (ref. {FOLIO}).",
 		"En mi tarjeta aparece un cargo de {MONTO} de TelArg que desconozco.",
 		"Pedí la cancelación de mi línea y aun así me cobraron {MONTO} en {MES}.",
 		"Me activaron {CONCEPTO_SERV} sin avisarme y ahora me cobran {MONTO_CHICO}.",
@@ -79,10 +100,22 @@ var Templates = [5][]string{
 		"Pedí la devolución de {MONTO} hace {DURACION_DIAS} y todavía no me abonan nada.",
 		"Mi banco me reporta un cargo no reconocido de TelArg por {MONTO}, quiero aclararlo.",
 		"Activaron {CONCEPTO_SERV} sin pedírmelo y me cobraron {MONTO_CHICO} en el estado de mi tarjeta.",
-		"Me cobraron {MONTO} por una promoción que nunca acepté ({FOLIO}).",
+		"Me cobraron {MONTO} por una promoción que nunca acepté (ref. {FOLIO}).",
 		"Me quitaron el saldo de mi recarga de {MONTO_CHICO} sin explicación alguna.",
 		"Cargos que no reconozco en {MES}: {MONTO_CHICO} por {CONCEPTO}. Exijo que los eliminen.",
 		"Desde que cambié de plan a {PLAN} me cobran {EXTRA} de más, es un cobro indebido.",
+		// cross-context: vocabulary of another category used in this category's sense
+		"Cancelé mi servicio porque nunca tuve señal y me siguen haciendo cobros de {MONTO} a mi tarjeta.",
+		"Me hicieron un cobro doble de {MONTO} después de reportar que no tenía internet.",
+		"Gracias por el cargo no reconocido de {MONTO}, ni idea de qué es.",
+		"Ya di de baja la línea y me siguen cobrando el plan {PLAN}, la atención no sirve.",
+		"El asesor me dijo que no me cobrarían más y en {MES} me volvió a salir el cargo de {MONTO}.",
+		"Increíble, cancelé por mala atención y me siguen cobrando {MONTO_CHICO} cada mes en la tarjeta.",
+		// shared: the same text is also a template of another category (controlled ambiguity)
+		"Hay un cargo de {MONTO} en mi recibo de {MES} que no me cuadra.",
+		"Necesito que revisen lo que me llegó en {MES}, no coincide con lo que pago.",
+		"El monto de este mes no es el que me dijeron {CANAL}, quiero una aclaración.",
+		"Fui a aclarar un cobro de {MONTO} y en {AREA} me dejaron esperando sin darme respuesta.",
 	},
 	// 3 — Problemas de Facturación
 	{
@@ -98,7 +131,7 @@ var Templates = [5][]string{
 		"Me emitieron dos facturas por el mismo periodo de {MES}, una de ellas está duplicada.",
 		"La factura trae un saldo anterior que ya pagué, el pago de {MONTO} no aparece reflejado.",
 		"Mi dirección de facturación es incorrecta y por eso no llegan mis recibos.",
-		"Necesito el comprobante fiscal (CFDI) de {MES} y el sistema no me lo genera ({FOLIO}).",
+		"Necesito el comprobante fiscal (CFDI) de {MES} y el sistema no me lo genera (ref. {FOLIO}).",
 		"Mi recibo viene con fecha límite de pago distinta a la que me indicaron {CANAL}.",
 		"Cambié de plan a {PLAN} y la factura sigue mostrando la tarifa anterior.",
 		"El desglose de mi factura no incluye los impuestos y no entiendo cómo llegan a {MONTO}.",
@@ -108,7 +141,7 @@ var Templates = [5][]string{
 		"La fecha de vencimiento de mi recibo no es la que me dieron, por eso se me juntan los periodos.",
 		"El ciclo de facturación cambió y ahora tengo dos recibos casi juntos de {MONTO} cada uno.",
 		"Mi factura de {MES} dice que tengo adeudo pero el sistema de pagos dice que estoy al corriente.",
-		"No puedo registrar mi correo para facturación, la página me regresa un error ({FOLIO}).",
+		"No puedo registrar mi correo para facturación, la página me regresa un error (ref. {FOLIO}).",
 		"Los consumos en mi factura de {MES} no corresponden con mi historial de llamadas.",
 		"Me llegó la factura en blanco, sin importes, desde que activé la entrega {ENTREGA}.",
 		"Quiero cambiar mi factura a entrega {ENTREGA} y no encuentro la opción por ningún lado.",
@@ -120,13 +153,25 @@ var Templates = [5][]string{
 		"Mi pago de {MONTO} sí se hizo pero la factura todavía marca vencido.",
 		"Recibo mi factura {DIAS_RETRASO} días tarde cada mes, ya casi vence cuando la tengo.",
 		"El portal muestra un monto de factura distinto al del recibo que me llegó, {MONTO} contra {MONTO_B}.",
+		// cross-context: vocabulary of another category used in this category's sense
+		"Gracias por nada, la factura de {MES} llegó otra vez con el plan equivocado.",
+		"Me cobran el monto completo, pero la factura dice un descuento que nunca aplicaron.",
+		"El CFDI de {MES} no llega y el cobro sí se hizo.",
+		"Increíble, la factura dice que no he pagado todo y no aparece mi abono de {MONTO}.",
+		"La factura dice servicio activo, pero en {ZONA} no tengo internet desde hace días.",
+		"El recibo no trae el descuento que me prometieron en atención a clientes por la falla de {SERVICIO}.",
+		// shared: the same text is also a template of another category (controlled ambiguity)
+		"Hay un cargo de {MONTO} en mi recibo de {MES} que no me cuadra.",
+		"Necesito que revisen lo que me llegó en {MES}, no coincide con lo que pago.",
+		"El monto de este mes no es el que me dijeron {CANAL}, quiero una aclaración.",
+		"Pedí {VECES} veces que corrijan mi factura y en {AREA} nadie me hace caso.",
 	},
 	// 4 — Quejas
 	{
 		"Esperé {ESPERA} en {AREA} y nadie me contestó.",
 		"{COLOQ}, el trato de {AGENTE} en {AREA} fue grosero, no pienso aguantar eso.",
 		"Me transfirieron {VECES} veces entre áreas y nadie pudo resolver mi problema.",
-		"Me prometieron una llamada de vuelta y después de {DURACION} sigo esperando ({FOLIO}).",
+		"Me prometieron una llamada de vuelta y después de {DURACION} sigo esperando (ref. {FOLIO}).",
 		"La atención en la sucursal de {CIUDAD} es pésima, hacen fila {ESPERA} para nada.",
 		"Subieron el precio de mi plan {PLAN} sin avisarme, esto me parece un abuso.",
 		"Cada vez que llamo me piden los mismos datos y no resuelven nada, estoy harto del servicio de atención.",
@@ -134,7 +179,7 @@ var Templates = [5][]string{
 		"Quiero presentar mi queja porque {AGENTE} me colgó la llamada en plena aclaración.",
 		"Me vendieron el plan {PLAN} con condiciones que no cumplen, publicidad engañosa.",
 		"Para cancelar mi línea me ponen mil trabas, es un proceso interminable.",
-		"Nadie da seguimiento a lo que pedí ({FOLIO}), siempre me dicen que ya está en proceso.",
+		"Nadie da seguimiento a lo que pedí (ref. {FOLIO}), siempre me dicen que ya está en proceso.",
 		"Los asesores no saben nada, me dieron {VECES} respuestas distintas en la misma semana.",
 		"Me llaman seguido {HORARIO} para ofrecerme promociones aunque ya les pedí que no.",
 		"El equipo que me entregaron llegó tarde y con la caja abierta, muy mal servicio.",
@@ -157,6 +202,21 @@ var Templates = [5][]string{
 		"No hay quien resuelva dudas en {AREA}, todo son excusas y tiempos de espera.",
 		"{COLOQ}, qué mala atención, desde {MES} estoy tratando de aclarar un tema y nadie me resuelve.",
 		"Mi queja: el call center cuelga cuando pido hablar con un supervisor.",
+		// cross-context: vocabulary of another category used in this category's sense
+		"Me quitan el servicio por un peso de adeudo, cuando el problema es la atención.",
+		"El asesor de la sucursal de {CIUDAD} fue grosero y me cortó la línea por pagar un día tarde.",
+		"Publicidad engañosa: prometen cobertura en {CIUDAD} y no hay señal.",
+		"Mala atención, me reagendan al técnico {VECES} veces y nadie da la cara.",
+		"Para cancelar te piden mil cosas y mientras tanto te siguen cobrando el plan {PLAN}.",
+		"Me cortan por un adeudo mínimo cuando ellos no mandan bien la factura.",
+		// shared: the same text is also a template of another category (controlled ambiguity)
+		"Llevo {DURACION} esperando una solución y nadie me da respuesta.",
+		"Ya reporté la falla {VECES} veces y nadie de soporte me resuelve.",
+		"Otra vez me dejaron sin servicio y en atención a clientes solo me dan largas (ref. {FOLIO}).",
+		"Fui a aclarar un cobro de {MONTO} y en {AREA} me dejaron esperando sin darme respuesta.",
+		"Pedí {VECES} veces que corrijan mi factura y en {AREA} nadie me hace caso.",
+		"Al final sí me resolvieron en {AREA}, aunque tardaron bastante.",
+		"Me atendieron {CANAL} y quedó resuelto, aunque tuve que llamar {VECES} veces.",
 	},
 	// 5 — Reconocimientos
 	{
@@ -166,7 +226,7 @@ var Templates = [5][]string{
 		"Mi reconocimiento al técnico que llegó puntual y dejó mi internet funcionando perfecto.",
 		"Excelente cobertura en {CIUDAD}, nunca he tenido problemas con mi plan {PLAN}.",
 		"Gracias a {AGENTE} por la paciencia y la amabilidad al explicarme mi plan {PLAN}.",
-		"Quiero agradecer la rapidez con la que atendieron mi solicitud ({FOLIO}), todo quedó resuelto.",
+		"Quiero agradecer la rapidez con la que atendieron mi solicitud (ref. {FOLIO}), todo quedó resuelto.",
 		"Les felicito por la aplicación, es muy fácil de usar y puedo ver mis consumos al instante.",
 		"En la sucursal de {CIUDAD} me atendieron de maravilla, todo fue rápido y claro.",
 		"Llevo años con TelArg y siempre he tenido buen servicio, los recomiendo.",
@@ -192,6 +252,22 @@ var Templates = [5][]string{
 		"Gracias, gracias y gracias, por fin alguien resolvió mi problema de manera ágil.",
 		"El servicio de TelArg ha mejorado muchísimo, se nota el compromiso con los clientes.",
 		"Quiero reconocer públicamente la labor de {AGENTE} en {AREA}, un trabajo verdaderamente profesional.",
+		"Pagar mi recibo en la app es muy fácil, todo queda registrado al momento.",
+		"Me encanta que la factura llegue cada mes {ENTREGA_ELEC} sin falta.",
+		"El estado de cuenta ahora viene muy claro, gracias por detallar cada cargo.",
+		"Gracias por avisarme antes de la fecha de corte, así no se me pasa el pago.",
+		"En {AREA} me explicaron con paciencia el cobro de mi plan {PLAN}, quedé muy conforme.",
+		"La domiciliación de mi pago funciona perfecto, nunca he tenido un cargo de más.",
+		// cross-context: vocabulary of another category used in this category's sense
+		"Por fin me devolvieron el cobro doble de {MONTO}, el asesor fue muy amable.",
+		"Gracias, TelArg: después de {DURACION} sin internet lo arreglaron en cuanto lo reporté.",
+		"Excelente atención, me corrigieron la factura de {MES} y el recibo ya cuadra con mi pago.",
+		"Por fin resolvieron la falta de señal en {ZONA}, el técnico llegó puntual.",
+		"Gracias, me quitaron de la cuenta el cargo de {MONTO_CHICO} que no reconocía y me devolvieron mi dinero.",
+		"Buena atención {CANAL}, me aclararon el monto de mi estado de cuenta en un momento.",
+		// shared: the same text is also a template of another category (controlled ambiguity)
+		"Al final sí me resolvieron en {AREA}, aunque tardaron bastante.",
+		"Me atendieron {CANAL} y quedó resuelto, aunque tuve que llamar {VECES} veces.",
 	},
 }
 

@@ -13,10 +13,11 @@ import (
 	"autoatend/internal/db"
 )
 
-func smallOptions(t *testing.T) Options {
+// runOptions is the case configuration: K1–K3 are pre-registered for the full corpus,
+// so a smaller sample of the generator need not pass them.
+func runOptions(t *testing.T) Options {
 	t.Helper()
 	cfg := DefaultConfig()
-	cfg.Total = 2000
 	dir := t.TempDir()
 	return Options{Config: cfg, OutPath: filepath.Join(dir, "corpus.db"), ReportPath: filepath.Join(dir, "report.md")}
 }
@@ -36,7 +37,7 @@ func TestPersistIsAllOrNothing(t *testing.T) {
 }
 
 func TestRunRefusesToPersistWhenValidationFails(t *testing.T) {
-	opts := smallOptions(t)
+	opts := runOptions(t)
 	opts.generate = func(cfg Config) ([]Comment, error) {
 		cs, err := Generate(cfg)
 		if err == nil {
@@ -58,13 +59,13 @@ func TestRunRefusesToPersistWhenValidationFails(t *testing.T) {
 }
 
 func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
-	opts := smallOptions(t)
+	opts := runOptions(t)
 	res, err := Run(opts)
 	if err != nil {
 		t.Fatalf("run: %v", err)
 	}
 	p := res.Persisted
-	if p.Rows != 2000 || p.PerCategory != [5]int{600, 400, 400, 400, 200} || p.Empty != 0 {
+	if p.Rows != 73000 || p.PerCategory != [5]int{21900, 14600, 14600, 14600, 7300} || p.Empty != 0 {
 		t.Fatalf("persisted stats = %+v", p)
 	}
 	for i := 0; i < 5; i++ {
@@ -106,7 +107,7 @@ func TestRunProducesVerifiedCorpusAndReport(t *testing.T) {
 
 func TestReportIsDeterministic(t *testing.T) {
 	render := func() ([]byte, string) {
-		opts := smallOptions(t)
+		opts := runOptions(t)
 		res, err := Run(opts)
 		if err != nil {
 			t.Fatal(err)
@@ -130,7 +131,7 @@ func TestReportIsDeterministic(t *testing.T) {
 // The train/test duplicate count is checked against an oracle built in Go from
 // the persisted rows, not against the SQL used by verifyCorpus.
 func TestPersistedTestDuplicatesInTrain(t *testing.T) {
-	opts := smallOptions(t)
+	opts := runOptions(t)
 	res, err := Run(opts)
 	if err != nil {
 		t.Fatal(err)
