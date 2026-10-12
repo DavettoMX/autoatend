@@ -245,7 +245,9 @@ Otras reglas:
 
 Esta es la checklist viva: marca `[x]` solo lo que se verificó ejecutándolo.
 
-### 5.1 Guion del TE §6.4.3, en las dos plataformas
+### 5.1 Guion del TE §6.4.3
+
+Decisión del usuario (12-oct): la demo se presenta en la **Mac propia** (autorizada por el CENEVAL). La columna Windows queda como respaldo opcional.
 
 | Paso | Windows | Mac |
 |---|---|---|

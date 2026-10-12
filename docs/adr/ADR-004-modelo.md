@@ -75,6 +75,36 @@ Python tokeniza invocando `cmd/tokenizar` (la misma `lexer.Analyze` que el barri
 - **Texto sin lexemas del vocabulario** (vacío, solo palabras vacías o solo palabras desconocidas): el vector es cero, los puntajes son los sesgos y la predicción es la del *prior* del modelo; `Prediction.Vacio` lo señala para que la capa web lo trate (por ejemplo, avisando que no se reconoció ninguna palabra) en vez de presentarlo como evidencia.
 - **`lexemas_clave`:** los cinco términos del soporte con mayor `|w_{k,i}·x_i|` para la clase ganadora, con empates por índice menor; no se listan términos con contribución cero.
 
+### 6. Ambigüedad controlada del corpus
+
+**Problema.** Con el corpus `b810bad2…` el modelo obtuvo Macro-F1 = 1.0000 y una matriz de confusión diagonal, incluso sin duplicados. El TE §6.1.4 exige que el generador "evite que el corpus sea trivialmente separable, lo que inflaría artificialmente las métricas", y que la batería verifique un "solapamiento léxico inter-categoría acotado". Con un 1.0 no se puede demostrar la comparación NBM contra RLS ni las tres estrategias de desbalance (§5.1.3), porque empataban. El diagnóstico (`docs/reports/generator_validation_report.md`, "Iteraciones del generador") fue que cada plantilla base tenía al menos un lexema exclusivo de su categoría y que ningún texto base aparecía con dos etiquetas.
+
+**Criterio registrado antes de cambiar el generador** (commit en rojo `4a36e53`, en el que el corpus anterior falla las tres compuertas; umbrales fijos desde entonces, `PLAN.md` §3):
+
+| Compuerta | Qué mide | Rango | Corpus `b810bad2…` | Corpus `37f285ff…` |
+|---|---|---|---|---|
+| K1 | Jaccard de los 100 términos más frecuentes por par de categorías, **después de la stoplist v1** | [0.15, 0.80] | 0.111 | 0.156–0.299 |
+| K2 | Colisión de la oración base: fracción de comentarios cuya bolsa base (texto limpio, con stoplist) aparece en ≥ 2 categorías | global [0.05, 0.10]; ≥ 0.03 por categoría; ≤ 0.05 en Reconocimientos | 0.0000 | 0.0895 (Rec. 0.0381) |
+| K3 | Sonda Naive Bayes (α = 1, 5 pliegues estratificados, semilla 10433) | Macro-F1 en [0.80, 0.99] | 1.0000 | 0.9726 |
+
+Las plantillas se ajustaron mirando solo la batería, en 4 iteraciones registradas. El modelo se entrenó **una sola vez**, después de que la batería pasó, y no hay ningún umbral sobre el modelo final.
+
+**Qué es y qué no es.** La ambigüedad controlada son 10 oraciones base compartidas entre los pares de categorías que el TE identifica como próximos: Falta↔Quejas (3), Cobros↔Facturación (3), Quejas↔Reconocimientos (2), Quejas↔Cobros (1) y Quejas↔Facturación (1). Cada una es plausible con las dos lecturas (`docs/reports/plantillas_nuevas.md`). Se suman 30 plantillas de contexto cruzado, en las que aparecen palabras de otra categoría (como el sarcasmo o el problema ya resuelto), inspiradas en patrones reales de quejas de telecomunicaciones en México (`docs/data/grok_examples.txt`), pero redactadas como plantillas parametrizadas.
+
+**No es ruido de etiqueta**, porque:
+- la etiqueta nunca contradice el texto;
+- la determina la plantilla, de forma determinista;
+- la tasa está declarada (8.95 %, ids en `data/corpus_ambiguos.json`, fuera de la BD para respetar el Anexo I).
+
+El TE la anticipa en tres lugares: en las causas primarias del diagnóstico ("inconsistencias inter-evaluador", "ambigüedad de los textos"), en §5.2.2 ("confusiones sistemáticas entre categorías semánticamente próximas (por ejemplo, Quejas y Falta de Servicio)") y en el guion de §6.4.3 ("un reconocimiento con tono ambiguo"). El ruido de etiqueta (invertir etiquetas al azar) se descartó porque el TE solo contempla ruido léxico y ortográfico.
+
+**Efecto medido:**
+- Macro-F1 de 0.9795 en test, 0.9997 sin el subconjunto ambiguo y 0.8350 con plantillas no vistas (solo reporte, `docs/reports/plantillas_no_vistas.md`).
+- RLS supera a NBM en validación cruzada (0.978 contra 0.972), así que la comparación del TE §6.4.2 produce evidencia.
+- Las tres estrategias de desbalance siguen a menos de una desviación entre sí; la elección la decide el desempate y se declara así.
+
+**Limitación.** Fuera del subconjunto ambiguo el corpus sigue siendo casi separable, porque el corte temporal no excluye plantillas: el test contiene las mismas plantillas que train. La cifra realista de generalización es la de plantillas no vistas; la cifra del TE (test temporal) se presenta junto a ella, nunca sola.
+
 ## Alternativas descartadas
 
 - **`TfidfVectorizer` de scikit-learn con su propio tokenizador:** habría dos definiciones de token (la de Python y la del analizador léxico propio de la consigna b) y la paridad CPA06 sería inalcanzable. Su fórmula de IDF suavizado es la misma que se usa aquí, pero el cálculo se hace sobre la salida del tokenizador Go.
