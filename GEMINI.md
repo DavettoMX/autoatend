@@ -87,6 +87,7 @@ make verify       # criterio de terminado: todos los gates en orden
 make test | test-integration | cover | cover-gate | lint-regexp | corpus-sha | sweep-sha | cross
 make gen          # se niega a sobrescribir data/corpus.db; usa make clean-data antes
 make sweep        # genera data/resultados.db y data/df_train.json; usa make clean-results antes
+make train        # entrena (uv + scikit-learn) y regenera modelo.json, modelo_alternativo.json, gold5.json, paridad_1000.json y el reporte; make train-sha comprueba el determinismo
 go test -count=1 -run NombrePrueba ./internal/...
 ```
 
@@ -102,7 +103,10 @@ go test -count=1 -run NombrePrueba ./internal/...
 - `internal/regex`: motor de ER propio (ADR-002). `Parse` (descenso recursivo sobre runas; AST tipado `Alternation`, `Concatenation`, `Closure`, `Group`, `Class`, `Char`; `ParseError` con posición; `MaxDepth` = 200), `Thompson`/`Compile` (AFN-ε de a lo más 2·|r| estados) y `(*NFA).Match` (simulación por conjuntos de estados, O(n·m), cadena completa). No importa `regexp`.
 - `internal/sweep`: barrido del corpus (`Run`): construye `resultados.db` (corridas, lexemas, frecuencias, variantes) y `df_train.json`, y verifica I-2 reabriendo el archivo. Valida cada ER por ida y vuelta con `internal/regex` antes de persistirla (`validatedER`; respaldo a la forma canónica; `Result.ERFallbacks`, esperado 0). Puede importar `internal/db/build`.
 - `cmd/simulador`: flags de `sweep.Run` (`make sweep`; `make sweep-sha` comprueba I-3).
-- Por crear según `PLAN.md`: `ml/` (Python, offline), `internal/ml`, `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
+- `internal/ml`: lado de ejecución del clasificador (ADR-004). `Lexicon`/`NewLexicon`/`LoadCatalogue` (forma → lexema canónico del catálogo por `lexer.Stem`), `RunTokenizar` (lógica de `cmd/tokenizar`: JSON lines `{id,texto}` → `{id,lexemas}`), `Load` (lee y valida `modelo.json`), `(*Model).Vectorize` (TF conteo × IDF almacenado, L2, suma en orden ascendente sin FMA), `Predict`/`PredictSparse` (`z = b + Σ w·x` sobre el soporte, softmax con resta del máximo, `LexemasClave` top-5 por `|w·x|`; `Vacio` si ningún token está en el vocabulario). Go nunca recalcula el IDF. Importa `internal/db`, nunca `internal/db/build`.
+- `cmd/tokenizar`: flags de `ml.RunTokenizar`; Python lo invoca por lotes (CPA06). `make train` lo compila a `dist/tokenizar`.
+- `ml/` (Python 3.11 + scikit-learn 1.9.1 con `uv`, solo desarrollo, nunca en el binario): `autoatend_ml.train` (split con la misma consulta SQL de `db.SplitCutoff`, TF-IDF de train, NBM y RLS × 3 estrategias de desbalance, CV estratificada de 5, evaluación en test con y sin duplicados, exportación), `export` (JSON determinista y escalador de referencia), `report`, `paridad`. `make train` regenera `data/modelo.json`, `data/modelo_alternativo.json`, `data/gold5.json`, `testdata/paridad_1000.json` y `docs/reports/evaluacion_modelo.md`; `make train-sha` comprueba que dos entrenamientos dan los mismos bytes. `make verify` no requiere Python: las pruebas Go leen los JSON versionados (CPA06, equivalencia lineal, `gold5`, CPM01/CPM02 medidos).
+- Por crear según `PLAN.md`: `internal/web`, `internal/assets` (`go:embed` no admite `..`, así que los artefactos embebidos van ahí), `cmd/autoatend`.
 
 ## Apego al Trabajo Escrito
 

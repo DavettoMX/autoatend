@@ -10,7 +10,7 @@ Atiende las cinco consignas del caso:
 | b) Programa analizador | Analizador léxico propio (parser de ER → Thompson → AFN-ε) y `cmd/simulador` → `resultados.db` | 🚧 en curso (Fase 2: lexer y barrido listos; falta el motor de ER) |
 | c) Plan de pruebas | TE §6.3 y Anexo II; pruebas en el repo y matriz `docs/CASOS_PRUEBA.md` | ⏳ Fases 2–5 |
 | d) Justificación del plan | TE §6.3 (ISO/IEC 25010, invariantes I-1…I-4); cifras medidas en `PLAN.md` §5.2 | ⏳ Fase 5 |
-| e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | ⏳ Fases 3–4 |
+| e) Servicio web clasificador | `cmd/autoatend`: HTTP en `127.0.0.1:8471`, inferencia nativa sobre `modelo.json` | 🚧 en curso (Fase 3: modelo entrenado, `internal/ml` y paridad Python↔Go listos; falta el servicio web de la Fase 4) |
 
 El plan de ejecución hacia la demo, con su checklist de aceptación, está en [`PLAN.md`](PLAN.md).
 
@@ -18,7 +18,7 @@ El plan de ejecución hacia la demo, con su checklist de aceptación, está en [
 
 - Go 1.26 o superior. No hace falta compilador de C: la única dependencia es `modernc.org/sqlite`, escrita en Go puro.
 - `make` (opcional; los comandos equivalentes aparecen abajo).
-- Python 3.11 y scikit-learn, solo para el entrenamiento offline de la Fase 3 (no forma parte del binario).
+- Solo para reentrenar (`make train`): [`uv`](https://docs.astral.sh/uv/) con Python 3.11 y scikit-learn 1.9.1 (fijados en `ml/pyproject.toml` y `ml/uv.lock`). No forman parte del binario ni de `make verify`.
 
 ## Uso rápido
 
@@ -30,6 +30,8 @@ make cover-gate         # falla si algún paquete queda por debajo del 80 % de c
 make lint-regexp        # falla si aparece import "regexp" o cgo
 make sweep              # barre data/corpus.db y genera data/resultados.db y data/df_train.json
 make sweep-sha          # invariante I-3: dos barridos dan el mismo SHA-256
+make train              # entrena y regenera modelo.json, modelo_alternativo.json, gold5.json, paridad_1000.json y el reporte (requiere uv)
+make train-sha          # dos entrenamientos independientes producen los mismos bytes
 make cross              # binarios estáticos en dist/ para windows/amd64 y darwin/arm64
 ```
 
@@ -44,6 +46,10 @@ sha256sum data/resultados.db
 ```
 
 El simulador no sobrescribe archivos existentes. Si falla algún chequeo posterior (la consulta I-2 del TE §6.3.3, una sola corrida, lexemas sin variantes o sin frecuencias, integridad de `categoria_id`), borra lo que creó. `df_train.json` es la frecuencia de documento de train para el entrenamiento en Python.
+
+### Entrenar el modelo (consigna e, Fase 3)
+
+`data/modelo.json` (ganador), `data/modelo_alternativo.json` (mejor de la otra familia), `data/gold5.json` y `testdata/paridad_1000.json` están versionados; `make verify` solo los lee. `make train` los reproduce: compila `cmd/tokenizar` (la tokenización la hace Go, no Python), entrena en `ml/` con TF-IDF de train, compara Naive Bayes multinomial y regresión logística softmax bajo tres estrategias de desbalance con validación cruzada estratificada de 5 particiones, evalúa una sola vez en test (también sin los duplicados exactos de train) y mide en Go la paridad Python↔Go (CPA06). El resultado y la evidencia están en [`docs/reports/evaluacion_modelo.md`](docs/reports/evaluacion_modelo.md) y en [`ADR-004`](docs/adr/ADR-004-modelo.md): ganador regresión logística (C = 10, pesos balanceados), Macro-F1 de test 1.0000 y recall de Reconocimientos 1.0000, con la salvedad de que el corpus sintético es fácil (Naive Bayes llega a 0.9997).
 
 ### Regenerar el corpus
 
@@ -64,6 +70,7 @@ Para generar en otra ruta: `go run ./cmd/gencorpus -out /tmp/c.db -report /tmp/r
 ```
 cmd/gencorpus/          CLI del generador (solo flags)
 cmd/simulador/          CLI del barrido léxico (solo flags)
+cmd/tokenizar/          CLI del tokenizador por lotes para Python (solo flags)
 internal/corpus/        generación, ruido, validación, persistencia y reporte
 internal/corpus/templates/  plantillas y vocabularios del dominio (solo datos)
 internal/db/            acceso en tiempo de ejecución: categorías, OpenReadOnly, DSN
@@ -72,8 +79,11 @@ internal/db/schema/     DDL de corpus.db y resultados.db (.sql embebido, Anexo I
 internal/lexer/         normalizador, tokenizador AFD, stoplist, stemmer, tabla de símbolos, generador de ER
 internal/regex/         motor de ER propio: parser, Thompson y simulación del AFN-ε
 internal/sweep/         barrido del corpus: construye resultados.db y df_train.json
+internal/ml/            carga de modelo.json, vectorización TF-IDF e inferencia lineal + softmax
+ml/                     entrenamiento offline en Python (uv, scikit-learn); nunca forma parte del binario
 internal/testutil/      helpers de prueba compartidos
-data/                   artefactos generados (corpus.db, resultados.db, df_train.json)
+data/                   artefactos generados (corpus.db, resultados.db, df_train.json, modelo.json, modelo_alternativo.json, gold5.json)
+testdata/               paridad_1000.json (fixture de CPA06)
 docs/adr/               decisiones de arquitectura (ADR)
 docs/reports/           reportes generados
 ```
